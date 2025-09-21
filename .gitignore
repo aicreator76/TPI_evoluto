@@ -1,28 +1,42 @@
-# Python
+﻿# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-*.pdb
-*.egg-info/
-.venv/
 
-# IDE / Editor
+# Virtualenv
+.venv/
+env/
+ENV/
+venv/
+
+# Logs & runtime
+logs/
+*.log
+data/
+*.pid
+
+# IDE/editor
 .vscode/
 .idea/
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+*.swp
+*.sublime-workspace
+*.sublime-project
 
-# Windows
+# OS/Windows
 Thumbs.db
-Desktop.ini
-$RECYCLE.BIN/
 ehthumbs.db
+Desktop.ini
 
-# Logs / Temp
-*.log
-*.tmp
+# Mac/other
+.DS_Store
+
+# Test/coverage
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+
+# Misc
 *.bak
+*.tmp
