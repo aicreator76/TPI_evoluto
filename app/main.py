@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+﻿from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 import time
 
@@ -19,8 +19,8 @@ from tpi_logging import get_logger
 # App FastAPI
 app = FastAPI(title="TPI_evoluto", redirect_slashes=True)
 
-# Statici: cartella "statico" nella root del progetto
-app.mount("/static", StaticFiles(directory="statico"), name="statico")
+# Statici: cartella "static" nella root del progetto
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # Logger
 logger = get_logger()
@@ -32,8 +32,7 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     duration = (time.time() - start_time) * 1000
     logger.info(
-        f"{request.method} {request.url.path} completed_in={duration:.2f}ms "
-        f"status={response.status_code}"
+        f"{request.method} {request.url.path} completed_in={duration:.2f}ms status={response.status_code}"
     )
     return response
 
