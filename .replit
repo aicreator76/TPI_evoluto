@@ -1,0 +1,7 @@
+run = "python -m gunicorn -w 1 -k gthread -b 0.0.0.0:3000 app:app"
+
+[nix]
+channel = "stable-23.11"
+
+[deployment]
+run = ["sh", "-c", "python -m gunicorn -w 1 -k gthread -b 0.0.0.0:3000 app:app"]
