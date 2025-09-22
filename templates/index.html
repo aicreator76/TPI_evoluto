@@ -1,18 +1,56 @@
 ﻿<!DOCTYPE html>
-<html lang="it">
+<html lang="{{ lang }}">
 <head>
     <meta charset="UTF-8">
-    <title>{{ t["title"] }}</title>
+    <title>{{ translations.title }}</title>
     <link rel="stylesheet" href="/static/theme.css">
 </head>
 <body>
-    <nav>
-        <a href="/">{{ t["menu_home"] }}</a> |
-        <a href="/about">{{ t["menu_about"] }}</a> |
-        <a href="/dpi">{{ t["menu_dpi"] }}</a> |
-        <a href="/funi_metalliche">{{ t["menu_funi"] }}</a> |
-        <a href="/formazione">{{ t["menu_formazione"] }}</a>
-    </nav>
-    <h1>{{ t["title"] }}</h1>
+    <header>
+        <h1>{{ translations.welcome }}</h1>
+        <nav>
+            <a href="/">Home</a> |
+            <a href="/dpi">DPI</a> |
+            <a href="/sottogancio">Sottogancio</a> |
+            <a href="/funi_metalliche">Funi Metalliche</a> |
+            <a href="/funi_fibra">Funi Fibra</a> |
+            <a href="/formazione">Formazione</a>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h2>{{ translations.active_role }}: {{ active_role }}</h2>
+            <form method="get" action="/">
+                <label>{{ translations.select_role }}:</label>
+                <select name="role">
+                    <option value="datore">Datore</option>
+                    <option value="revisore">Revisore</option>
+                    <option value="rspp">RSPP</option>
+                    <option value="lavoratore">Lavoratore</option>
+                </select>
+                <button type="submit">OK</button>
+            </form>
+        </section>
+
+        <section>
+            <h2>{{ translations.change_language }}</h2>
+            <a href="/?lang=it">IT</a> |
+            <a href="/?lang=en">EN</a> |
+            <a href="/?lang=fr">FR</a> |
+            <a href="/?lang=de">DE</a>
+        </section>
+
+        <section>
+            <h2>Dashboard principali</h2>
+            <ul>
+                <li><a href="/dpi">Gestione DPI</a></li>
+                <li><a href="/sottogancio">Gestione Sottogancio</a></li>
+                <li><a href="/funi_metalliche">Gestione Funi Metalliche</a></li>
+                <li><a href="/funi_fibra">Gestione Funi Fibra</a></li>
+                <li><a href="/formazione">Gestione Formazione</a></li>
+            </ul>
+        </section>
+    </main>
 </body>
 </html>

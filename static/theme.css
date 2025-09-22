@@ -1,6 +1,27 @@
-:root{--bg:#fff;--fg:#111;--muted:#666;--line:#e9e9e9}
-*{box-sizing:border-box} body{background:var(--bg);color:var(--fg)}
-a{color:inherit}
-nav{position:sticky;top:0;background:var(--bg);backdrop-filter:saturate(1.2) blur(3px)}
-.card:hover{box-shadow:0 6px 18px rgba(0,0,0,.08)}
-.btn{background:#fafafa}
+﻿body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background: #f7f7f7;
+    color: #222;
+}
+header {
+    background: #004080;
+    color: white;
+    padding: 10px;
+    border-radius: 8px;
+}
+nav a {
+    color: white;
+    margin: 0 10px;
+    text-decoration: none;
+}
+nav a:hover {
+    text-decoration: underline;
+}
+section {
+    margin-top: 20px;
+    padding: 15px;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
