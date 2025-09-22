@@ -1,4 +1,4 @@
-﻿from fastapi import FastAPI, Request
+﻿from fastapi import FastAPI, Request, Request
 from fastapi.staticfiles import StaticFiles
 import time
 
@@ -45,3 +45,10 @@ app.include_router(funi_metalliche_router.router)
 app.include_router(funi_fibra_router.router)
 app.include_router(formazione_router.router)
 app.include_router(site_router.router)
+
+from app.config.i18n import get_locale
+@app.middleware("http")
+async def add_locale_to_request(request: Request, call_next):
+    request.state.locale = get_locale(request)
+    response = await call_next(request)
+    return response
