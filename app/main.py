@@ -1,54 +1,27 @@
-﻿from fastapi import FastAPI, Request, Request
-from fastapi.staticfiles import StaticFiles
-import time
-
-# Router
-from app.routers import (
-    home as home_router,
-    api as api_router,
-    dpi as dpi_router,
-    sottogancio as sottogancio_router,
-    funi_metalliche as funi_metalliche_router,
-    funi_fibra as funi_fibra_router,
-    formazione as formazione_router,
-    site as site_router,
-)
-
-from tpi_logging import get_logger
-
-# App FastAPI
-app = FastAPI(title="TPI_evoluto", redirect_slashes=True)
-
-# Statici: cartella "static" nella root del progetto
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
-# Logger
-logger = get_logger()
-
-# Middleware di logging
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    start_time = time.time()
-    response = await call_next(request)
-    duration = (time.time() - start_time) * 1000
-    logger.info(
-        f"{request.method} {request.url.path} completed_in={duration:.2f}ms status={response.status_code}"
-    )
-    return response
-
-# Includi router
-app.include_router(home_router.router)
-app.include_router(api_router.router)
-app.include_router(dpi_router.router)
-app.include_router(sottogancio_router.router)
-app.include_router(funi_metalliche_router.router)
-app.include_router(funi_fibra_router.router)
-app.include_router(formazione_router.router)
-app.include_router(site_router.router)
-
+﻿from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from app.config.roles import ROLES
 from app.config.i18n import get_locale
+
+app = FastAPI()
+templates = Jinja2Templates(directory="templates")
+
 @app.middleware("http")
-async def add_locale_to_request(request: Request, call_next):
-    request.state.locale = get_locale(request)
-    response = await call_next(request)
-    return response
+async def validate_role(request: Request, call_next):
+    role = request.query_params.get("role")
+    if role and role not in ROLES:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Ruolo '{role}' non valido. Ruoli disponibili: {', '.join(ROLES)}"
+        )
+    return await call_next(request)
+
+@app.get("/", response_class=HTMLResponse)
+async def home(request: Request):
+    translations, lang = get_locale(request)
+    role = request.query_params.get("role", ROLES[0])
+    return templates.TemplateResponse(
+        "index.html",
+        {"request": request, "translations": translations, "lang": lang, "role": role}
+    )
