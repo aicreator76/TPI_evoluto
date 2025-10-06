@@ -1,0 +1,29 @@
+<div class="kpi-card" role="group" aria-label="Andamento DPI scaduti">
+  <div class="kpi-head">
+    <h3>DPI scaduti</h3>
+    <span id="kpi-value" class="kpi-value">3</span>
+  </div>
+  <canvas id="kpiTrend" width="320" height="120" aria-label="Trend ultimi 14 giorni"></canvas>
+  <div class="kpi-foot" id="kpi-alert" role="status" aria-live="polite"></div>
+</div>
+<script>
+(function(){
+  const data = (window.KPI_DPI_SCADUTI || [5,4,4,3,3,2,2,3,2,2,2,1,1,1]);
+  const c = document.getElementById('kpiTrend'), ctx = c.getContext('2d');
+  // mini-sparkline senza librerie
+  const max = Math.max(...data,1), w=c.width, h=c.height, step=w/(data.length-1);
+  ctx.beginPath();
+  data.forEach((v,i)=>{
+    const x = i*step; const y = h - (v/max)*h;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  const today = data[data.length-1], weekago = data[Math.max(0,data.length-8)];
+  const diff = today - weekago;
+  const alert = document.getElementById('kpi-alert');
+  if (diff > 0) alert.textContent = `Alert: trend in peggioramento (+${diff} in 7 giorni)`;
+  else if (diff < 0) alert.textContent = `OK: trend in miglioramento (${diff} in 7 giorni)`;
+  else alert.textContent = 'Trend stabile';
+})();
+</script>
