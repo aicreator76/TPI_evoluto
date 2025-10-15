@@ -300,6 +300,31 @@
           </ul>
         </section>
       </div>
+      <!-- Nuove sezioni per assegnazioni, revisioni e aiuto (inizialmente nascoste) -->
+      <section id="assignmentsSection" style="display:none;" class="assignments-section">
+        <h2>Gestione Assegnazioni</h2>
+        <p>Assegna responsabili per ogni linea di prodotto.</p>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Linea</th><th>Responsabile</th></tr></thead>
+            <tbody id="assignmentsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+      <section id="revisionsSection" style="display:none;" class="revisions-section">
+        <h2>Revisioni per Settore</h2>
+        <p>Registro revisioni suddivise per settore.</p>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>Settore</th><th>Data</th><th>Stato</th><th>Note</th></tr></thead>
+            <tbody id="revisionsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+      <section id="helpSection" style="display:none;" class="help-section">
+        <h2>Aiuto</h2>
+        <p>Per supporto tecnico e domande frequenti, consulta la documentazione o contatta l'amministratore.</p>
+      </section>
     </div>
   </div>
 
@@ -833,6 +858,132 @@
             window.location.href = 'login.html';
           });
         }
+      });
+
+      // --- Funzionalità aggiuntive: assegnazioni, revisioni e navigazione ---
+      // Ruoli disponibili per l'assegnazione
+      const roles = ['RSPP','HSE','Datore','Tecnico'];
+      // Oggetto per memorizzare le assegnazioni per categoria
+      const assignments = {};
+      // Dati fittizi per le revisioni suddivise per settore
+      const revisionsData = [
+        {Settore:'Funi metalliche', Data:'2025-09-15', Stato:'Completata', Note:'Ispezione periodica eseguita'},
+        {Settore:'Funi in fibra', Data:'2025-09-20', Stato:'In sospeso', Note:'Programmare revisione'},
+        {Settore:'Accessori sottogancio', Data:'2025-09-10', Stato:'Completata', Note:'Verifica accessori ok'},
+        {Settore:'Catene', Data:'2025-09-05', Stato:'Completata', Note:'Controllo dimensioni eseguito'},
+        {Settore:'Linea vita', Data:'2025-09-30', Stato:'Da pianificare', Note:'Revisione annuale in arrivo'},
+        {Settore:'Formazione', Data:'2025-10-01', Stato:'Aggiornamento', Note:'Aggiornare corsi entro fine anno'}
+      ];
+
+      // Popola la tabella delle assegnazioni con le categorie uniche
+      function populateAssignments() {
+        const tbody = document.getElementById('assignmentsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        const categories = Array.from(new Set(dpiData.map(item => item.Categoria)));
+        categories.forEach(cat => {
+          const tr = document.createElement('tr');
+          const tdCat = document.createElement('td');
+          tdCat.textContent = cat;
+          const tdResp = document.createElement('td');
+          const select = document.createElement('select');
+          // opzione vuota
+          const optEmpty = document.createElement('option');
+          optEmpty.value = '';
+          optEmpty.textContent = 'Non assegnato';
+          select.appendChild(optEmpty);
+          roles.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r;
+            opt.textContent = r;
+            select.appendChild(opt);
+          });
+          select.value = assignments[cat] || '';
+          select.addEventListener('change', () => {
+            assignments[cat] = select.value;
+          });
+          tdResp.appendChild(select);
+          tr.appendChild(tdCat);
+          tr.appendChild(tdResp);
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Popola la tabella delle revisioni con i dati fittizi
+      function populateRevisions() {
+        const tbody = document.getElementById('revisionsTableBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        revisionsData.forEach(item => {
+          const tr = document.createElement('tr');
+          const tdSect = document.createElement('td');
+          tdSect.textContent = item.Settore;
+          const tdDate = document.createElement('td');
+          tdDate.textContent = item.Data;
+          const tdStatus = document.createElement('td');
+          tdStatus.textContent = item.Stato;
+          const tdNote = document.createElement('td');
+          tdNote.textContent = item.Note;
+          tr.appendChild(tdSect);
+          tr.appendChild(tdDate);
+          tr.appendChild(tdStatus);
+          tr.appendChild(tdNote);
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Mostra o nasconde le sezioni in base al menu selezionato
+      function toggleSections(target) {
+        const overviewEl = document.querySelector('.overview');
+        const contentEl = document.querySelector('.content');
+        const assignmentsEl = document.getElementById('assignmentsSection');
+        const revisionsEl = document.getElementById('revisionsSection');
+        const helpEl = document.getElementById('helpSection');
+        // Nasconde tutte le sezioni tranne quella richiesta
+        const hideDashboard = target !== 'dashboard';
+        if (overviewEl) overviewEl.style.display = hideDashboard ? 'none' : '';
+        if (contentEl) contentEl.style.display = hideDashboard ? 'none' : '';
+        if (assignmentsEl) assignmentsEl.style.display = (target === 'assignments') ? '' : 'none';
+        if (revisionsEl) revisionsEl.style.display = (target === 'revisions') ? '' : 'none';
+        if (helpEl) helpEl.style.display = (target === 'help') ? '' : 'none';
+        // Popola dinamicamente le tabelle quando la sezione è visibile
+        if (target === 'assignments') {
+          populateAssignments();
+        }
+        if (target === 'revisions') {
+          populateRevisions();
+        }
+      }
+
+      // Gestisce i click sul menu della sidebar
+      document.addEventListener('DOMContentLoaded', () => {
+        const linkMap = {
+          navDashboard: 'dashboard',
+          navProducts: 'dashboard',
+          navAssignments: 'assignments',
+          navRevisions: 'revisions',
+          navHelp: 'help'
+        };
+        const navLinks = document.querySelectorAll('.sidebar li a');
+        navLinks.forEach(link => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Cambia classe attiva
+            document.querySelectorAll('.sidebar li').forEach(li => li.classList.remove('active'));
+            if (link.parentNode) link.parentNode.classList.add('active');
+            // Trova l'ID del menu tramite lo span con id
+            const spans = link.querySelectorAll('span');
+            let key = '';
+            spans.forEach(sp => {
+              if (sp.id && linkMap[sp.id]) {
+                key = linkMap[sp.id];
+              }
+            });
+            if (key) toggleSections(key);
+          });
+        });
+        // Visualizza dashboard di default
+        toggleSections('dashboard');
       });
     </script>
   </body>
