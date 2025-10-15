@@ -1,0 +1,801 @@
+﻿<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>TPI – Dashboard</title>
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    :root{
+      --bg:#0b1220;
+      --bg2:#0e1526;
+      --surface:#121a2b;
+      --card:#141f33;
+      --card-border:rgba(255,255,255,.06);
+      --text:#e6eefc;
+      --muted:#9fb3d3;
+      --accent:#3a86ff;
+      --accent-2:#7cc4ff;
+      --ring: 0 8px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    @media (prefers-color-scheme: light){
+      :root{--bg:#f5f7fb;--bg2:#eef3fb;--surface:#fff;--card:#ffffff;--card-border:#e6eaf2;--text:#0f172a;--muted:#475569}
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      color:var(--text);background:
+        radial-gradient(1200px 600px at 20% -10%, #1c2a46 10%, transparent 60%),
+        radial-gradient(1000px 500px at 110% -20%, #12213c 10%, transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      min-height:100%;
+    }
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+    /* NAV */
+    .nav{
+      position:sticky;top:0;backdrop-filter:saturate(1.2) blur(10px);
+      background:color-mix(in srgb, var(--surface) 75%, transparent);
+      border-bottom:1px solid var(--card-border);z-index:10
+    }
+    .nav-inner{display:flex;gap:20px;align-items:center;justify-content:space-between;padding:12px 24px}
+    .brand{font-weight:700;letter-spacing:.2px}
+    .nav ul{display:flex;gap:16px;list-style:none;margin:0;padding:0}
+    .nav a{color:var(--text);text-decoration:none;padding:8px 10px;border-radius:10px}
+    .nav a:hover{background:color-mix(in srgb, var(--card) 60%, transparent)}
+    /* HERO */
+    .hero{padding:42px 0 8px}
+    h1{font-size:clamp(28px, 4vw, 44px);margin:0 0 8px}
+    .subtitle{color:var(--muted);margin:6px 0 0}
+    /* GRID CARDS */
+    .section{margin-top:28px}
+    .section h2{font-size:22px;margin:18px 0;color:var(--text)}
+    .grid{
+      display:grid;gap:16px;
+      grid-template-columns:repeat(12,1fr)
+    }
+    .card{
+      grid-column:span 12;
+      background:var(--card);border:1px solid var(--card-border);
+      border-radius:var(--radius);box-shadow:var(--ring);padding:18px 18px 20px;
+      transition:transform .15s ease, box-shadow .2s ease, border-color .2s ease
+    }
+    .card:hover{transform:translateY(-2px);box-shadow:0 12px 38px rgba(0,0,0,.35);border-color:color-mix(in srgb, var(--accent) 35%, var(--card-border))}
+    .card h3{margin:0 0 6px;font-size:18px}
+    .card p{margin:0;color:var(--muted)}
+    @media (min-width:640px){ .card{grid-column:span 6} }
+    @media (min-width:980px){ .card{grid-column:span 4} }
+    /* BUTTON */
+    .actions{margin:16px 0 8px}
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(160deg, var(--accent), var(--accent-2));
+      color:white;border:0;border-radius:12px;padding:10px 14px;font-weight:600;
+      text-decoration:none;box-shadow:0 10px 22px rgba(58,134,255,.25);transition:transform .1s ease, box-shadow .2s ease
+    }
+    .btn:hover{transform:translateY(-1px);box-shadow:0 14px 30px rgba(58,134,255,.33)}
+    /* FOOTER */
+    footer{color:var(--muted);font-size:14px;border-top:1px solid var(--card-border);margin-top:36px;padding:18px 0}
+
+    /* Hide old container (hero/nav/sections) */
+    .container{display:none}
+
+    /* SIDEBAR & DASHBOARD LAYOUT */
+    .dashboard-container{display:flex;min-height:100vh}
+    .sidebar{
+      position:fixed;top:0;left:0;bottom:0;width:220px;
+      background:var(--surface);
+      border-right:1px solid var(--card-border);
+      padding:24px 0;
+      display:flex;flex-direction:column;
+    }
+    .sidebar .logo{font-size:20px;font-weight:700;color:var(--text);padding:0 24px;margin-bottom:24px;line-height:1.2}
+    .sidebar .logo small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+    .sidebar ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+    .sidebar li{margin:0}
+    .sidebar li a{display:flex;align-items:center;gap:10px;color:var(--text);padding:10px 24px;text-decoration:none;border-left:4px solid transparent}
+    .sidebar li a:hover,.sidebar li.active a{background:color-mix(in srgb, var(--card) 80%, transparent);border-left-color:var(--accent)}
+    .sidebar li a span.icon{width:20px;text-align:center}
+
+    .main{margin-left:220px;padding:32px}
+    .topbar{display:flex;justify-content:flex-end;align-items:center;gap:16px;margin-bottom:24px}
+    .topbar select{background:var(--card);color:var(--text);border:1px solid var(--card-border);padding:6px 8px;border-radius:8px}
+    .topbar .user{color:var(--text);font-weight:600;display:flex;align-items:center;gap:8px}
+    .topbar .user .role{color:var(--muted);font-weight:400}
+
+    /* Logout button style in top bar */
+    .logout-btn{
+      background:var(--card);
+      color:var(--muted);
+      border:1px solid var(--card-border);
+      border-radius:6px;
+      padding:4px 8px;
+      font-size:14px;
+      cursor:pointer;
+      transition:background .15s ease,border-color .2s ease;
+    }
+    .logout-btn:hover{
+      background:color-mix(in srgb, var(--card) 80%, transparent);
+      border-color:var(--accent);
+      color:var(--text);
+    }
+
+    .overview .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:16px}
+    .overview .stat-card{background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:6px}
+    .overview .stat-card h4{margin:0;font-size:16px;color:var(--text)}
+    .overview .stat-card .value{font-size:28px;font-weight:700}
+    .overview .stat-card .note{color:var(--muted);font-size:14px}
+
+    /* Enhanced styles for stat cards to include icon badges and color cues */
+    .overview .stat-card{position:relative;padding:16px 16px 16px 16px;}
+    .overview .stat-card .icon{
+      position:absolute;top:16px;right:16px;width:28px;height:28px;
+      display:flex;align-items:center;justify-content:center;font-size:16px;
+      border-radius:50%;
+      background:var(--icon-bg, var(--surface));
+      color:var(--icon-color, var(--accent));
+      border:1px solid var(--icon-color, var(--accent));
+    }
+    .stat-active{--icon-bg:rgba(58,134,255,0.12);--icon-color:var(--accent);}
+    .stat-expiring{--icon-bg:rgba(214,159,46,0.15);--icon-color:#D69E2E;}
+    .stat-expired{--icon-bg:rgba(214,70,70,0.15);--icon-color:#D64545;}
+    .stat-assignments{--icon-bg:rgba(55,156,94,0.15);--icon-color:#37BB82;}
+
+    .content{display:flex;gap:24px;margin-top:24px;flex-wrap:wrap}
+    .products-section,.activity-section{flex:1;min-width:320px;background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);padding:16px}
+    .products-section h3,.activity-section h3{margin-top:0;font-size:20px}
+    .products-section .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+    .products-section .filters select,.products-section .filters input{background:var(--surface);color:var(--text);border:1px solid var(--card-border);border-radius:8px;padding:6px 8px}
+    /* Search input with icon */
+    #search{
+      padding-left:32px;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23A0AEC0' d='M11.742 10.344a6 6 0 1 0-1.397 1.398l3.85 3.85.708-.708-3.85-3.85ZM12 6a5 5 0 1 1-10 0 5 5 0 0 1 10 0Z'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;
+      background-position:8px center;
+      background-size:16px;
+    }
+    .product-item{background:var(--surface);border:1px solid var(--card-border);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;flex-direction:column;gap:4px}
+    .product-item .code{font-weight:600}
+    .product-item .sub{color:var(--muted);font-size:14px}
+    .product-item .meta{display:flex;gap:12px;font-size:12px;color:var(--muted)}
+    .activity-section ul{list-style:none;margin:0;padding:0}
+    .activity-section li{margin-bottom:8px;color:var(--muted)}
+
+    /* Badge for product category code */
+    .product-item .badge{
+      display:inline-block;
+      font-size:12px;font-weight:600;color:var(--accent);
+      background:rgba(58,134,255,0.12);
+      border:1px solid var(--accent);
+      border-radius:6px;
+      padding:2px 6px;
+      margin-bottom:4px;
+      width:max-content;
+    }
+
+    /* Additional styles for product section header and add button */
+    .products-section .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .products-section .btn-add{
+      display:inline-flex;align-items:center;gap:6px;
+      background:linear-gradient(160deg, var(--accent), var(--accent-2));
+      color:#fff;font-size:14px;font-weight:600;padding:6px 10px;border-radius:8px;text-decoration:none;
+      box-shadow:0 6px 16px rgba(58,134,255,.3);transition:transform .1s ease, box-shadow .2s ease;
+    }
+    .products-section .btn-add:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(58,134,255,.4)}
+
+    /* TABLE STYLES */
+    .table-wrapper{overflow-x:auto;margin-top:16px}
+    table{width:100%;border-collapse:collapse;font-size:15px}
+    th, td{padding:8px 12px;border:1px solid var(--card-border);text-align:left}
+    th{background:var(--surface);color:var(--text);font-weight:600}
+    tr:nth-child(even){background:color-mix(in srgb, var(--card) 80%, transparent)}
+
+    /* Hide the old horizontal navigation bar in the improved dashboard layout */
+    .nav{display:none}
+  </style>
+</head>
+<body>
+  <!-- NAV -->
+  <!-- Navigation: wrapped in a list for better semantics and accessibility -->
+  <nav class="nav" role="navigation" aria-label="Sezioni principali">
+    <ul style="display:flex;gap:16px;list-style:none;margin:0;padding:0">
+      <li><a href="#dpi">DPI</a></li>
+      <li><a href="#fibre">Funi in fibra</a></li>
+      <li><a href="#metalliche">Funi metalliche</a></li>
+      <li><a href="#accessori">Accessori</a></li>
+      <li><a href="#formazione">Formazione</a></li>
+      <li><a href="#checklist">Checklist DPI</a></li>
+      <li><a href="#sovvenzioni">Sovvenzioni</a></li>
+    </ul>
+  </nav>
+
+  <!-- DASHBOARD LAYOUT -->
+  <div class="dashboard-container">
+    <div class="sidebar">
+      <div class="logo">TPI Dashboard<small>Teufelberger Protezione Individuale</small></div>
+      <ul>
+        <li class="active"><a href="#"><span class="icon">📊</span><span id="navDashboard">Dashboard</span></a></li>
+        <li><a href="#"><span class="icon">🗂️</span><span id="navProducts">Prodotti</span></a></li>
+        <li><a href="#"><span class="icon">📦</span><span id="navAssignments">Assegnazioni</span></a></li>
+        <li><a href="#"><span class="icon">🔧</span><span id="navRevisions">Revisioni</span></a></li>
+        <li><a href="#"><span class="icon">⚙️</span><span id="navAdministration">Amministrazione</span></a></li>
+        <li><a href="#"><span class="icon">❓</span><span id="navHelp">Aiuto</span></a></li>
+      </ul>
+    </div>
+    <div class="main">
+      <div class="topbar">
+        <select id="languageSelect" aria-label="Seleziona lingua">
+          <option value="it">Italiano</option>
+          <option value="en">English</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+        </select>
+        <div class="user">
+          <span id="userEmail">Utente</span> <span class="role" id="userRole"></span>
+          <button id="logoutButton" class="logout-btn" style="margin-left:12px;">Esci</button>
+        </div>
+      </div>
+      <section class="overview">
+        <h2 id="overviewTitle">Dashboard Overview</h2>
+        <p id="overviewSubtitle">Gestione dispositivi di protezione individuale e documentazione tecnica</p>
+        <div class="stats">
+          <div class="stat-card stat-active">
+            <div class="icon">📦</div>
+            <h4 id="statTotalLabel">Prodotti Attivi</h4>
+            <span class="value" id="stat-total">0</span>
+            <span class="note" id="statTotalNote">vs mese scorso</span>
+          </div>
+          <div class="stat-card stat-expiring">
+            <div class="icon">⚠️</div>
+            <h4 id="statExpiringLabel">In Scadenza</h4>
+            <span class="value" id="stat-expiring">0</span>
+            <span class="note" id="statExpiringNote">Entro 60 giorni</span>
+          </div>
+          <div class="stat-card stat-expired">
+            <div class="icon">❌</div>
+            <h4 id="statExpiredLabel">Scaduti</h4>
+            <span class="value" id="stat-expired">0</span>
+            <span class="note" id="statExpiredNote">Richiede azione</span>
+          </div>
+          <div class="stat-card stat-assignments">
+            <div class="icon">👤</div>
+            <h4 id="statAssignmentsLabel">Assegnazioni</h4>
+            <span class="value" id="stat-assignments">2</span>
+            <span class="note" id="statAssignmentsNote">98% completate</span>
+          </div>
+        </div>
+      </section>
+      <div class="content">
+        <section class="products-section">
+          <div class="header">
+            <h3 id="productsTitle">Gestione Prodotti</h3>
+            <a id="newProductButton" class="btn-add" href="#">+ Nuovo Prodotto</a>
+          </div>
+          <div class="filters">
+            <input type="text" placeholder="Cerca per seriale, categoria, materiale..." id="search" />
+            <select id="filter-category">
+              <option value="">Tutte le categorie</option>
+            </select>
+            <select id="filter-material">
+              <option value="">Tutti i materiali</option>
+            </select>
+            <select id="filter-state">
+              <option value="">Tutti gli stati</option>
+              <option value="attivo">Attivi</option>
+              <option value="scadenza">In scadenza</option>
+              <option value="scaduto">Scaduti</option>
+            </select>
+          </div>
+          <div id="productList"></div>
+        </section>
+        <section class="activity-section">
+          <h3 id="recentActivityTitle">Attività Recente</h3>
+          <ul id="activityList">
+            <!-- In futuro popolato da sistema -->
+            <li>Mario Bianchi ha assegnato TR-001-2023 a Luca Verdi – 2 ore fa</li>
+            <li>BR-005-2023 scadrà tra 45 giorni – ieri</li>
+            <li>Revisione completata per AC-008-2023 – 2 giorni fa</li>
+            <li>Nuovo catalogo caricato per TR-015-2023 – 3 giorni fa</li>
+          </ul>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero">
+      <!-- Corrected encoding and punctuation -->
+      <h1>TPI – Teufelberger Protezione Individuale</h1>
+      <p class="subtitle">DPI • Funi metalliche • Accessori per il sollevamento</p>
+    </section>
+
+    <!-- DPI -->
+    <section class="section" id="dpi">
+      <h2>DPI</h2>
+      <div class="grid">
+<a class="card" role="button" href="#">
+          <h3>Prodotti</h3>
+          <p>Schede catalogo, manuali d’uso e manutenzione.</p>
+        </a>
+        <a class="card" role="button" href="#">
+          <h3>Assegnazioni DPI</h3>
+          <p>Schede personali, consegna e scadenze DPI.</p>
+        </a>
+        <a class="card" role="button" href="#">
+          <h3>Revisioni</h3>
+          <p>Stato revisioni, certificazioni e scadenze.</p>
+        </a>
+      </div>
+      <div class="actions">
+        <a class="btn" href="#">Apri schede dettagliate</a>
+      </div>
+    </section>
+
+    <!-- SOLLEVAMENTO -->
+    <section class="section" id="sollevamento">
+      <h2>Sollevamento</h2>
+      <div class="grid">
+        <a class="card" role="button" href="#"><h3>UHMWPE</h3><p>Alta resistenza, peso ridotto, WLL/MBL.</p></a>
+        <a class="card" role="button" href="#"><h3>Poliestere/Polipropilene</h3><p>Impieghi generali, verifica guaina e diametro.</p></a>
+        <a class="card" role="button" href="#"><h3>Brache tessili</h3><p>Etichetta, colormark, criteri di dismissione.</p></a>
+      </div>
+    </section>
+
+    <footer>
+      TPI – Demo UI – © 2025
+    </footer>
+  <!-- START AUTO CHAPTERS -->
+<section id="dpi">
+  <h2>DPI</h2>
+  <div class="cards">
+    <a class="card" role="button" href="#dpi-catalogo"><strong>Catalogo</strong><br><span>Schede catalogo, manuali d’uso e manutenzione.</span></a>
+    <a class="card" role="button" href="#dpi-assegnazioni"><strong>Assegnazione DPI</strong><br><span>Schede personali, consegna e scadenze.</span></a>
+    <a class="card" role="button" href="#dpi-revisioni"><strong>Revisione</strong><br><span>Stato revisioni e certificazioni.</span></a>
+  </div>
+</section>
+
+<section id="fibre">
+  <h2>Funi in fibra</h2>
+  <div class="cards">
+    <a class="card" role="button" href="#fibre-catalogo"><strong>Catalogo</strong><br><span>UHMWPE, poliestere/polipropilene, brache tessili.</span></a>
+    <a class="card" role="button" href="#fibre-config"><strong>Configuratore</strong><br><span>Selezione guaina, diametro, impieghi.</span></a>
+    <a class="card" role="button" href="#fibre-revisioni"><strong>Revisione</strong><br><span>Criteri e tracciabilità revisioni.</span></a>
+  </div>
+</section>
+
+<section id="metalliche">
+  <h2>Funi metalliche</h2>
+  <div class="cards">
+    <a class="card" role="button" href="#met-catalogo"><strong>Catalogo</strong><br><span>Funi in acciaio, specifiche e impieghi.</span></a>
+    <a class="card" role="button" href="#met-config"><strong>Configuratore</strong><br><span>Selezione diametro, costruzione, WLL/MBL.</span></a>
+    <a class="card" role="button" href="#met-revisioni"><strong>Revisione</strong><br><span>Stato revisioni e criteri di dismissione.</span></a>
+  </div>
+</section>
+
+<section id="accessori">
+  <h2>Accessori per sollevamento</h2>
+  <div class="cards">
+    <a class="card" role="button" href="#acc-catalogo"><strong>Catalogo</strong><br><span>Ganci, grilli, golfari, accessori.</span></a>
+    <a class="card" role="button" href="#acc-config"><strong>Configuratore</strong><br><span>Scelta accessori per carico e applicazione.</span></a>
+    <a class="card" role="button" href="#acc-revisioni"><strong>Revisione</strong><br><span>Ispezioni periodiche e registri.</span></a>
+  </div>
+</section>
+
+<section id="formazione">
+  <h2>Formazione</h2>
+  <div class="cards">
+    <a class="card" role="button" href="#form-proposte"><strong>Proposte</strong><br><span>Catalogo corsi attivi.</span></a>
+    <a class="card" role="button" href="#form-miei"><strong>I miei corsi</strong><br><span>Iscrizioni e avanzamento personale.</span></a>
+    <a class="card" role="button" href="#form-cert"><strong>Certificati</strong><br><span>Download attestati e scadenze.</span></a>
+  </div>
+</section>
+<!-- END AUTO CHAPTERS -->
+    <!-- CHECKLIST DPI -->
+    <section class="section" id="checklist">
+      <h2>Checklist DPI</h2>
+      <p class="subtitle">Elenco DPI anticaduta e relative scadenze.</p>
+      <div class="table-wrapper">
+        <table id="dpiTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Categoria</th>
+              <th>Norma EN</th>
+              <th>Marca/Modello</th>
+              <th>Data primo uso</th>
+              <th>Scadenza</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Le righe verranno generate dinamicamente con JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SOVVENZIONI & FINANZIAMENTI -->
+    <section class="section" id="sovvenzioni">
+      <h2>Sovvenzioni e finanziamenti</h2>
+      <p class="subtitle">Programmi di finanziamento utili per progetti anticaduta e digitalizzazione.</p>
+      <div class="grid">
+        <a class="card" role="button" href="#">
+          <h3>INAIL ISI (sicurezza)</h3>
+          <p>Fondo perduto fino al 65%; mappa interventi anticaduta/DPI; click day annuale.</p>
+        </a>
+        <a class="card" role="button" href="#">
+          <h3>OT23 2026</h3>
+          <p>Sconto premio INAIL se nel 2025 vengono realizzate misure di prevenzione. Prepara elenco interventi 2025 per invio inizio 2026.</p>
+        </a>
+        <a class="card" role="button" href="#">
+          <h3>Transizione 5.0</h3>
+          <p>Credito d’imposta per investimenti che generano risparmio energetico (3–5%). Verifica progetti idonei entro il 31/12/2025; comunicazione GSE entro il 28/02/2026.</p>
+        </a>
+        <a class="card" role="button" href="#">
+          <h3>SIMEST 394</h3>
+          <p>Supporto ad export ed e‑commerce con quota fondo perduto variabile fino al 10%. Pianifica strategia export digitale DPI e anticaduta.</p>
+        </a>
+        <a class="card" role="button" href="#">
+          <h3>Voucher Digitali I4.0</h3>
+          <p>Contributo ~50% su progetti digitali/AI/app. Prepara progetto app/AI TPI e monitora i bandi della camera di commercio.</p>
+        </a>
+        <a class="card" role="button" href="#">
+          <h3>Nuova Sabatini</h3>
+          <p>Finanziamenti agevolati per beni strumentali, hardware e software 4.0. Valuta per hardware/software e attrezzature TPI.</p>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!--
+    Le sezioni duplicate "fibre" e "metalliche" rimosse: per i contenuti
+    relativi alle funi in fibra e alle funi metalliche utilizzare le sezioni
+    presenti all’interno del wrapper "AUTO CHAPTERS" qui sopra.
+  -->
+
+    <script>
+      // Redirect to login page if user is not authenticated (simple session check)
+      if (!sessionStorage.getItem('userEmail')) {
+        window.location.href = 'login.html';
+      }
+
+      /*
+       * Dataset importato dalla checklist Excel (convertita in JSON). Per semplicità viene
+       * incorporato direttamente nell’interfaccia offline. Se in futuro la checklist
+       * verrà aggiornata, sostituire o generare nuovamente questo array.
+       */
+      const dpiData = [
+        {
+          "ID_DPI/Impianto": "DPI-0001",
+          "Categoria": "Imbracatura",
+          "Norma_EN_riferimento": "EN 361",
+          "Marca/Modello": "IKAR/CAMBA – H-01",
+          "Data_primo_uso": "2025-01-10",
+          "Scadenza": "2026-01-10"
+        },
+        {
+          "ID_DPI/Impianto": "DPI-0002",
+          "Categoria": "Retrattile",
+          "Norma_EN_riferimento": "EN 360",
+          "Marca/Modello": "IKAR – R-10",
+          "Data_primo_uso": "2025-03-15",
+          "Scadenza": "2027-03-15"
+        },
+        {
+          "ID_DPI/Impianto": "IMP-TECI-01",
+          "Categoria": "Linea vita",
+          "Norma_EN_riferimento": "EN 17235 / prEN 795",
+          "Marca/Modello": "TECI – LV-01",
+          "Data_primo_uso": "2024-11-20",
+          "Scadenza": "2026-11-20"
+        }
+      ];
+
+      function populateChecklist() {
+        const tbody = document.querySelector('#dpiTable tbody');
+        if (!tbody) return;
+        dpiData.forEach(item => {
+          const tr = document.createElement('tr');
+          const fields = ['ID_DPI/Impianto', 'Categoria', 'Norma_EN_riferimento', 'Marca/Modello', 'Data_primo_uso', 'Scadenza'];
+          fields.forEach(key => {
+            const td = document.createElement('td');
+            td.textContent = item[key] || '';
+            tr.appendChild(td);
+          });
+          tbody.appendChild(tr);
+        });
+      }
+      // Compute statistics and populate dashboard overview cards
+      function daysUntil(dateStr) {
+        const today = new Date();
+        const target = new Date(dateStr);
+        return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
+      }
+
+      function updateStats() {
+        const total = dpiData.length;
+        let expiring = 0;
+        let expired = 0;
+        const today = new Date();
+        dpiData.forEach(item => {
+          const scadenza = new Date(item.Scadenza);
+          const diffDays = (scadenza - today) / (1000 * 60 * 60 * 24);
+          if (diffDays < 0) {
+            expired++;
+          } else if (diffDays <= 60) {
+            expiring++;
+          }
+        });
+        const totalEl = document.getElementById('stat-total');
+        const expiringEl = document.getElementById('stat-expiring');
+        const expiredEl = document.getElementById('stat-expired');
+        if (totalEl) totalEl.textContent = total;
+        if (expiringEl) expiringEl.textContent = expiring;
+        if (expiredEl) expiredEl.textContent = expired;
+      }
+
+      function populateFilters() {
+        const categorySelect = document.getElementById('filter-category');
+        const materialSelect = document.getElementById('filter-material');
+        if (!categorySelect || !materialSelect) return;
+        const categories = new Set();
+        const materials = new Set();
+        dpiData.forEach(item => {
+          categories.add(item.Categoria);
+          // Derive material from category or model description
+          const model = (item['Marca/Modello'] || '').toLowerCase();
+          if (model.includes('acciaio') || model.includes('steel')) materials.add('Acciaio');
+          if (model.includes('fibre') || model.includes('uhmw') || model.includes('polies')) materials.add('Fibre');
+        });
+        categories.forEach(cat => {
+          const opt = document.createElement('option');
+          opt.value = cat;
+          opt.textContent = cat;
+          categorySelect.appendChild(opt);
+        });
+        materials.forEach(mat => {
+          const opt = document.createElement('option');
+          opt.value = mat;
+          opt.textContent = mat;
+          materialSelect.appendChild(opt);
+        });
+      }
+
+      function populateProducts() {
+        const listContainer = document.getElementById('productList');
+        if (!listContainer) return;
+        listContainer.innerHTML = '';
+        const search = document.getElementById('search');
+        const filterCategory = document.getElementById('filter-category');
+        const filterMaterial = document.getElementById('filter-material');
+        const filterState = document.getElementById('filter-state');
+        const query = search ? search.value.toLowerCase() : '';
+        dpiData.forEach(item => {
+          // Filter by search text
+          const text = Object.values(item).join(' ').toLowerCase();
+          if (query && !text.includes(query)) return;
+          // Filter by category
+          if (filterCategory && filterCategory.value && item.Categoria !== filterCategory.value) return;
+          // Filter by material (simple detection from model name)
+          const model = (item['Marca/Modello'] || '').toLowerCase();
+          if (filterMaterial && filterMaterial.value) {
+            const matVal = filterMaterial.value.toLowerCase();
+            if (matVal === 'acciaio' && !model.includes('acciaio') && !model.includes('steel')) return;
+            if (matVal === 'fibre' && !(model.includes('fiber') || model.includes('uhmw') || model.includes('poli'))) return;
+          }
+          // Filter by state
+          if (filterState && filterState.value) {
+            const days = daysUntil(item.Scadenza);
+            if (filterState.value === 'attivo' && days <= 60) return;
+            if (filterState.value === 'scadenza' && !(days > 0 && days <= 60)) return;
+            if (filterState.value === 'scaduto' && days > 0) return;
+          }
+          const wrapper = document.createElement('div');
+          wrapper.className = 'product-item';
+          // Badge with code derived from category (first two uppercase letters)
+          const badge = document.createElement('div');
+          badge.className = 'badge';
+          const cat = item.Categoria || '';
+          badge.textContent = cat.slice(0,2).toUpperCase();
+          const code = document.createElement('div');
+          code.className = 'code';
+          code.textContent = item['ID_DPI/Impianto'];
+          const sub = document.createElement('div');
+          sub.className = 'sub';
+          sub.textContent = `${item.Categoria} – ${item['Marca/Modello']}`;
+          const meta = document.createElement('div');
+          meta.className = 'meta';
+          meta.innerHTML = `<span>Uso: ${item['Data_primo_uso']}</span><span>Scadenza: ${item['Scadenza']}</span>`;
+          wrapper.appendChild(badge);
+          wrapper.appendChild(code);
+          wrapper.appendChild(sub);
+          wrapper.appendChild(meta);
+          listContainer.appendChild(wrapper);
+        });
+      }
+
+      function attachFilters() {
+        const search = document.getElementById('search');
+        const selects = [document.getElementById('filter-category'), document.getElementById('filter-material'), document.getElementById('filter-state')];
+        if (search) search.addEventListener('input', populateProducts);
+        selects.forEach(sel => { if (sel) sel.addEventListener('change', populateProducts); });
+      }
+
+      function populateDashboard() {
+        updateStats();
+        populateFilters();
+        populateProducts();
+        attachFilters();
+      }
+
+      /*
+       * Internationalization (i18n) support.
+       * Define translations for UI elements in Italian (it), English (en), French (fr) and German (de).
+       * Each key corresponds to an element id defined in the HTML (overviewTitle, productsTitle, etc.).
+       */
+      const translations = {
+        it: {
+          overviewTitle: "Dashboard Overview",
+          overviewSubtitle: "Gestione dispositivi di protezione individuale e documentazione tecnica",
+          statTotalLabel: "Prodotti Attivi",
+          statExpiringLabel: "In Scadenza",
+          statExpiredLabel: "Scaduti",
+          statAssignmentsLabel: "Assegnazioni",
+          statTotalNote: "vs mese scorso",
+          statExpiringNote: "Entro 60 giorni",
+          statExpiredNote: "Richiede azione",
+          statAssignmentsNote: "98% completate",
+          productsTitle: "Gestione Prodotti",
+          newProductButton: "+ Nuovo Prodotto",
+          recentActivityTitle: "Attività Recente"
+          ,navDashboard: "Dashboard"
+          ,navProducts: "Prodotti"
+          ,navAssignments: "Assegnazioni"
+          ,navRevisions: "Revisioni"
+          ,navAdministration: "Amministrazione"
+          ,navHelp: "Aiuto"
+          ,logoutButton: "Esci"
+        },
+        en: {
+          overviewTitle: "Dashboard Overview",
+          overviewSubtitle: "Management of personal protective equipment and technical documentation",
+          statTotalLabel: "Active Products",
+          statExpiringLabel: "Expiring",
+          statExpiredLabel: "Expired",
+          statAssignmentsLabel: "Assignments",
+          statTotalNote: "vs last month",
+          statExpiringNote: "Within 60 days",
+          statExpiredNote: "Requires action",
+          statAssignmentsNote: "98% completed",
+          productsTitle: "Product Management",
+          newProductButton: "+ New Product",
+          recentActivityTitle: "Recent Activity"
+          ,navDashboard: "Dashboard"
+          ,navProducts: "Products"
+          ,navAssignments: "Assignments"
+          ,navRevisions: "Revisions"
+          ,navAdministration: "Administration"
+          ,navHelp: "Help"
+          ,logoutButton: "Logout"
+        },
+        fr: {
+          overviewTitle: "Vue d'ensemble du tableau de bord",
+          overviewSubtitle: "Gestion des équipements de protection individuelle et documentation technique",
+          statTotalLabel: "Produits actifs",
+          statExpiringLabel: "À échéance",
+          statExpiredLabel: "Expirés",
+          statAssignmentsLabel: "Affectations",
+          statTotalNote: "vs mois dernier",
+          statExpiringNote: "Dans 60 jours",
+          statExpiredNote: "Action requise",
+          statAssignmentsNote: "98% complétées",
+          productsTitle: "Gestion des produits",
+          newProductButton: "+ Nouveau produit",
+          recentActivityTitle: "Activité récente"
+          ,navDashboard: "Tableau de bord"
+          ,navProducts: "Produits"
+          ,navAssignments: "Affectations"
+          ,navRevisions: "Révisions"
+          ,navAdministration: "Administration"
+          ,navHelp: "Aide"
+          ,logoutButton: "Se déconnecter"
+        },
+        de: {
+          overviewTitle: "Dashboard Übersicht",
+          overviewSubtitle: "Verwaltung von persönlicher Schutzausrüstung und technischer Dokumentation",
+          statTotalLabel: "Aktive Produkte",
+          statExpiringLabel: "In Kürze fällig",
+          statExpiredLabel: "Abgelaufen",
+          statAssignmentsLabel: "Zuweisungen",
+          statTotalNote: "ggü. letztem Monat",
+          statExpiringNote: "Innerhalb von 60 Tagen",
+          statExpiredNote: "Aktion erforderlich",
+          statAssignmentsNote: "98% abgeschlossen",
+          productsTitle: "Produktverwaltung",
+          newProductButton: "+ Neues Produkt",
+          recentActivityTitle: "Neueste Aktivitäten"
+          ,navDashboard: "Dashboard"
+          ,navProducts: "Produkte"
+          ,navAssignments: "Zuweisungen"
+          ,navRevisions: "Revisionen"
+          ,navAdministration: "Verwaltung"
+          ,navHelp: "Hilfe"
+          ,logoutButton: "Abmelden"
+        }
+      };
+
+      function setLanguage(lang) {
+        const t = translations[lang];
+        if (!t) return;
+        const keys = Object.keys(t);
+        keys.forEach(key => {
+          const el = document.getElementById(key);
+          if (el) {
+            el.textContent = t[key];
+          }
+        });
+      }
+
+      // Set language based on select value on change
+      document.addEventListener('DOMContentLoaded', () => {
+        const langSelect = document.getElementById('languageSelect');
+        if (langSelect) {
+          // Set the select value to the persisted language if available
+          const savedLang = sessionStorage.getItem('language');
+          if (savedLang && translations[savedLang]) {
+            langSelect.value = savedLang;
+          }
+          setLanguage(langSelect.value);
+          langSelect.addEventListener('change', (e) => {
+            const selectedLang = e.target.value;
+            sessionStorage.setItem('language', selectedLang);
+            setLanguage(selectedLang);
+          });
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        populateChecklist();
+        populateDashboard();
+      });
+
+      // After page load: set user information and handle logout
+      document.addEventListener('DOMContentLoaded', () => {
+        const email = sessionStorage.getItem('userEmail');
+        if (!email) {
+          window.location.href = 'login.html';
+          return;
+        }
+        // Map of demo emails to roles; extend as needed
+        const roleMap = {
+          'rspp@demo.tpi': 'RSPP',
+          'hse@demo.tpi': 'HSE',
+          'datore@demo.tpi': 'Datore'
+        };
+        const role = roleMap[email] || '';
+        const userEmailEl = document.getElementById('userEmail');
+        const userRoleEl = document.getElementById('userRole');
+        if (userEmailEl) userEmailEl.textContent = email;
+        if (userRoleEl) userRoleEl.textContent = role;
+        const logoutBtn = document.getElementById('logoutButton');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', () => {
+            sessionStorage.removeItem('userEmail');
+            window.location.href = 'login.html';
+          });
+        }
+      });
+    </script>
+  </body>
+</html>
+
+
+
+
+
+
+
+
+
+
