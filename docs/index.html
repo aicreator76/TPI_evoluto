@@ -313,10 +313,11 @@
       </section>
       <section id="revisionsSection" style="display:none;" class="revisions-section">
         <h2>Revisioni per Settore</h2>
-        <p>Registro revisioni suddivise per settore.</p>
+        <p>Registro revisioni suddivise per settore. Per ogni revisione è richiesta una foto come prova dell’avvenuto controllo.</p>
         <div class="table-wrapper">
           <table>
-            <thead><tr><th>Settore</th><th>Data</th><th>Stato</th><th>Note</th></tr></thead>
+            <!-- Aggiornato: aggiunta colonna per prova fotografica della revisione -->
+            <thead><tr><th>Settore</th><th>Data</th><th>Stato</th><th>Foto prova</th></tr></thead>
             <tbody id="revisionsTableBody"></tbody>
           </table>
         </div>
@@ -490,6 +491,9 @@
        * incorporato direttamente nell’interfaccia offline. Se in futuro la checklist
        * verrà aggiornata, sostituire o generare nuovamente questo array.
        */
+      // Dataset aggiornato integrando i DPI del catalogo PSA.
+      // Contiene i dispositivi originali del progetto più un insieme di esempi
+      // tratti dal catalogo PSA (imbracature, accessori, reggette antishock, ecc.).
       const dpiData = [
         {
           "ID_DPI/Impianto": "DPI-0001",
@@ -562,6 +566,86 @@
           "Marca/Modello": "IKAR",
           "Data_primo_uso": "2025-05-20",
           "Scadenza": "2027-05-20"
+        },
+        {
+          "ID_DPI/Impianto": "IMB-0001",
+          "Categoria": "Imbracature anticaduta",
+          "Norma_EN_riferimento": "EN 358/EN 361/EN 813",
+          "Marca/Modello": "TripleA – Access All Areas",
+          "Data_primo_uso": "2024-05-01",
+          "Scadenza": "2028-05-01"
+        },
+        {
+          "ID_DPI/Impianto": "IMB-0002",
+          "Categoria": "Imbracature anticaduta",
+          "Norma_EN_riferimento": "EN 358/EN 361/EN 813",
+          "Marca/Modello": "Energy Pro Evo",
+          "Data_primo_uso": "2024-05-15",
+          "Scadenza": "2028-05-15"
+        },
+        {
+          "ID_DPI/Impianto": "ACC-0001",
+          "Categoria": "Accessori per imbracature",
+          "Norma_EN_riferimento": "EN 358",
+          "Marca/Modello": "Cintura di sicurezza integrata",
+          "Data_primo_uso": "2024-07-01",
+          "Scadenza": "2029-07-01"
+        },
+        {
+          "ID_DPI/Impianto": "ANT-0001",
+          "Categoria": "Reggette antishock",
+          "Norma_EN_riferimento": "EN 354/EN 355",
+          "Marca/Modello": "FallSorb Antishock",
+          "Data_primo_uso": "2025-01-10",
+          "Scadenza": "2029-01-10"
+        },
+        {
+          "ID_DPI/Impianto": "APP-0001",
+          "Categoria": "Apparecchi di sospensione a scorrimento",
+          "Norma_EN_riferimento": "EN 795",
+          "Marca/Modello": "Carrello scorrevole su binario",
+          "Data_primo_uso": "2025-02-01",
+          "Scadenza": "2030-02-01"
+        },
+        {
+          "ID_DPI/Impianto": "DIS-0001",
+          "Categoria": "Dispositivi anticaduta",
+          "Norma_EN_riferimento": "EN 360",
+          "Marca/Modello": "Anticaduta retrattile 10m",
+          "Data_primo_uso": "2024-03-01",
+          "Scadenza": "2029-03-01"
+        },
+        {
+          "ID_DPI/Impianto": "CON-0001",
+          "Categoria": "Elementi di collegamento",
+          "Norma_EN_riferimento": "EN 362",
+          "Marca/Modello": "Moschettone a ghiera D",
+          "Data_primo_uso": "2024-06-15",
+          "Scadenza": "2028-06-15"
+        },
+        {
+          "ID_DPI/Impianto": "FUN-0001",
+          "Categoria": "Funi",
+          "Norma_EN_riferimento": "EN 1891",
+          "Marca/Modello": "Fune statica 11mm",
+          "Data_primo_uso": "2024-09-01",
+          "Scadenza": "2031-09-01"
+        },
+        {
+          "ID_DPI/Impianto": "SPA-0001",
+          "Categoria": "Dispositivi per spazi confinati",
+          "Norma_EN_riferimento": "EN 1496",
+          "Marca/Modello": "Treppiede di recupero",
+          "Data_primo_uso": "2025-04-01",
+          "Scadenza": "2030-04-01"
+        },
+        {
+          "ID_DPI/Impianto": "DES-0001",
+          "Categoria": "Discensori e dispositivi di salvataggio",
+          "Norma_EN_riferimento": "EN 341",
+          "Marca/Modello": "Discensore automatico 20m",
+          "Data_primo_uso": "2025-07-01",
+          "Scadenza": "2030-07-01"
         }
       ];
 
@@ -700,6 +784,9 @@
         populateFilters();
         populateProducts();
         attachFilters();
+        // Popola tabelle aggiuntive per assegnazioni e revisioni
+        populateAssignments();
+        populateRevisions();
       }
 
       /*
@@ -880,31 +967,16 @@
         const tbody = document.getElementById('assignmentsTableBody');
         if (!tbody) return;
         tbody.innerHTML = '';
-        const categories = Array.from(new Set(dpiData.map(item => item.Categoria)));
-        categories.forEach(cat => {
+        // Crea una mappa delle linee e dei responsabili utilizzando eventuali campi operatore/responsabile nei dati
+        const lines = {};
+        dpiData.forEach(item => {
+          const line = item.Categoria || '–';
+          const resp = item['Nome operatore'] || item['Ruolo_responsabile'] || 'Da assegnare';
+          if (!lines[line]) lines[line] = resp;
+        });
+        Object.entries(lines).forEach(([line, resp]) => {
           const tr = document.createElement('tr');
-          const tdCat = document.createElement('td');
-          tdCat.textContent = cat;
-          const tdResp = document.createElement('td');
-          const select = document.createElement('select');
-          // opzione vuota
-          const optEmpty = document.createElement('option');
-          optEmpty.value = '';
-          optEmpty.textContent = 'Non assegnato';
-          select.appendChild(optEmpty);
-          roles.forEach(r => {
-            const opt = document.createElement('option');
-            opt.value = r;
-            opt.textContent = r;
-            select.appendChild(opt);
-          });
-          select.value = assignments[cat] || '';
-          select.addEventListener('change', () => {
-            assignments[cat] = select.value;
-          });
-          tdResp.appendChild(select);
-          tr.appendChild(tdCat);
-          tr.appendChild(tdResp);
+          tr.innerHTML = `<td>${line}</td><td>${resp}</td>`;
           tbody.appendChild(tr);
         });
       }
@@ -914,20 +986,28 @@
         const tbody = document.getElementById('revisionsTableBody');
         if (!tbody) return;
         tbody.innerHTML = '';
-        revisionsData.forEach(item => {
+        const today = new Date();
+        dpiData.forEach(item => {
+          // Calcola la data di revisione come un anno dopo la data di primo uso
+          const firstUseStr = item['Data_primo_uso'];
+          const firstUse = firstUseStr ? new Date(firstUseStr) : null;
+          if (!firstUse || isNaN(firstUse)) return;
+          const revisionDue = new Date(firstUse.getTime());
+          revisionDue.setFullYear(revisionDue.getFullYear() + 1);
+          const dueDateStr = revisionDue.toISOString().split('T')[0];
+          const days = (revisionDue - today) / (1000 * 60 * 60 * 24);
+          let status;
+          if (days < 0) {
+            status = 'Scaduta';
+          } else if (days <= 30) {
+            status = 'In scadenza';
+          } else {
+            status = 'OK';
+          }
           const tr = document.createElement('tr');
-          const tdSect = document.createElement('td');
-          tdSect.textContent = item.Settore;
-          const tdDate = document.createElement('td');
-          tdDate.textContent = item.Data;
-          const tdStatus = document.createElement('td');
-          tdStatus.textContent = item.Stato;
-          const tdNote = document.createElement('td');
-          tdNote.textContent = item.Note;
-          tr.appendChild(tdSect);
-          tr.appendChild(tdDate);
-          tr.appendChild(tdStatus);
-          tr.appendChild(tdNote);
+          // Default placeholder for photo proof; this can be replaced by an image or file input in future iterations
+          const photoStatus = 'Manca foto';
+          tr.innerHTML = `<td>${item.Categoria}</td><td>${dueDateStr}</td><td>${status}</td><td>${photoStatus}</td>`;
           tbody.appendChild(tr);
         });
       }
