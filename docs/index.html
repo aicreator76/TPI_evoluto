@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>TPI – Dashboard</title>
-  <meta name="color-scheme" content="dark light" />
+  <!-- Force dark color scheme for consistent dark appearance -->
+  <meta name="color-scheme" content="dark" />
   <style>
     :root{
       /* Dark theme variables tuned for deeper black background and high contrast text */
@@ -20,9 +21,7 @@
       --ring: 0 8px 30px rgba(0,0,0,.35);
       --radius:18px;
     }
-    @media (prefers-color-scheme: light){
-      :root{--bg:#f5f7fb;--bg2:#eef3fb;--surface:#fff;--card:#ffffff;--card-border:#e6eaf2;--text:#0f172a;--muted:#475569}
-    }
+    /* Removed light mode overrides to enforce dark theme across all user settings */
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
@@ -283,8 +282,9 @@
             <h3 id="productsTitle">Gestione Prodotti</h3>
             <a id="newProductButton" class="btn-add" href="#">+ Nuovo Prodotto</a>
           </div>
-          <div id="categoryList" class="category-list"></div>
-          <a id="backToCategories">← Torna ai settori</a>
+          <!-- Sector list is hidden by default; appears when clicking on "Prodotti" -->
+          <div id="categoryList" class="category-list" style="display:none;"></div>
+          <a id="backToCategories" style="display:none;">← Torna ai settori</a>
           <div class="filters" style="display:none;">
             <input type="text" placeholder="Cerca per seriale, categoria, materiale..." id="search" />
             <select id="filter-category">
@@ -1105,7 +1105,8 @@
       document.addEventListener('DOMContentLoaded', () => {
         const linkMap = {
           navDashboard: 'dashboard',
-          navProducts: 'dashboard',
+          // Map Prodotti navigation to the products section
+          navProducts: 'products',
           navAssignments: 'assignments',
           navRevisions: 'revisions',
           navHelp: 'help'
