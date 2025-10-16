@@ -147,6 +147,11 @@
     .products-section h3,.activity-section h3{margin-top:0;font-size:20px}
     .products-section .filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
     .products-section .filters select,.products-section .filters input{background:var(--surface);color:var(--text);border:1px solid var(--card-border);border-radius:8px;padding:6px 8px}
+.products-section .category-list{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px}
+.products-section .category-card{background:var(--surface);border:1px solid var(--card-border);border-radius:8px;padding:12px 16px;cursor:pointer;width:calc(50% - 12px);box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:transform .2s}
+.products-section .category-card:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgba(0,0,0,0.2)}
+#backToCategories{display:none;margin-bottom:8px;color:var(--primary);cursor:pointer;text-decoration:underline}
+#backToCategories:hover{text-decoration:none}
     /* Search input with icon */
     #search{
       padding-left:32px;
@@ -276,7 +281,9 @@
             <h3 id="productsTitle">Gestione Prodotti</h3>
             <a id="newProductButton" class="btn-add" href="#">+ Nuovo Prodotto</a>
           </div>
-          <div class="filters">
+          <div id="categoryList" class="category-list"></div>
+          <a id="backToCategories">← Torna ai settori</a>
+          <div class="filters" style="display:none;">
             <input type="text" placeholder="Cerca per seriale, categoria, materiale..." id="search" />
             <select id="filter-category">
               <option value="">Tutte le categorie</option>
@@ -291,7 +298,7 @@
               <option value="scaduto">Scaduti</option>
             </select>
           </div>
-          <div id="productList"></div>
+          <div id="productList" style="display:none;"></div>
         </section>
         <section class="activity-section">
           <h3 id="recentActivityTitle">Attività Recente</h3>
@@ -791,7 +798,60 @@
         // Popola tabelle aggiuntive per assegnazioni e revisioni
         populateAssignments();
         populateRevisions();
+        // Popola elenco categorie per la sezione Prodotti
+        populateCategoryList();
       }
+
+      // Popola la lista dei settori/categorie da dpiData
+      function populateCategoryList() {
+        const categoryListEl = document.getElementById('categoryList');
+        if (!categoryListEl) return;
+        // Raccogli categorie uniche
+        const categories = new Set();
+        dpiData.forEach(item => {
+          if (item.Categoria) {
+            categories.add(item.Categoria);
+          }
+        });
+        categoryListEl.innerHTML = '';
+        categories.forEach(cat => {
+          const card = document.createElement('div');
+          card.className = 'category-card';
+          card.textContent = cat;
+          card.addEventListener('click', () => {
+            // Al click su una categoria: nasconde la lista e mostra filtri e prodotti filtrati
+            categoryListEl.style.display = 'none';
+            const back = document.getElementById('backToCategories');
+            if (back) back.style.display = '';
+            const filtersDiv = document.querySelector('.products-section .filters');
+            if (filtersDiv) filtersDiv.style.display = '';
+            const productListEl = document.getElementById('productList');
+            if (productListEl) productListEl.style.display = '';
+            // Imposta il filtro categoria e aggiorna la lista prodotti
+            const selCat = document.getElementById('filter-category');
+            if (selCat) selCat.value = cat;
+            populateProducts();
+          });
+          categoryListEl.appendChild(card);
+        });
+      }
+
+      // Gestisce il ritorno alla lista di settori
+      document.addEventListener('DOMContentLoaded', () => {
+        const backLink = document.getElementById('backToCategories');
+        if (backLink) {
+          backLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            const categoryListEl = document.getElementById('categoryList');
+            if (categoryListEl) categoryListEl.style.display = '';
+            backLink.style.display = 'none';
+            const filtersDiv = document.querySelector('.products-section .filters');
+            if (filtersDiv) filtersDiv.style.display = 'none';
+            const productListEl = document.getElementById('productList');
+            if (productListEl) productListEl.style.display = 'none';
+          });
+        }
+      });
 
       /*
        * Internationalization (i18n) support.
@@ -1064,6 +1124,26 @@
               }
             });
             if (key) toggleSections(key);
+            // Se l'utente clicca su "Prodotti", mostra la lista dei settori e nasconde filtri e prodotti
+            spans.forEach(sp => {
+              if (sp.id === 'navProducts') {
+                const categoryListEl = document.getElementById('categoryList');
+                const backLink = document.getElementById('backToCategories');
+                const filtersDiv = document.querySelector('.products-section .filters');
+                const productListEl = document.getElementById('productList');
+                if (categoryListEl) categoryListEl.style.display = '';
+                if (backLink) backLink.style.display = 'none';
+                if (filtersDiv) filtersDiv.style.display = 'none';
+                if (productListEl) productListEl.style.display = 'none';
+                // Scorri all'inizio della sezione prodotti dopo un breve timeout
+                const prodSection = document.querySelector('.products-section');
+                if (prodSection) {
+                  setTimeout(() => {
+                    prodSection.scrollIntoView({behavior:'smooth', block:'start'});
+                  }, 50);
+                }
+              }
+            });
           });
         });
         // Visualizza dashboard di default
