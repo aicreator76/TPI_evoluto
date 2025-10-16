@@ -7,15 +7,16 @@
   <meta name="color-scheme" content="dark light" />
   <style>
     :root{
-      --bg:#0b1220;
-      --bg2:#0e1526;
-      --surface:#121a2b;
-      --card:#141f33;
+      /* Dark theme variables tuned for deeper black background and high contrast text */
+      --bg:#050713;
+      --bg2:#0a0e20;
+      --surface:#111826;
+      --card:#0e1627;
       --card-border:rgba(255,255,255,.06);
-      --text:#e6eefc;
-      --muted:#9fb3d3;
-      --accent:#3a86ff;
-      --accent-2:#7cc4ff;
+      --text:#f5f8ff;
+      --muted:#8aa4c8;
+      --accent:#478eff;
+      --accent-2:#80b3ff;
       --ring: 0 8px 30px rgba(0,0,0,.35);
       --radius:18px;
     }
@@ -27,8 +28,9 @@
     body{
       margin:0;font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
       color:var(--text);background:
-        radial-gradient(1200px 600px at 20% -10%, #1c2a46 10%, transparent 60%),
-        radial-gradient(1000px 500px at 110% -20%, #12213c 10%, transparent 60%),
+        /* Adjust radial overlays to darker hues to enhance the black theme */
+        radial-gradient(1200px 600px at 20% -10%, #0c1326 10%, transparent 60%),
+        radial-gradient(1000px 500px at 110% -20%, #0a1022 10%, transparent 60%),
         linear-gradient(180deg, var(--bg), var(--bg2));
       min-height:100%;
     }
