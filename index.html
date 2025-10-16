@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TPI Dashboard - Gestione DPI e AELIS</title>
+  <link rel="stylesheet" href="public/css/style.css">
+</head>
+<body>
+  <header>
+    <div class="container">
+      <h1>TPI Dashboard</h1>
+      <p class="subtitle">Sistema di gestione DPI con agenti AELIS</p>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="intro">
+      <h2>Benvenuto nel sistema TPI/AELIS</h2>
+      <p>Dashboard per il monitoraggio e gestione dei Dispositivi di Protezione Individuale (DPI) con integrazione agli agenti intelligenti AELIS.</p>
+    </section>
+
+    <section class="dashboard-grid">
+      <div class="card">
+        <h3>🤖 Agente #7 - Operativo Dashboard</h3>
+        <p>Monitoraggio scadenze DPI, notifiche automatiche e gestione badge di stato.</p>
+        <ul>
+          <li>Notifiche scadenze DPI</li>
+          <li>Badge colorati (rosso/giallo/verde)</li>
+          <li>KPI in tempo reale</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>📦 Agente #8 - Ordini DPI</h3>
+        <p>Creazione e gestione automatica degli ordini di sostituzione DPI.</p>
+        <ul>
+          <li>Creazione ordini automatica</li>
+          <li>Tracking stato ordini</li>
+          <li>Chiusura ordini verificati</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="kpi-section">
+      <h2>KPI e Andamenti</h2>
+      <div id="kpi-container"></div>
+    </section>
+
+    <section class="wll-section">
+      <h2>Badge WLL - Giorni alla scadenza</h2>
+      <div class="badge-container">
+        <div id="badge-wll" class="badge" data-color="green">
+          <span class="badge-label">WLL: Caricamento...</span>
+        </div>
+      </div>
+      <p class="note">Il badge WLL mostra i giorni rimanenti alla scadenza dei dispositivi.</p>
+    </section>
+
+    <section class="info-section">
+      <h2>Tecnologie utilizzate</h2>
+      <div class="tech-grid">
+        <div class="tech-item">
+          <strong>n8n</strong>
+          <p>Orchestrazione workflow e webhook</p>
+        </div>
+        <div class="tech-item">
+          <strong>FastAPI</strong>
+          <p>Backend per azioni e Firestore</p>
+        </div>
+        <div class="tech-item">
+          <strong>OpenAI</strong>
+          <p>Intelligenza artificiale AELIS</p>
+        </div>
+        <div class="tech-item">
+          <strong>GitHub Actions</strong>
+          <p>CI/CD e automazione</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="status-section">
+      <h2>Stato del sistema</h2>
+      <div class="status-card">
+        <div class="status-indicator active"></div>
+        <div>
+          <strong>Sistema operativo</strong>
+          <p>Tutti i servizi sono attivi e funzionanti</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 TPI/AELIS - Dashboard gestione DPI</p>
+      <p>Licenza MIT - <a href="https://github.com/aicreator76/TPI_evoluto" target="_blank">GitHub Repository</a></p>
+    </div>
+  </footer>
+
+  <script type="module">
+    // Carica il componente KPI
+    fetch('public/components/kpi-trend.html')
+      .then(r => r.text())
+      .then(html => {
+        document.getElementById('kpi-container').innerHTML = html;
+        // Esegui gli script inline
+        const scripts = document.getElementById('kpi-container').querySelectorAll('script');
+        scripts.forEach(script => {
+          const newScript = document.createElement('script');
+          newScript.textContent = script.textContent;
+          document.body.appendChild(newScript);
+        });
+      });
+
+    // Inizializza il badge WLL
+    import { formatWLLDays } from './public/js/wll.js';
+    
+    // Esempio con data di scadenza tra 25 giorni
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + 25);
+    const dateStr = futureDate.toISOString().split('T')[0];
+    
+    const badge = formatWLLDays(dateStr);
+    const badgeElement = document.getElementById('badge-wll');
+    badgeElement.querySelector('.badge-label').textContent = badge.label;
+    badgeElement.dataset.color = badge.color;
+  </script>
+</body>
+</html>
