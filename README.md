@@ -34,4 +34,11 @@ Questo repository ospita la dashboard TPI e l’integrazione con gli agenti AELI
 - Dettagli in `docs/ACCESSIBILITY.md`.
 
 ## Licenza
+
+## Nuove funzionalità (2025)
+- **Tema nero**: interfaccia scura con testo chiaro e contrasti elevati.
+- **Selezione per settore**: cliccando su "Prodotti" puoi scegliere il settore (funi metalliche, accessori sottogancio, catene, funi in fibra, linea vita, formazione) prima di visualizzare i DPI.
+- **Catalogo PSA integrato**: link diretto al PDF del catalogo PSA e integrazione dei dispositivi nel database.
+- **Foto prova per revisioni**: nella sezione revisioni è presente una colonna per allegare una foto a testimonianza della revisione.
+
 Vedi `LICENSE` (MIT).
