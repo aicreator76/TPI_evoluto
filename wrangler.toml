@@ -1,0 +1,12 @@
+name = "aelis-edge"
+main = "server/workers/api.js"
+compatibility_date = "2024-01-01"
+
+[env.production]
+workers_dev = false
+routes = [
+  { pattern = "*.example.com/*", zone_name = "example.com" }
+]
+
+[vars]
+# FLY_ORIGIN should be set via secrets in Cloudflare dashboard
