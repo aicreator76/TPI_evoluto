@@ -1,0 +1,36 @@
+{
+  "name": "tpi-evoluto",
+  "version": "1.0.0",
+  "description": "TPI/AELIS Dashboard & Agents",
+  "type": "module",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "prod": "NODE_ENV=production node main.js",
+    "grand": "node scripts/grand-opening.cjs",
+    "seed:demo": "node scripts/seed-demo.cjs",
+    "chaos:smoke": "node scripts/chaos-smoke.cjs",
+    "snapshot": "node scripts/snapshot.cjs",
+    "restore": "node scripts/restore.cjs",
+    "quality-gate": "node scripts/quality-gate.cjs",
+    "verify-plugins": "node scripts/verify-all-plugins.cjs",
+    "policy-check": "node scripts/policy-check.cjs",
+    "sign-plugin": "node scripts/plugin-sign.js"
+  },
+  "keywords": [
+    "tpi",
+    "aelis",
+    "dashboard"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^9.2.2",
+    "express": "^4.18.2",
+    "semver": "^7.7.3",
+    "ws": "^8.14.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

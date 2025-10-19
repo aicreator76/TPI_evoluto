@@ -1,0 +1,28 @@
+name = "tpi-evoluto-worker"
+main = "server/workers/api.js"
+compatibility_date = "2024-01-01"
+workers_dev = true
+
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "tpi-evoluto-worker-prod"
+workers_dev = false
+
+[vars]
+FLY_ORIGIN = "https://tpi-evoluto.fly.dev"
+ENVIRONMENT = "production"
+
+# Example bindings (uncomment and configure as needed)
+# [[kv_namespaces]]
+# binding = "MY_KV"
+# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# [[d1_databases]]
+# binding = "DB"
+# database_name = "tpi-database"
+# database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# [[r2_buckets]]
+# binding = "MY_BUCKET"
+# bucket_name = "my-bucket"

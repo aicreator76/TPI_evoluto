@@ -33,5 +33,29 @@ Questo repository ospita la dashboard TPI e l’integrazione con gli agenti AELI
 - **Accessibilità**: contrasto ≥ 4.5:1, focus visibile, ARIA per componenti interattivi, supporto keyboard/screen reader.
 - Dettagli in `docs/ACCESSIBILITY.md`.
 
+## Scripts operativi
+- `npm start` - Avvia il server (porta 8080)
+- `npm run prod` - Avvia in modalità produzione
+- `npm run grand` - Grand opening (quality gate + seed + server)
+- `npm run quality-gate` - Check di qualità (Node version, npm audit, endpoints)
+- `npm run verify-plugins` - Verifica firme plugin con ed25519
+- `npm run policy-check` - Controlla policy OPA
+- `npm run seed:demo` - Invia eventi demo via WebSocket
+- `npm run chaos:smoke` - Test di carico chaos via WebSocket
+- `npm run snapshot` - Backup database
+- `npm run restore` - Ripristina database da backup
+- `npm run sign-plugin` - Firma un plugin
+
+## Endpoints disponibili
+- `GET /health` - Health check con stato safe mode
+- `GET /metrics` - Metriche formato Prometheus
+- `GET /mode` - Modalità corrente (safe mode, config, env)
+- `GET /observability/metrics` - Redirect a /metrics
+
+## Deployment
+- **Fly.io**: Configurato con `fly.toml` (Dockerfile, HTTPS, autoscaling, metrics)
+- **Cloudflare Workers**: API stub in `server/workers/api.js` con `wrangler.toml`
+- **Safe mode**: Impostare `AELIS_SAFE_MODE=true` per disabilitare caricamento plugin
+
 ## Licenza
 Vedi `LICENSE` (MIT).
