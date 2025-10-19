@@ -1,0 +1,149 @@
+name: Deploy Hybrid (Fly.io + Cloudflare)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      DEPLOY_STRATEGY:
+        description: "rolling | canary"
+        default: "canary"
+
+concurrency:
+  group: prod-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: read
+  id-token: write
+  statuses: write
+
+env:
+  NODE_VERSION: '20'
+  FLY_APP: 'aelis'
+  FLY_CONFIG: 'fly.toml'
+  WORKER_NAME: 'aelis-edge'
+  HEALTH_TARGETS: >-
+    https://${{ secrets.WORKER_HOST }}/api/health,
+    https://${{ secrets.WORKER_HOST }}/metrics,
+    ${{ secrets.FLY_ORIGIN }}/health,
+    ${{ secrets.FLY_ORIGIN }}/metrics
+  ERROR_RATE_THRESHOLD: "0.01"
+  LATENCY_P95_MS: "800"
+  DURATION_SEC: "300"
+  INTERVAL_MS: "5000"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: ${{ env.NODE_VERSION }} }
+      - uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            npm-${{ runner.os }}-
+      - run: npm ci
+      - run: npm test --if-present
+      - run: npm run quality-gate
+
+  deploy-fly:
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+      - name: Capture previous Fly release
+        id: prev
+        env: { FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }} }
+        run: |
+          PREV=$(flyctl releases --json | jq -r '.[0].Version')
+          echo "version=$PREV" >> $GITHUB_OUTPUT
+      - name: Deploy to Fly
+        env: { FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }} }
+        run: |
+          export IMAGE_LABEL="${GITHUB_SHA}"
+          flyctl deploy --config $FLY_CONFIG --remote-only --image-label "$IMAGE_LABEL"
+          echo "FLY_PREV_VERSION=${{ steps.prev.outputs.version }}" >> $GITHUB_ENV
+          echo "FLY_IMAGE_LABEL=${GITHUB_SHA}" >> $GITHUB_ENV
+
+  deploy-workers:
+    needs: ci
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: ${{ env.NODE_VERSION }} }
+      - run: npm ci --omit=dev --ignore-scripts
+      - name: Wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: npx wrangler deploy
+      - name: Save Worker current version (best-effort)
+        run: |
+          echo "WORKER_VERSION=current" >> $GITHUB_ENV
+
+  canary-validate:
+    needs: [deploy-fly, deploy-workers]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: ${{ env.NODE_VERSION }} }
+      - run: npm ci
+      - name: Canary probe
+        env:
+          TARGETS: ${{ env.HEALTH_TARGETS }}
+          ERROR_RATE_THRESHOLD: ${{ env.ERROR_RATE_THRESHOLD }}
+          LATENCY_P95_MS: ${{ env.LATENCY_P95_MS }}
+          DURATION_SEC: ${{ env.DURATION_SEC }}
+          INTERVAL_MS: ${{ env.INTERVAL_MS }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: node scripts/health-monitor.cjs
+      - name: Aether report (artefatto)
+        if: failure()
+        run: |
+          echo "## Aether Canary Advisor" > AETHER_REPORT.md
+          echo "" >> AETHER_REPORT.md
+          echo "- p95 sopra ${LATENCY_P95_MS}ms o error-rate > $(echo "${ERROR_RATE_THRESHOLD}*100" | bc -l)%." >> AETHER_REPORT.md
+          echo "- Verifica cold-start Fly, TTL edge cache e peso response JSON." >> AETHER_REPORT.md
+        shell: bash
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: aether-report
+          path: AETHER_REPORT.md
+
+  rollback:
+    needs: canary-validate
+    if: failure()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+      - name: Fly rollback to previous release
+        env: { FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }} }
+        run: |
+          if [ -n "${FLY_PREV_VERSION}" ]; then
+            flyctl deploy --config $FLY_CONFIG --strategy immediate --rollback ${FLY_PREV_VERSION}
+          else
+            echo "No previous version captured; manual rollback may be required."
+          fi
+      - name: Self-heal hook
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: node scripts/selfheal.cjs || true
