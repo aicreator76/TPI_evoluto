@@ -1,0 +1,128 @@
+name: Deploy Hybrid (Fly.io + Cloudflare)
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      DEPLOY_STRATEGY:
+        description: "rolling | canary"
+        required: false
+        default: "canary"
+
+env:
+  NODE_VERSION: '20'
+  FLY_APP: 'aelis'
+  FLY_CONFIG: 'fly.toml'
+  WORKER_NAME: 'aelis-edge'
+  HEALTH_TARGETS: >-
+    https://$WORKER_HOST/api/health,
+    https://$WORKER_HOST/metrics,
+    https://$FLY_ORIGIN/health,
+    https://$FLY_ORIGIN/metrics
+  ERROR_RATE_THRESHOLD: "0.01"
+  LATENCY_P95_MS: "800"
+  DURATION_SEC: "300"
+  INTERVAL_MS: "5000"
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: ${{ env.NODE_VERSION }} }
+      - run: npm ci
+      - run: npm test --if-present
+      - run: npm run quality-gate
+
+  deploy-fly:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+      - name: Deploy to Fly (rolling/canary)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          if [ "${{ github.event.inputs.DEPLOY_STRATEGY || 'canary' }}" = "canary" ]; then
+            # Etichetta immagine per rollback deterministico
+            export IMAGE_LABEL="${GITHUB_SHA}"
+            flyctl deploy --config $FLY_CONFIG --remote-only --image-label "$IMAGE_LABEL"
+          else
+            flyctl deploy --config $FLY_CONFIG --remote-only
+          fi
+      - name: Publish Fly release metadata
+        run: echo "FLY_IMAGE_LABEL=${GITHUB_SHA}" >> $GITHUB_ENV
+
+  deploy-workers:
+    needs: ci
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: ${{ env.NODE_VERSION }} }
+      - run: npm ci --omit=dev --ignore-scripts
+      - name: Wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: npx wrangler deploy
+      - name: Expose Worker host to pipeline
+        run: echo "WORKER_HOST=${{ secrets.WORKER_HOST }}" >> $GITHUB_ENV
+
+  canary-validate:
+    needs: [deploy-fly, deploy-workers]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: ${{ env.NODE_VERSION }} }
+      - run: npm ci
+      - name: Canary probe (5 min, p95+error rate)
+        env:
+          TARGETS: ${{ env.HEALTH_TARGETS }}
+          ERROR_RATE_THRESHOLD: ${{ env.ERROR_RATE_THRESHOLD }}
+          LATENCY_P95_MS: ${{ env.LATENCY_P95_MS }}
+          DURATION_SEC: ${{ env.DURATION_SEC }}
+          INTERVAL_MS: ${{ env.INTERVAL_MS }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: node scripts/health-monitor.cjs
+      - name: Notify success
+        if: success()
+        run: |
+          echo "Canary OK"
+          [ -n "${DISCORD_WEBHOOK}" ] && curl -s -H "Content-Type: application/json" \
+            -d '{"content":"✅ Canary passed"}' "$DISCORD_WEBHOOK" || true
+
+  rollback:
+    needs: canary-validate
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: superfly/flyctl-actions/setup-flyctl@v1
+      - name: Fly rollback (previous release)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+        run: |
+          # Ritorna alla release precedente
+          flyctl releases --json | jq -r '.[1].Version' | xargs -I{} flyctl deploy --config $FLY_CONFIG --strategy immediate --release-command "" --rollback {}
+      - name: Worker rollback (version pin – manual fallback)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          PREV_WORKER_VERSION: ${{ secrets.PREV_WORKER_VERSION }}
+        run: |
+          if [ -n "$PREV_WORKER_VERSION" ]; then
+            echo "(placeholder) Ridistribuire versione $PREV_WORKER_VERSION"
+            # npx wrangler versions deploy --version "$PREV_WORKER_VERSION"
+          else
+            echo "Nessuna versione Worker precedente definita (PREV_WORKER_VERSION)."
+          fi
+      - name: Self-heal hook
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        run: node scripts/selfheal.cjs || true

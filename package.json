@@ -1,0 +1,17 @@
+{
+  "name": "tpi-evoluto",
+  "version": "1.0.0",
+  "description": "TPI / AELIS Dashboard & Agents",
+  "scripts": {
+    "health:monitor": "node scripts/health-monitor.cjs",
+    "selfheal": "node scripts/selfheal.cjs",
+    "quality-gate": "echo 'No quality-gate checks configured yet'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aicreator76/TPI_evoluto.git"
+  },
+  "keywords": ["aelis", "dashboard", "dpi"],
+  "author": "",
+  "license": "MIT"
+}
