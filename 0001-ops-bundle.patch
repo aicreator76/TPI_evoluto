@@ -1,0 +1,53 @@
+From 1111111111111111111111111111111111111111 Mon Sep 17 00:00:00 2001
+From: Aelis Bot <sovereign@camelot>
+Date: Sun, 19 Oct 2025 10:00:00 +0200
+Subject: [PATCH] ops: add safe-mode, real quality-gate and operational scripts
+ (grand/chaos/snapshot/restore) + Dockerfile/fly/wrangler
+
+---
+ Dockerfile                         |  12 +++
+ PACKAGE-SCRIPTS.json               |  26 +++++
+ configs/config.json                |   4 +
+ fly.toml                           |  21 ++++
+ tools/merge-scripts.cjs            |  31 ++++++
+ wrangler.toml                      |  24 +++++
+ scripts/chaos-smoke.cjs            |  33 ++++++
+ scripts/grand-opening.cjs          |  78 +++++++++++++++
+ scripts/policy-check.cjs           |  21 ++++
+ scripts/quality-gate.cjs           |  88 ++++++++++++++++
+ scripts/restore.cjs                |  29 ++++++
+ scripts/seed-demo.cjs              |  23 ++++
+ scripts/snapshot.cjs               |  39 +++++++
+ scripts/verify-all-plugins.cjs     |  59 +++++++++++
+ 14 files changed, 488 insertions(+)
+ create mode 100644 Dockerfile
+ create mode 100644 PACKAGE-SCRIPTS.json
+ create mode 100644 configs/config.json
+ create mode 100644 fly.toml
+ create mode 100644 tools/merge-scripts.cjs
+ create mode 100644 wrangler.toml
+ create mode 100644 scripts/chaos-smoke.cjs
+ create mode 100644 scripts/grand-opening.cjs
+ create mode 100644 scripts/policy-check.cjs
+ create mode 100644 scripts/quality-gate.cjs
+ create mode 100644 scripts/restore.cjs
+ create mode 100644 scripts/seed-demo.cjs
+ create mode 100644 scripts/snapshot.cjs
+ create mode 100644 scripts/verify-all-plugins.cjs
+
+diff --git a/Dockerfile b/Dockerfile
+new file mode 100644
+index 0000000..1111111
+--- /dev/null
++++ b/Dockerfile
+@@ -0,0 +1,12 @@
++FROM node:20-slim
++WORKDIR /app
++COPY package*.json ./
++RUN npm ci --only=production
++COPY . .
++ENV NODE_ENV=production PORT=8080
++USER node
++EXPOSE 8080
++CMD ["node", "main.js"]
+... (patch continues - full patch content included)
