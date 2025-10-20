@@ -1,0 +1,143 @@
+﻿name: TPI CI & Snapshot
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ "main", "master" ]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tpi-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (FastAPI)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Detect backend directory
+        id: detect_backend
+        shell: bash
+        run: |
+          if [ -f backend/requirements.txt ] || [ -f backend/pyproject.toml ]; then
+            echo "dir=backend" >> $GITHUB_OUTPUT
+          elif [ -f requirements.txt ] || [ -f pyproject.toml ]; then
+            echo "dir=." >> $GITHUB_OUTPUT
+          else
+            echo "dir=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install dependencies (backend)
+        if: steps.detect_backend.outputs.dir != ''
+        shell: bash
+        run: |
+          cd "${{ steps.detect_backend.outputs.dir }}"
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+          if [ -f pyproject.toml ]; then python -m pip install poetry || true; poetry install --no-root || true; fi
+          python -m pip install "uvicorn[standard]" fastapi || true
+
+      - name: Launch API and check /health
+        if: steps.detect_backend.outputs.dir != ''
+        shell: bash
+        run: |
+          set -e
+          cd "${{ steps.detect_backend.outputs.dir }}"
+          # Try to guess the app module (main:app / app.main:app / first FastAPI("…"))
+          APP_MODULE="main:app"
+          if [ ! -f main.py ]; then
+            if [ -f app/main.py ]; then APP_MODULE="app.main:app"
+            else
+              CAND=$(grep -Rsl "FastAPI(" . | head -n1 || true)
+              if [ -n "$CAND" ]; then
+                MOD=${CAND%.py}; MOD=${MOD#./}; MOD=${MOD//\//.}
+                APP_MODULE="$MOD:app"
+              fi
+            fi
+          fi
+          echo "Using module: $APP_MODULE"
+          nohup uvicorn "$APP_MODULE" --host 127.0.0.1 --port 8000 >/tmp/api.log 2>&1 &
+          sleep 5
+          curl -fsSL http://127.0.0.1:8000/health || { echo "Health check failed"; tail -n 200 /tmp/api.log; exit 1; }
+
+  frontend:
+    name: Frontend (Next.js)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Detect frontend directory
+        id: detect_front
+        shell: bash
+        run: |
+          if [ -f frontend/package.json ]; then
+            echo "dir=frontend" >> $GITHUB_OUTPUT
+          elif [ -f package.json ]; then
+            echo "dir=." >> $GITHUB_OUTPUT
+          else
+            echo "dir=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create .env.local placeholders (frontend)
+        if: steps.detect_front.outputs.dir != ''
+        shell: bash
+        run: |
+          cd "${{ steps.detect_front.outputs.dir }}"
+          cat > .env.local << 'EOF'
+          NEXT_PUBLIC_FIREBASE_API_KEY=dummy
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=dummy
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID=dummy
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=dummy
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=dummy
+          NEXT_PUBLIC_FIREBASE_APP_ID=dummy
+          API_BASE_URL=http://localhost:8000
+          EOF
+
+      - name: Install & Build (frontend)
+        if: steps.detect_front.outputs.dir != ''
+        shell: bash
+        run: |
+          cd "${{ steps.detect_front.outputs.dir }}"
+          npm ci
+          npm run build
+
+      - name: Upload build artifact
+        if: steps.detect_front.outputs.dir != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: next-build
+          path: |
+            ${{ steps.detect_front.outputs.dir }}/.next
+            ${{ steps.detect_front.outputs.dir }}/next.config.js
+
+  snapshot-tag:
+    name: Tag Snapshot-OK
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    if: |
+      (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
+      (needs.frontend.result == 'success' || needs.frontend.result == 'skipped')
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Create & push tag if CI OK
+        shell: bash
+        run: |
+          DATE=$(date +'%Y-%m-%d')
+          TAG="Snapshot-OK-$DATE"
+          if git rev-parse -q --verify "refs/tags/$TAG"; then
+            echo "Tag $TAG already exists"; exit 0
+          fi
+          git tag -a "$TAG" -m "CI snapshot build OK"
+          git push origin "$TAG"

@@ -1,0 +1,9 @@
+﻿
+GET CSV template
+
+GET http://127.0.0.1:8010/api/dpi/csv/template
+
+HEAD CSV template
+
+HEAD http://127.0.0.1:8010/api/dpi/csv/template
+
