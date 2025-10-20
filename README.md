@@ -17,6 +17,23 @@ Questo repository ospita la dashboard TPI e l’integrazione con gli agenti AELI
    - `OPENAI_API_KEY`, `FASTAPI_BASE_URL`, `FASTAPI_JWT`, `TZ=Europe/Amsterdam`
 3. Importa i workflow n8n da `n8n/Agente7_ReturnModel.json` e `n8n/Agente8_WorkOrders.json`.
 
+## Dashboard pubblicata
+
+🚀 **La dashboard è LIVE su GitHub Pages:**
+- **URL**: https://aicreator76.github.io/TPI_evoluto/
+- **Deploy automatico**: ogni push su `main` attiva GitHub Actions
+- **Status**: ✅ Operativo
+
+### Test locali
+```bash
+# Con Python
+python3 -m http.server 8080
+
+# Oppure con Node.js
+npx http-server -p 8080
+```
+Poi apri `http://localhost:8080` nel browser.
+
 ## Avvio rapido
 - **Test via curl**: vedi `README_AELIS_QuickStart.md` / sezione Quick Start.
 - **CI Postman**: GitHub → Actions → “AELIS Agents – Postman CI” → Run workflow.
