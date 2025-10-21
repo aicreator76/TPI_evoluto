@@ -1,4 +1,20 @@
-﻿# Python / Virtualenv
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Env / tools
+.venv/
+.uvicorn.pid
+
+# Artefatti locali / sample
+*.csv
+per_chat_LITE_*.zip
+data/dpi_items.json
+
+# Build/static opzionali
+static/**/dist
+# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -7,11 +23,9 @@ __pycache__/
 .env
 .venv/
 */.venv/
-
 # IDE
 .vscode/
 .idea/
-
-# Log & OS
+# Log & tmp
 *.log
 .DS_Store
