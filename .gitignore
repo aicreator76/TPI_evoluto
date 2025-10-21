@@ -1,0 +1,17 @@
+﻿# Python / Virtualenv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.env
+.venv/
+*/.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Log & OS
+*.log
+.DS_Store
