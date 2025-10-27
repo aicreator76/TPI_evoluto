@@ -19,3 +19,6 @@ if site_dir.exists():
 @app.get("/", include_in_schema=False)
 def _root():
     return RedirectResponse("/site/")
+
+from app.csv_routes import router as csv_router
+app.include_router(csv_router)
