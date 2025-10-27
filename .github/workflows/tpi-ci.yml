@@ -1,0 +1,83 @@
+﻿name: TPI CI & Snapshot
+on:
+  push: { branches: [ "main", "master", "docs/api-csv-template" ] }
+  workflow_dispatch: {}
+permissions: { contents: write }
+concurrency: { group: tpi-ci-${{ github.ref }}, cancel-in-progress: true }
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - id: detect_backend
+        run: |
+          if [ -f backend/requirements.txt ] || [ -f backend/pyproject.toml ]; then echo "dir=backend" >> $GITHUB_OUTPUT; \
+          elif [ -f requirements.txt ] || [ -f pyproject.toml ]; then echo "dir=." >> $GITHUB_OUTPUT; else echo "dir=" >> $GITHUB_OUTPUT; fi
+      - name: Install deps
+        if: steps.detect_backend.outputs.dir != ''
+        run: |
+          cd "${{ steps.detect_backend.outputs.dir }}"
+          if [ -f requirements.txt ]; then python -m pip install -r requirements.txt; fi
+          python -m pip install "uvicorn[standard]" fastapi || true
+      - name: Health check
+        if: steps.detect_backend.outputs.dir != ''
+        run: |
+          cd "${{ steps.detect_backend.outputs.dir }}"
+          APP="main:app"
+          if [ ! -f main.py ] && [ -f app/main.py ]; then APP="app.main:app"; fi
+          nohup uvicorn "$APP" --host 127.0.0.1 --port 8000 >/tmp/api.log 2>&1 &
+          sleep 5
+          curl -fsSL http://127.0.0.1:8000/health || { tail -n 200 /tmp/api.log; exit 1; }
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: "20" }
+      - id: detect_front
+        run: |
+          if [ -f frontend/package.json ]; then echo "dir=frontend" >> $GITHUB_OUTPUT; \
+          elif [ -f package.json ]; then echo "dir=." >> $GITHUB_OUTPUT; else echo "dir=" >> $GITHUB_OUTPUT; fi
+      - name: Env placeholders
+        if: steps.detect_front.outputs.dir != ''
+        run: |
+          cd "${{ steps.detect_front.outputs.dir }}"
+          cat > .env.local <<EOF
+NEXT_PUBLIC_FIREBASE_API_KEY=dummy
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=dummy
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=dummy
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=dummy
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=dummy
+NEXT_PUBLIC_FIREBASE_APP_ID=dummy
+API_BASE_URL=http://localhost:8000
+EOF
+      - name: Install & build
+        if: steps.detect_front.outputs.dir != ''
+        run: |
+          cd "${{ steps.detect_front.outputs.dir }}"
+          npm ci
+          npm run build
+
+  snapshot-tag:
+    needs: [backend, frontend]
+    if: |
+      (needs.backend.result == 'success' || needs.backend.result == 'skipped') &&
+      (needs.frontend.result == 'success' || needs.frontend.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: Tag Snapshot-OK
+        run: |
+          DATE=$(date +'%Y-%m-%d'); TAG="Snapshot-OK-$DATE"
+          git tag -l "$TAG" || true
+          if ! git rev-parse -q --verify "refs/tags/$TAG"; then
+            git tag -a "$TAG" -m "CI snapshot build OK"
+            git push origin "$TAG"
+          fi
