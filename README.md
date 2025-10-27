@@ -34,4 +34,5 @@ Questo repository ospita la dashboard TPI e l’integrazione con gli agenti AELI
 - Dettagli in `docs/ACCESSIBILITY.md`.
 
 ## Licenza
-Vedi `LICENSE` (MIT).
+Vedi `LICENSE` (MIT).## Savepoint tooling
+- Vedi README_SAVEPOINT.md e savepoint_workflows.ps1 per snapshot giornalieri, rebase sicuro e branch feat/hotfix.
