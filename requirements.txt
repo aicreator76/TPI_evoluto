@@ -1,4 +1,8 @@
 ﻿fastapi
 uvicorn[standard]
 jinja2
+<<<<<<< HEAD
 python-dotenv
+=======
+python-dotenv
+>>>>>>> a92b547 (chore(savepoint): snapshot 2025-10-21)

@@ -1,4 +1,8 @@
 ﻿id,name,expiry
 DPI-101,Casco Z,2025-10-05
 DPI-102,Imbracatura X,15/11/2025
+<<<<<<< HEAD
 DPI-103,Cordino Y,2025-12-20
+=======
+DPI-103,Cordino Y,2025-12-20
+>>>>>>> a92b547 (chore(savepoint): snapshot 2025-10-21)
