@@ -1,13 +1,8 @@
 ﻿from fastapi import FastAPI
-# importa router esistenti se già presenti
-try:
-    from app.dpi_csv import router as dpi_router
-except Exception:
-    dpi_router = None
+from app.dpi_csv import router as dpi_router
 
-app = FastAPI()
-if dpi_router:
-    app.include_router(dpi_router)
+app = FastAPI(title="TPI_evoluto API")
+app.include_router(dpi_router)
 
 @app.get("/health")
 def health():

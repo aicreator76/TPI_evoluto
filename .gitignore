@@ -1,31 +1,5 @@
-﻿# Python
-__pycache__/
-*.py[cod]
-*.pyo
-
-# Env / tools
-.venv/
-.uvicorn.pid
-
-# Artefatti locali / sample
-*.csv
-per_chat_LITE_*.zip
-data/dpi_items.json
-
-# Build/static opzionali
-static/**/dist
-# Python
-__pycache__/
+﻿__pycache__/
 *.pyc
 *.pyo
-*.pyd
-*.egg-info/
-.env
 .venv/
-*/.venv/
-# IDE
-.vscode/
-.idea/
-# Log & tmp
-*.log
-.DS_Store
+docs/chat_ready/src/.venv/
