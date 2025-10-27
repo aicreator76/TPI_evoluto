@@ -1,0 +1,5 @@
+﻿__pycache__/
+*.pyc
+*.pyo
+.venv/
+docs/chat_ready/src/.venv/
