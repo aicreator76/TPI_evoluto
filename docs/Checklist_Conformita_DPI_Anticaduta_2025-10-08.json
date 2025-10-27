@@ -1,0 +1,53 @@
+[
+  {
+    "ID_DPI/Impianto": "DPI-0001",
+    "Categoria": "Imbracatura",
+    "Norma_EN_riferimento": "EN 361",
+    "Marca/Modello": "IKAR/CAMBA – H-01",
+    "Data_primo_uso": "2025-01-10",
+    "Scadenza": "2026-01-10",
+    "Giorni_alla_scadenza": "",
+    "Stato (Verde>60 / Giallo<=60 / Rosso<=0)": "",
+    "Ispezione_annuale_data": "",
+    "Ispezione_annuale_esito": "",
+    "Certificati_link/percorso": "",
+    "Foto/Video_link/percorso": "",
+    "Ruolo_responsabile": "HSE",
+    "Firma_responsabile": "",
+    "Note": ""
+  },
+  {
+    "ID_DPI/Impianto": "DPI-0002",
+    "Categoria": "Retrattile",
+    "Norma_EN_riferimento": "EN 360",
+    "Marca/Modello": "IKAR – R-10",
+    "Data_primo_uso": "2025-03-15",
+    "Scadenza": "2027-03-15",
+    "Giorni_alla_scadenza": "",
+    "Stato (Verde>60 / Giallo<=60 / Rosso<=0)": "",
+    "Ispezione_annuale_data": "",
+    "Ispezione_annuale_esito": "",
+    "Certificati_link/percorso": "",
+    "Foto/Video_link/percorso": "",
+    "Ruolo_responsabile": "RSPP",
+    "Firma_responsabile": "",
+    "Note": ""
+  },
+  {
+    "ID_DPI/Impianto": "IMP-TECI-01",
+    "Categoria": "Linea vita",
+    "Norma_EN_riferimento": "EN 17235 / prEN 795",
+    "Marca/Modello": "TECI – LV-01",
+    "Data_primo_uso": "2024-11-20",
+    "Scadenza": "2026-11-20",
+    "Giorni_alla_scadenza": "",
+    "Stato (Verde>60 / Giallo<=60 / Rosso<=0)": "",
+    "Ispezione_annuale_data": "",
+    "Ispezione_annuale_esito": "",
+    "Certificati_link/percorso": "",
+    "Foto/Video_link/percorso": "",
+    "Ruolo_responsabile": "Tecnico",
+    "Firma_responsabile": "",
+    "Note": ""
+  }
+]

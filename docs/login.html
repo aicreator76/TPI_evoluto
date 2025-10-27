@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TPI Dashboard – Login</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --bg2:#0e1526;
+      --surface:#121a2b;
+      --card:#141f33;
+      --card-border:rgba(255,255,255,.06);
+      --text:#e6eefc;
+      --muted:#9fb3d3;
+      --accent:#3a86ff;
+      --accent-2:#7cc4ff;
+      --ring:0 8px 30px rgba(0,0,0,.35);
+      --radius:18px;
+    }
+    @media (prefers-color-scheme: light){
+      :root{--bg:#f5f7fb;--bg2:#eef3fb;--surface:#fff;--card:#ffffff;--card-border:#e6eaf2;--text:#0f172a;--muted:#475569}
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% -10%, #1c2a46 10%, transparent 60%),
+        radial-gradient(1000px 500px at 110% -20%, #12213c 10%, transparent 60%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .login-card{
+      background:var(--card);
+      border:1px solid var(--card-border);
+      border-radius:var(--radius);
+      box-shadow:var(--ring);
+      padding:32px 24px;
+      width:100%;
+      max-width:360px;
+    }
+    .logo{
+      width:48px;height:48px;
+      border-radius:50%;
+      background:var(--accent);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:0 auto 16px;
+      color:white;
+      font-size:24px;
+    }
+    h1{
+      text-align:center;
+      margin:0 0 6px;
+      font-size:24px;
+    }
+    p.subtitle{
+      text-align:center;
+      color:var(--muted);
+      margin:0 0 24px;
+      font-size:14px;
+      line-height:1.4;
+    }
+    label{
+      display:block;
+      margin-bottom:4px;
+      font-size:14px;
+    }
+    input{
+      width:100%;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid var(--card-border);
+      background:var(--surface);
+      color:var(--text);
+      margin-bottom:16px;
+      font-size:14px;
+    }
+    input::placeholder{
+      color:var(--muted);
+    }
+    button{
+      width:100%;
+      padding:12px;
+      border:none;
+      border-radius:8px;
+      background:linear-gradient(160deg, var(--accent), var(--accent-2));
+      color:#fff;
+      font-weight:600;
+      font-size:16px;
+      cursor:pointer;
+      box-shadow:0 6px 16px rgba(58,134,255,.3);
+      transition:transform .1s ease, box-shadow .2s ease;
+    }
+    button:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 24px rgba(58,134,255,.4);
+    }
+    .demo-creds{
+      margin-top:24px;
+      font-size:13px;
+      color:var(--muted);
+    }
+    .demo-creds table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+    .demo-creds td{
+      padding:2px 0;
+    }
+    .demo-creds td.label{
+      width:25%;
+      font-weight:600;
+      color:var(--text);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="logo">🛡️</div>
+    <h1 id="loginTitle">TPI Dashboard</h1>
+    <p id="loginSubtitle" class="subtitle">Teufelberger Protezione Individuale<br>Accedi al sistema di gestione</p>
+    <!-- Language selector for the login page -->
+    <label for="langSelect" style="display:none" id="langSelectLabel">Lingua</label>
+    <select id="langSelect" aria-label="Seleziona lingua" style="display:none;margin-bottom:16px;width:100%;padding:10px 12px;border-radius:8px;border:1px solid var(--card-border);background:var(--surface);color:var(--text);">
+      <option value="it">Italiano</option>
+      <option value="en">English</option>
+      <option value="fr">Français</option>
+      <option value="de">Deutsch</option>
+    </select>
+    <label id="labelEmail" for="email">Email</label>
+    <input id="email" type="email" placeholder="email@esempio.com" />
+    <label id="labelPassword" for="password">Password</label>
+    <input id="password" type="password" placeholder="Password" />
+    <button id="loginButton">Accedi</button>
+    <div class="demo-creds">
+      <p id="demoUsersHeading">Utenti demo per test:</p>
+      <table>
+        <tr><td class="label" id="roleRspp">RSPP:</td><td id="credRspp">rspp@demo.tpi / Passw0rd!23</td></tr>
+        <tr><td class="label" id="roleHse">HSE:</td><td id="credHse">hse@demo.tpi / Passw0rd!23</td></tr>
+        <tr><td class="label" id="roleDatore">Datore:</td><td id="credDatore">datore@demo.tpi / Passw0rd!23</td></tr>
+      </table>
+    </div>
+  </div>
+  <script>
+    /*
+     * Translations for the login page. Keys correspond to element IDs defined above.
+     * 'accendi' means 'Login' etc. Provide translation strings for supported languages.
+     */
+    const loginTranslations = {
+      it: {
+        loginTitle: 'TPI Dashboard',
+        loginSubtitle: 'Teufelberger Protezione Individuale\nAccedi al sistema di gestione',
+        labelEmail: 'Email',
+        labelPassword: 'Password',
+        loginButton: 'Accedi',
+        demoUsersHeading: 'Utenti demo per test:',
+        roleRspp: 'RSPP:',
+        roleHse: 'HSE:',
+        roleDatore: 'Datore:',
+        langSelectLabel: 'Lingua',
+        invalid: 'Credenziali non valide. Riprova.'
+      },
+      en: {
+        loginTitle: 'TPI Dashboard',
+        loginSubtitle: 'Teufelberger Personal Protection\nSign in to the management system',
+        labelEmail: 'Email',
+        labelPassword: 'Password',
+        loginButton: 'Sign in',
+        demoUsersHeading: 'Demo users for testing:',
+        roleRspp: 'RSPP:',
+        roleHse: 'HSE:',
+        roleDatore: 'Employer:',
+        langSelectLabel: 'Language',
+        invalid: 'Invalid credentials. Please try again.'
+      },
+      fr: {
+        loginTitle: 'Tableau de bord TPI',
+        loginSubtitle: 'Protection individuelle Teufelberger\nConnectez-vous au système de gestion',
+        labelEmail: 'E-mail',
+        labelPassword: 'Mot de passe',
+        loginButton: 'Se connecter',
+        demoUsersHeading: 'Utilisateurs de démonstration :',
+        roleRspp: 'RSPP :',
+        roleHse: 'HSE :',
+        roleDatore: 'Employeur :',
+        langSelectLabel: 'Langue',
+        invalid: 'Identifiants invalides. Veuillez réessayer.'
+      },
+      de: {
+        loginTitle: 'TPI-Dashboard',
+        loginSubtitle: 'Teufelberger Persönliche Schutzausrüstung\nMelden Sie sich beim Managementsystem an',
+        labelEmail: 'E-Mail',
+        labelPassword: 'Passwort',
+        loginButton: 'Anmelden',
+        demoUsersHeading: 'Demo-Benutzer zum Testen:',
+        roleRspp: 'RSPP:',
+        roleHse: 'HSE:',
+        roleDatore: 'Arbeitgeber:',
+        langSelectLabel: 'Sprache',
+        invalid: 'Ungültige Anmeldedaten. Bitte versuchen Sie es erneut.'
+      }
+    };
+    // Determine the default language from sessionStorage or browser
+    const savedLang = sessionStorage.getItem('language') || 'it';
+    const langSelect = document.getElementById('langSelect');
+    const langLabel = document.getElementById('langSelectLabel');
+    // Show language selector only when more than one language supported
+    langSelect.style.display = 'block';
+    langLabel.style.display = 'block';
+    langSelect.value = savedLang;
+    function applyLoginTranslations(lang) {
+      const t = loginTranslations[lang] || loginTranslations['it'];
+      document.getElementById('loginTitle').innerText = t.loginTitle;
+      // Subtitle may contain newline; replace with <br>
+      document.getElementById('loginSubtitle').innerHTML = t.loginSubtitle.replace(/\n/g, '<br>');
+      document.getElementById('labelEmail').innerText = t.labelEmail;
+      document.getElementById('labelPassword').innerText = t.labelPassword;
+      document.getElementById('loginButton').innerText = t.loginButton;
+      document.getElementById('demoUsersHeading').innerText = t.demoUsersHeading;
+      document.getElementById('roleRspp').innerText = t.roleRspp;
+      document.getElementById('roleHse').innerText = t.roleHse;
+      document.getElementById('roleDatore').innerText = t.roleDatore;
+      langLabel.innerText = t.langSelectLabel;
+    }
+    applyLoginTranslations(savedLang);
+    langSelect.addEventListener('change', function() {
+      const selected = langSelect.value;
+      sessionStorage.setItem('language', selected);
+      applyLoginTranslations(selected);
+    });
+    // Simple client-side login: validate credentials and redirect to the dashboard
+    const validCreds = {
+      'rspp@demo.tpi': 'Passw0rd!23',
+      'hse@demo.tpi': 'Passw0rd!23',
+      'datore@demo.tpi': 'Passw0rd!23'
+    };
+    document.getElementById('loginButton').addEventListener('click', function() {
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value;
+      const lang = sessionStorage.getItem('language') || 'it';
+      const t = loginTranslations[lang] || loginTranslations['it'];
+      if (validCreds[email] && validCreds[email] === password) {
+        sessionStorage.setItem('userEmail', email);
+        // Save the language to persist across pages
+        sessionStorage.setItem('language', lang);
+        window.location.href = 'index.html';
+      } else {
+        alert(t.invalid);
+      }
+    });
+  </script>
+</body>
+</html>
