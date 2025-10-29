@@ -1,0 +1,5 @@
+﻿name: Bug report
+labels: bug
+body:
+  - type: textarea
+    attributes: { label: Problema, description: Cosa non funziona }
