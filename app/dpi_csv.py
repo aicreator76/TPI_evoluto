@@ -1,18 +1,33 @@
-﻿from fastapi import APIRouter, UploadFile, File, Response
+﻿import os, time
+from fastapi import HTTPException
 
-router = APIRouter(prefix="/api/dpi/csv", tags=["dpi-csv"])
+MAX_BYTES = 5 * 1024 * 1024
+EXPECTED = HEADER.split(",")
 
-HEADER = "codice,descrizione,marca,modello,matricola,assegnato_a,data_inizio,data_fine,certificazione,scadenza,note"
+@router.post("/import")
+async def csv_import(file: UploadFile = File(...)):
+    raw = await file.read()
+    if len(raw) > MAX_BYTES:
+        raise HTTPException(status_code=413, detail="file_too_large")
 
-@router.get("/template")
-def csv_template():
-    return Response(
-        content="\ufeff" + HEADER + "\n",
-        media_type="text/csv; charset=utf-8",
-        headers={
-            "Content-Disposition": "attachment; filename=\"dpi_template.csv\"",
-            "Cache-Control": "no-store",
-        },
+    # salva il file grezzo (con BOM ripulito) per auditing
+    os.makedirs("data/imports", exist_ok=True)
+    ts = time.strftime("%Y%m%d-%H%M%S")
+    raw_path = f"data/imports/dpi_import_{ts}.csv"
+    with open(raw_path, "wb") as f:
+        f.write(raw)
+
+    text = raw.decode("utf-8-sig", errors="ignore").splitlines()
+    if not text:
+        return {"status": "ok", "rows": 0}
+
+    header = [h.strip() for h in text[0].split(",")]
+    if header != EXPECTED:
+        raise HTTPException(status_code=400, detail="bad_header")
+
+    rows = [r for r in text[1:] if r.strip()]
+    # TODO: parsing -> dict e persistenza DB
+    return {"status": "ok", "rows": len(rows), "file": raw_path}
     )
 
 @router.post("/import")
