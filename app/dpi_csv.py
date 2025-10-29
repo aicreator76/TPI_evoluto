@@ -1,19 +1,37 @@
-﻿from fastapi import APIRouter
-from fastapi.responses import StreamingResponse
-import io, csv
+﻿import os, time
+from fastapi import HTTPException
 
-router = APIRouter(prefix="/api/dpi/csv", tags=["dpi_csv"])
+MAX_BYTES = 5 * 1024 * 1024
+EXPECTED = HEADER.split(",")
 
-@router.get("/template")
-def get_template():
-    headers = ["codice","descrizione","marca","modello","matricola",
-               "assegnato_a","data_inizio","data_fine","certificazione","scadenza","note"]
-    buf = io.StringIO(newline="")
-    w = csv.DictWriter(buf, fieldnames=headers)
-    w.writeheader()
-    data = buf.getvalue().encode("utf-8-sig")  # BOM per Excel (compatibile Excel)
-    return StreamingResponse(
-        io.BytesIO(data),
-        media_type="text/csv",
-        headers={"Content-Disposition": 'attachment; filename="dpi_template.csv"'},
+@router.post("/import")
+async def csv_import(file: UploadFile = File(...)):
+    raw = await file.read()
+    if len(raw) > MAX_BYTES:
+        raise HTTPException(status_code=413, detail="file_too_large")
+
+    # salva il file grezzo (con BOM ripulito) per auditing
+    os.makedirs("data/imports", exist_ok=True)
+    ts = time.strftime("%Y%m%d-%H%M%S")
+    raw_path = f"data/imports/dpi_import_{ts}.csv"
+    with open(raw_path, "wb") as f:
+        f.write(raw)
+
+    text = raw.decode("utf-8-sig", errors="ignore").splitlines()
+    if not text:
+        return {"status": "ok", "rows": 0}
+
+    header = [h.strip() for h in text[0].split(",")]
+    if header != EXPECTED:
+        raise HTTPException(status_code=400, detail="bad_header")
+
+    rows = [r for r in text[1:] if r.strip()]
+    # TODO: parsing -> dict e persistenza DB
+    return {"status": "ok", "rows": len(rows), "file": raw_path}
     )
+
+@router.post("/import")
+async def csv_import(file: UploadFile = File(...)):
+    data = (await file.read()).decode("utf-8-sig", errors="ignore").splitlines()
+    rows = [r for r in data[1:] if r.strip()]
+    return {"status": "ok", "rows": len(rows)}
