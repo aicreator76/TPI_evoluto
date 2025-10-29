@@ -1,19 +1,22 @@
-﻿from fastapi import APIRouter
-from fastapi.responses import StreamingResponse
-import io, csv
+﻿from fastapi import APIRouter, UploadFile, File, Response
 
-router = APIRouter(prefix="/api/dpi/csv", tags=["dpi_csv"])
+router = APIRouter(prefix="/api/dpi/csv", tags=["dpi-csv"])
+
+HEADER = "codice,descrizione,marca,modello,matricola,assegnato_a,data_inizio,data_fine,certificazione,scadenza,note"
 
 @router.get("/template")
-def get_template():
-    headers = ["codice","descrizione","marca","modello","matricola",
-               "assegnato_a","data_inizio","data_fine","certificazione","scadenza","note"]
-    buf = io.StringIO(newline="")
-    w = csv.DictWriter(buf, fieldnames=headers)
-    w.writeheader()
-    data = buf.getvalue().encode("utf-8-sig")  # BOM per Excel (compatibile Excel)
-    return StreamingResponse(
-        io.BytesIO(data),
-        media_type="text/csv",
-        headers={"Content-Disposition": 'attachment; filename="dpi_template.csv"'},
+def csv_template():
+    return Response(
+        content="\ufeff" + HEADER + "\n",
+        media_type="text/csv; charset=utf-8",
+        headers={
+            "Content-Disposition": "attachment; filename=\"dpi_template.csv\"",
+            "Cache-Control": "no-store",
+        },
     )
+
+@router.post("/import")
+async def csv_import(file: UploadFile = File(...)):
+    data = (await file.read()).decode("utf-8-sig", errors="ignore").splitlines()
+    rows = [r for r in data[1:] if r.strip()]
+    return {"status": "ok", "rows": len(rows)}
