@@ -3,3 +3,8 @@
 *.pyo
 .venv/
 docs/chat_ready/src/.venv/
+__pycache__/
+*.pyc
+*.pyo
+dpi_template.csv
+data/imports/
