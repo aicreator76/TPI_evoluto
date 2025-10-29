@@ -8,3 +8,6 @@ __pycache__/
 *.pyo
 dpi_template.csv
 data/imports/
+uvicorn*.out
+uvicorn*.err
+mini_app.py
