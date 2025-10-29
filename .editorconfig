@@ -1,14 +1,6 @@
-﻿root = true
-
+root = true
 [*]
-end_of_line = crlf
-insert_final_newline = true
-charset = utf-8-bom
-indent_style = space
-indent_size = 2
-trim_trailing_whitespace = true
-
-[*.py]
-indent_size = 4
 end_of_line = lf
+insert_final_newline = true
 charset = utf-8
+trim_trailing_whitespace = true

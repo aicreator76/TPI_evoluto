@@ -1,0 +1,4 @@
+site_name: TPI_evoluto Docs
+theme: { name: material }
+nav:
+  - Home: docs/index.md
