@@ -1,8 +1,9 @@
-﻿name: Docs
+name: Docs
 on:
   push:
-    branches: [ "main" ]
-    paths: [ "docs/**", "mkdocs.yml" ]
+    branches: ["main"]
+    paths: ["docs/**","mkdocs.yml"]
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -12,7 +13,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+        with: { python-version: "3.11" }
       - run: pip install mkdocs mkdocs-material
       - run: mkdocs build --strict
