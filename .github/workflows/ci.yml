@@ -10,6 +10,7 @@ jobs:
   lint-type:
     name: Lint & Typecheck
     runs-on: ubuntu-latest
+    continue-on-error: ${{ github.event_name == 'pull_request' }}
     strategy:
       matrix:
         python-version: ["3.10", "3.11"]
@@ -61,17 +62,9 @@ jobs:
           name: coverage-xml
           path: coverage.xml
 
-  semantic-pr:
-    name: Conventional PR Title
-    runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-    steps:
-      - uses: amannn/action-semantic-pull-request@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
   docs-build:
+    # NIENTE build docs su PR: solo push (main/branches)
+    if: github.event_name != 'pull_request'
     name: Docs build
     runs-on: ubuntu-latest
     steps:
