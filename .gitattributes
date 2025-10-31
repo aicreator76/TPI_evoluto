@@ -1,1 +1,5 @@
 * text=auto eol=lf.secrets.baseline text eol=lf
+*.py text eol=lf
+.pre-commit-config.yaml text eol=lf
+ruff.toml text eol=lf
+.secrets.baseline text eol=lf
