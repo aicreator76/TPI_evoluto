@@ -49,3 +49,8 @@ curl -fS http://127.0.0.1:{PORT}/api/dpi/csv/template -o dpi_template.csv
 
 # Import (usa un CSV reale)
 curl -sS -F "file=@dpi_template.csv" http://127.0.0.1:{PORT}/api/dpi/csv/import
+
+[![CI](https://github.com/aicreator76/TPI_evoluto/actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
+[![Docs](https://github.com/aicreator76/TPI_evoluto/actions/workflows/docs.yml/badge.svg)](../../actions/workflows/docs.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+

@@ -1,0 +1,5 @@
+﻿name: Feature request
+labels: feat
+body:
+  - type: textarea
+    attributes: { label: Proposta, description: Cosa vuoi ottenere }

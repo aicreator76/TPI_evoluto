@@ -1,0 +1,47 @@
+﻿{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TPI Report v1",
+  "type": "object",
+  "required": ["rows_total","rows_ok","rows_skipped","rows_errors","errors","warnings","fixes","sha256","paths","timestamp"],
+  "properties": {
+    "rows_total": {"type":"integer","minimum":0},
+    "rows_ok": {"type":"integer","minimum":0},
+    "rows_skipped": {"type":"integer","minimum":0},
+    "rows_errors": {"type":"integer","minimum":0},
+    "errors": {
+      "type":"array",
+      "items":{"type":"object","properties":{
+        "code":{"type":"string"},
+        "row":{"type":["integer","null"],"minimum":0},
+        "field":{"type":["string","null"]},
+        "message":{"type":"string"}
+      }, "required":["code","message"]}
+    },
+    "warnings":{"type":"array","items":{"type":"string"}},
+    "fixes": {
+      "type":"array",
+      "items":{"type":"object","properties":{
+        "row":{"type":["integer","null"],"minimum":0},
+        "field":{"type":["string","null"]},
+        "action":{"type":"string"},
+        "old_value":{"type":["string","null"]},
+        "new_value":{"type":["string","null"]}
+      }, "required":["action"]}
+    },
+    "sha256":{"type":"string","pattern":"^[A-Fa-f0-9]{64}$"},
+    "paths":{"type":"object","properties":{
+      "raw_imported":{"type":"string"},
+      "clean":{"type":"string"},
+      "report":{"type":"string"}
+    }},
+    "columns_extra":{"type":"object","additionalProperties":{"type":"object"}},
+    "template_version":{"type":"string","const":"v1"},
+    "attempts":{"type":"integer","minimum":0},
+    "last_http_code":{"type":["integer","null"]},
+    "last_body_excerpt":{"type":["string","null"],"maxLength":256},
+    "corr_id":{"type":["string","null"]},
+    "duration_ms":{"type":["integer","null"],"minimum":0},
+    "mem_mb":{"type":["number","null"],"minimum":0},
+    "timestamp":{"type":"string","format":"date-time"}
+  }
+}

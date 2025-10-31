@@ -1,0 +1,3 @@
+﻿# Richiede approver su cartelle sensibili
+/data/cataloghi/*  @aicreator76
+/ops/*             @aicreator76
