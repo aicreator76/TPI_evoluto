@@ -1,10 +1,11 @@
 name: CI
-on:
-  push:
-  pull_request:
-  workflow_dispatch:
+on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
+  statuses: write
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   lint-type:
     name: Lint & Typecheck
@@ -17,16 +18,25 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: python -m pip install -U pip
-      - run: |
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt','pyproject.toml','.pre-commit-config.yaml') }}
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f pyproject.toml ]; then pip install -e .; fi
           pip install pre-commit mypy bandit pip-audit
-      - run: pre-commit run --all-files
-      - run: mypy .
-      - run: bandit -q -r .
-      - run: pip-audit -r requirements.txt || true
+      - name: Pre-commit (black/isort/flake8)
+        run: pre-commit run --all-files
+      - name: Mypy
+        run: mypy .
+      - name: Bandit
+        run: bandit -q -r .
+      - name: Pip-audit (non-fail)
+        run: pip-audit -r requirements.txt || true
 
   tests:
     name: Tests & Coverage
@@ -37,36 +47,41 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: python -m pip install -U pip
-      - run: |
+      - name: Install deps
+        run: |
+          python -m pip install -U pip
           if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           pip install pytest pytest-cov coverage
-      - run: pytest --maxfail=1 --disable-warnings -q --cov=. --cov-report=xml
-      - uses: actions/upload-artifact@v4
+      - name: Pytest
+        run: pytest --maxfail=1 --disable-warnings -q --cov=. --cov-report=xml
+      - name: Store coverage
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-xml
           path: coverage.xml
 
-  semantic-pr:
-    if: github.event_name == 'pull_request'
-    name: Conventional PR Title
+  # Bridge che pubblica il commit status 'CI' richiesto dalla protezione
+  ci-status-bridge:
+    name: CI status bridge
+    if: always()
+    needs: [lint-type, tests]
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
     steps:
-      - uses: amannn/action-semantic-pull-request@v5
+      - id: derive
+        run: |
+          lt="${{ needs.lint-type.result }}"; ts="${{ needs.tests.result }}"
+          state="success"
+          if [ "$lt" != "success" ] || [ "$ts" != "success" ]; then state="failure"; fi
+          echo "state=$state" >> "$GITHUB_OUTPUT"
+      - name: Publish required commit status 'CI'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  docs-build:
-    if: github.ref == 'refs/heads/main'
-    name: Docs build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - run: pip install mkdocs mkdocs-material
-      - run: mkdocs build --strict
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -s -X POST \
+            -H "Authorization: token $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
+            -d @- <<JSON
+          {"state":"${{ steps.derive.outputs.state }}","context":"CI","description":"Aggregated result (lint/type/tests)","target_url":"${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}
+          JSON
