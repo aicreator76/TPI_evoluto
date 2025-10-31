@@ -1,55 +1,37 @@
-﻿from fastapi import APIRouter, UploadFile, File, Response, HTTPException
-import os
-import datetime
+﻿import os, time
+from fastapi import HTTPException
 
-router = APIRouter(prefix="/api/dpi/csv", tags=["dpi-csv"])
-
-HEADER = "codice,descrizione,marca,modello,matricola,assegnato_a,data_inizio,data_fine,certificazione,scadenza,note"
-BOM = "\ufeff"
-MAX_BYTES = 5 * 1024 * 1024  # 5MB
-
-@router.get("/template")
-def csv_template():
-    # CSV "sicuro" per Excel/Windows: BOM UTF-8 + CRLF
-    content = BOM + HEADER + "\r\n"
-    return Response(
-        content=content,
-        media_type="text/csv; charset=utf-8",
-        headers={
-            "Content-Disposition": 'attachment; filename="dpi_template.csv"',
-            "Cache-Control": "no-store",
-        },
-    )
-
-def _ensure_dir(path: str):
-    os.makedirs(path, exist_ok=True)
+MAX_BYTES = 5 * 1024 * 1024
+EXPECTED = HEADER.split(",")
 
 @router.post("/import")
 async def csv_import(file: UploadFile = File(...)):
-    # Limite dimensione
     raw = await file.read()
     if len(raw) > MAX_BYTES:
-        raise HTTPException(status_code=413, detail="File too large (limit 5MB).")
+        raise HTTPException(status_code=413, detail="file_too_large")
 
-    # Audit su disco
-    save_dir = os.path.join("data", "imports")
-    _ensure_dir(save_dir)
-    ts = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
-    safe_name = os.path.basename(file.filename or "upload.csv")
-    audit_path = os.path.join(save_dir, f"{ts}-{safe_name}")
-    with open(audit_path, "wb") as f:
+    # salva il file grezzo (con BOM ripulito) per auditing
+    os.makedirs("data/imports", exist_ok=True)
+    ts = time.strftime("%Y%m%d-%H%M%S")
+    raw_path = f"data/imports/dpi_import_{ts}.csv"
+    with open(raw_path, "wb") as f:
         f.write(raw)
 
-    # Decodifica + normalizza righe
-    text = raw.decode("utf-8-sig", errors="ignore")
-    lines = [ln for ln in text.replace("\r\n", "\n").replace("\r", "\n").split("\n") if ln.strip() != ""]
-    if not lines:
+    text = raw.decode("utf-8-sig", errors="ignore").splitlines()
+    if not text:
         return {"status": "ok", "rows": 0}
 
-    # Verifica header
-    got_header = lines[0].strip()
-    if got_header != HEADER:
-        raise HTTPException(status_code=400, detail=f"Invalid header. Expected '{HEADER}' got '{got_header}'")
+    header = [h.strip() for h in text[0].split(",")]
+    if header != EXPECTED:
+        raise HTTPException(status_code=400, detail="bad_header")
 
-    rows = len(lines) - 1
-    return {"status": "ok", "rows": rows}
+    rows = [r for r in text[1:] if r.strip()]
+    # TODO: parsing -> dict e persistenza DB
+    return {"status": "ok", "rows": len(rows), "file": raw_path}
+    )
+
+@router.post("/import")
+async def csv_import(file: UploadFile = File(...)):
+    data = (await file.read()).decode("utf-8-sig", errors="ignore").splitlines()
+    rows = [r for r in data[1:] if r.strip()]
+    return {"status": "ok", "rows": len(rows)}
