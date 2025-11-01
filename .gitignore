@@ -36,3 +36,8 @@ Enterprise_STELLARE_Kit_*
 *.zip
 Enterprise_STELLARE_Kit_*
 
+
+artifacts/
+*.sarif
+pip-audit.json
+
