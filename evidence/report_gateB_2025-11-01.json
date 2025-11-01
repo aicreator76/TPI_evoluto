@@ -1,0 +1,20 @@
+﻿{
+    "when":  "2025-11-01T20:32:15",
+    "gate":  "B",
+    "base_url":  "http://localhost:8000",
+    "template":  {
+
+                 },
+    "import_dpi":  {
+
+                   },
+    "import_anc":  {
+
+                   },
+    "idempotence":  {
+
+                    },
+    "notes":  [
+                  "API non raggiungibile in questo momento; i CSV sono stati creati e tracciati."
+              ]
+}
