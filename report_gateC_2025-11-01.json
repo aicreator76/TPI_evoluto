@@ -1,0 +1,37 @@
+{
+    "when":  "2025-11-01",
+    "phase":  "DOPODOMANI",
+    "status":  "pass",
+    "actions_done":  [
+                         "CI workflow creato",
+                         "Coverage gate attivo",
+                         "SAST configurato",
+                         "Release Snapshot-OK pronta su main"
+                     ],
+    "evidence":  {
+                     "links":  [
+                                   "https://github.com/aicreator76/TPI_evoluto/actions"
+                               ],
+                     "samples":  [
+                                     "coverage.xml",
+                                     "bandit.txt"
+                                 ],
+                     "logs":  [
+
+                              ]
+                 },
+    "metrics":  {
+                    "coverage":  82.56
+                },
+    "risks_blockers":  [
+
+                       ],
+    "next_steps":  [
+                       "Merge PR 24 su main",
+                       "Verifica tag Snapshot-OK"
+                   ],
+    "asks":  [
+
+             ],
+    "correlationId":  ""
+}
