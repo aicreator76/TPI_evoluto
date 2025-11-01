@@ -54,3 +54,9 @@ curl -sS -F "file=@dpi_template.csv" http://127.0.0.1:{PORT}/api/dpi/csv/import
 [![Docs](https://github.com/aicreator76/TPI_evoluto/actions/workflows/docs.yml/badge.svg)](../../actions/workflows/docs.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+## Cataloghi (/v1/cataloghi)
+- GET  /v1/cataloghi/csv/template → XLSX (2 sheet: catalogo_dpi, catalogo_ancoraggi)
+- HEAD /v1/cataloghi/csv/template → 200 + MIME XLSX
+- POST /v1/cataloghi/csv/import   → multipart CSV/XLSX, upsert su 'codice'
+  - 200 {inserted, updated, skipped, invalid, rejectLog, correlationId, metrics}
+  - 400 header mancante / 413 oversize
