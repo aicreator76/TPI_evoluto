@@ -1,3 +1,4 @@
-﻿# Richiede approver su cartelle sensibili
-/data/cataloghi/*  @aicreator76
-/ops/*             @aicreator76
+﻿# Tutto richiede review del Sovrano
+*   @aicreator76
+# Workflow CI: richiedi anche @sistemianticaduta
+.github/workflows/*  @aicreator76 @sistemianticaduta
