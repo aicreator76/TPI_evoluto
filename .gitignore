@@ -11,3 +11,4 @@ data/imports/
 uvicorn*.out
 uvicorn*.err
 mini_app.py
+uvicorn*.log
