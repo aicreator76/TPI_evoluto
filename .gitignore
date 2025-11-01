@@ -28,3 +28,7 @@ app.db
 *.db
 *.sqlite
 *.sqlite3
+
+*.zip
+Enterprise_STELLARE_Kit_*
+
