@@ -1,0 +1,9 @@
+﻿security:
+  - changed-files:
+      - any-glob-to-any-file: ["**/SECURITY.md", ".github/workflows/codeql.yml", ".github/dependabot.yml"]
+automation:
+  - changed-files:
+      - any-glob-to-any-file: [".github/workflows/**", ".github/labeler.yml"]
+"GateA:pass":
+  - changed-files:
+      - any-glob-to-any-file: ["**/gateA_evidence_*.json", "**/GateA-*.json"]
