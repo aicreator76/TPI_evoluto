@@ -12,3 +12,9 @@
 ## Notes
 Link to artifacts (coverage, SARIF, audit): Attach CI run links here.
 
+
+## Checklist sicurezza
+- [ ] CI – Enterprise verde (lint/type/pytest/pip-audit/bandit/trivy)
+- [ ] CodeQL senza alert nuovi
+- [ ] SBOM generato al prossimo push su main
+- [ ] Nessun segreto nei diff
