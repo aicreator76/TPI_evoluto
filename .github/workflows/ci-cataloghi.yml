@@ -1,7 +1,8 @@
 ﻿name: CI Cataloghi
 
 on:
-  pull_request:
+  workflow_dispatch:
+pull_request:
     paths:
       - "app/**"
       - "tests/**"
@@ -25,7 +26,9 @@ permissions:
 jobs:
   ci:
     name: test-${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on:
+  workflow_dispatch:
+${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
@@ -38,7 +41,9 @@ jobs:
       - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version:
+  workflow_dispatch:
+"3.11"
 
       - name: Cache pip
         uses: actions/cache@v4
@@ -106,7 +111,9 @@ jobs:
     name: tag-and-release
     needs: [ci]
     if: github.ref == 'refs/heads/main' && needs.ci.result == 'success'
-    runs-on: ubuntu-latest
+    runs-on:
+  workflow_dispatch:
+ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -133,3 +140,4 @@ jobs:
             Notes: CI green (matrix), coverage≥70%, SAST pass, artifacts attached.
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
