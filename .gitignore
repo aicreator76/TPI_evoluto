@@ -29,19 +29,6 @@ app.db
 *.sqlite
 *.sqlite3
 
-*.zip
-Enterprise_STELLARE_Kit_*
-
-
-*.zip
-Enterprise_STELLARE_Kit_*
-
-
-artifacts/
-*.sarif
-pip-audit.json
-
-
 artifacts/
 *.sarif
 pip-audit.json

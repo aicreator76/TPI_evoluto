@@ -1,44 +1,37 @@
-import hashlib
-from typing import Iterable, Tuple
-from sqlalchemy.orm import Session
-from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+from sqlalchemy import select
 
 
-def _fp(*parts: str) -> str:
-    s = "|".join("" if p is None else str(p) for p in parts)
-    return hashlib.sha256(s.encode("utf-8")).hexdigest()[:64]
+def upsert_many(session, Model, rows):
+    # Colonne valide nel modello
+    cols = {c.name for c in Model.__table__.c}
+    key = "codice"
 
-
-def upsert_many(session: Session, model, rows: Iterable[dict]) -> Tuple[int, int, int]:
-    inserted = updated = skipped = 0
+    clean_rows = []
     for r in rows:
-        r = dict(r)
-        r["fingerprint"] = _fp(
-            r.get("codice"),
-            r.get("descrizione"),
-            r.get("categoria"),
-            r.get("prezzo_eur"),
-            r.get("url"),
-        )
-        stmt = sqlite_insert(model).values(r)
-        stmt = stmt.on_conflict_do_update(
-            index_elements=[model.codice],
-            set_={
-                "descrizione": stmt.excluded.descrizione,
-                "categoria": stmt.excluded.categoria,
-                "prezzo_eur": stmt.excluded.prezzo_eur,
-                "url": stmt.excluded.url,
-                "fingerprint": stmt.excluded.fingerprint,
-            },
-        )
-        session.execute(stmt)
-        current = session.get(model, r["codice"])
-        if current and current.fingerprint == r["fingerprint"]:
-            skipped += 1
+        if key not in r or not r[key]:
+            continue
+        clean_rows.append({k: r.get(k) for k in cols if k in r})
+
+    inserted = updated = skipped = 0
+    for r in clean_rows:
+        existing = session.execute(
+            select(Model).where(getattr(Model, key) == r[key])
+        ).scalar_one_or_none()
+
+        if existing is None:
+            session.add(Model(**r))
+            inserted += 1
         else:
-            # best-effort: se esisteva prima -> updated, altrimenti inserted
-            if current:
+            changed = False
+            for k in cols - {"id"}:
+                new_val = r.get(k, getattr(existing, k))
+                if getattr(existing, k) != new_val:
+                    setattr(existing, k, new_val)
+                    changed = True
+            if changed:
                 updated += 1
             else:
-                inserted += 1
+                skipped += 1
+
+    session.commit()
     return inserted, updated, skipped

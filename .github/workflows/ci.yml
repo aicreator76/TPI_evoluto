@@ -1,16 +1,12 @@
 ﻿name: CI
 on:
-  pull_request:
-    branches: [ main, feat/ci-enterprise ]
-  push:
-    branches: [ feat/ci-enterprise ]
+  pull_request: { branches: [ main, feat/ci-enterprise ] }
+  push:        { branches: [ feat/ci-enterprise ] }
 jobs:
   lint-type:
     name: Lint & Typecheck (${{ matrix.py }})
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        py: ["3.10","3.11"]
+    strategy: { matrix: { py: ["3.10","3.11"] }, fail-fast: false }
     steps:
       - run: echo "Legacy CI sostituita: controlli reali su 'CI – Enterprise'"; exit 0
   tests:
