@@ -1,14 +1,14 @@
 {
     "dpi":  {
-                "inserted":  null,
-                "updated":  null,
-                "invalid":  null,
+                "inserted":  1,
+                "updated":  0,
+                "invalid":  0,
                 "rejectLog":  null
             },
     "ancoraggi":  {
-                      "inserted":  null,
-                      "updated":  null,
-                      "invalid":  null,
+                      "inserted":  1,
+                      "updated":  0,
+                      "invalid":  0,
                       "rejectLog":  null
                   },
     "dq":  {
@@ -31,5 +31,5 @@
 
                                      ]
                   },
-    "correlationId":  null
+    "correlationId":  "e05e5172-6721-4904-8516-30782bacc12c"
 }
