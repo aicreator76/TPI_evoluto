@@ -1,0 +1,35 @@
+{
+    "dpi":  {
+                "inserted":  1,
+                "updated":  0,
+                "invalid":  0,
+                "rejectLog":  null
+            },
+    "ancoraggi":  {
+                      "inserted":  1,
+                      "updated":  0,
+                      "invalid":  0,
+                      "rejectLog":  null
+                  },
+    "dq":  {
+               "invalid_pct":  0,
+               "rules_violations":  [
+
+                                    ],
+               "reconciliation":  null
+           },
+    "queries":  {
+                    "by_category":  [
+
+                                    ],
+                    "top5_price":  [
+
+                                   ]
+                },
+    "artifacts":  {
+                      "db_samples":  [
+
+                                     ]
+                  },
+    "correlationId":  "e05e5172-6721-4904-8516-30782bacc12c"
+}

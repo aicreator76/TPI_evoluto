@@ -1,3 +1,7 @@
-﻿# Richiede approver su cartelle sensibili
-/data/cataloghi/*  @aicreator76
-/ops/*             @aicreator76
+﻿# Cataloghi: orchestratore + builder (sostituisci handle se necessario)
+app/cataloghi/*   @sistemianticaduta
+.github/*         @sistemianticaduta
+
+app/cataloghi/*   @sistemianticaduta @<secondo_handle_con_write>
+.github/*         @sistemianticaduta @<secondo_handle_con_write>
+
