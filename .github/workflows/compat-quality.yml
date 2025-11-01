@@ -4,16 +4,24 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ main ]
+    paths:
+      - "app/cataloghi/**"
+      - "samples/cataloghi/**"
+      - "evidence/**"
+      - ".github/workflows/compat-quality.yml"
   push:
-    branches: [ feat/cataloghi-v1 ]
+    branches: [ feat/cataloghi-variants-etl ]
+    paths:
+      - "app/cataloghi/**"
+      - "samples/cataloghi/**"
+      - "evidence/**"
+      - ".github/workflows/compat-quality.yml"
 
 jobs:
   quality:
     name: quality / ubuntu-latest / py${{ matrix.py }}
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix: { py: ["3.11","3.12"] }
+    strategy: { fail-fast: false, matrix: { py: ["3.11","3.12"] } }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,5 +34,5 @@ jobs:
           pip install ruff pytest pytest-cov || true
       - name: Lint
         run: ruff check . || true
-      - name: Tests
+      - name: Tests + Coverage (best effort)
         run: pytest -q --maxfail=1 --disable-warnings --cov=app.cataloghi --cov-report=xml || true
