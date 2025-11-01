@@ -1,3 +1,4 @@
+from fastapi import Response
 import io
 import csv
 import uuid
@@ -153,3 +154,13 @@ async def csv_import(
         "correlationId": cid,
         "metrics": {"duration_ms": dur_ms, "batch": len(valid)},
     }
+
+
+@router.head("/csv/template")
+def csv_template_head():
+    return Response(
+        status_code=200,
+        headers={
+            "content-type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        },
+    )
