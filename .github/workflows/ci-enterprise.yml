@@ -29,7 +29,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements-dev.txt ]; then
+  if [ -f requirements-dev.txt ]; then
   pip install -r requirements-dev.txt
+else
+  pip install ruff mypy pytest pytest-cov bandit pip-audit
+fi
 else
   pip install ruff mypy pytest pytest-cov bandit pip-audit
 fi
@@ -78,4 +82,5 @@ fi
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
+
 
