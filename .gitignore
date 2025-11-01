@@ -24,3 +24,7 @@ coverage.xml
 uvicorn*.out
 uvicorn*.err
 uvicorn*.log
+app.db
+*.db
+*.sqlite
+*.sqlite3
