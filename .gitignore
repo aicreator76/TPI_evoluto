@@ -41,3 +41,8 @@ artifacts/
 *.sarif
 pip-audit.json
 
+
+artifacts/
+*.sarif
+pip-audit.json
+
