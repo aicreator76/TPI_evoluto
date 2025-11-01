@@ -21,3 +21,6 @@ coverage.xml
 # editor/OS
 *.swp
 .DS_Store
+uvicorn*.out
+uvicorn*.err
+uvicorn*.log

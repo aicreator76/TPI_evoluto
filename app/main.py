@@ -1,4 +1,5 @@
-﻿import importlib
+from app.cataloghi.router import router as cataloghi_router
+import importlib
 import logging
 
 from fastapi import FastAPI
@@ -28,3 +29,6 @@ try_include_router()
 @app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+app.include_router(cataloghi_router)
