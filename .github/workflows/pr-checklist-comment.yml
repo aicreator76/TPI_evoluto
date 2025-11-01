@@ -1,0 +1,23 @@
+﻿name: PR Checklist Comment
+on:
+  pull_request_target:
+    types: [opened]
+permissions:
+  pull-requests: write
+jobs:
+  checklist:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            **Checklist condivisa (Orchestratore ↔ Builder)**
+
+            - [ ] CI verde (quality **3.11**; compat attivo finché la protection non punta ai job enterprise)
+            - [ ] Coverage conforme (target attuale **≥70%**; poi ↑ 90/92/95)
+            - [ ] SAST/Dependency audit (no High/Critical)
+            - [ ] Docs aggiornate e migrazioni (se toccate)
+            - [ ] 1 review approvata
+
+            _Auto‑merge squash arma la chiusura appena tutti i punti sono spuntati._
