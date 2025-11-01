@@ -1,0 +1,3 @@
+INFO:tpi.app:Router CSV registrato: /api/dpi/csv/*
+INFO:     Started server process [34516]
+INFO:     Uvicorn running on http://127.0.0.1:8011 (Press CTRL+C to quit)

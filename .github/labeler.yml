@@ -1,0 +1,15 @@
+﻿"type:docs":
+  - changed-files:
+      - any-glob-to-any-file: ["docs/**", "**/*.md"]
+"type:feat":
+  - changed-files:
+      - any-glob-to-any-file: ["app/**"]
+"owner:builder":
+  - changed-files:
+      - any-glob-to-any-file: ["app/**"]
+"owner:orchestrator":
+  - changed-files:
+      - any-glob-to-any-file: [".github/**"]
+"gate:sast":
+  - changed-files:
+      - any-glob-to-any-file: [".github/workflows/**", "pyproject.toml", "requirements*.txt"]
