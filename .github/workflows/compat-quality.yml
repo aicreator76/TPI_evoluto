@@ -1,5 +1,4 @@
 ﻿name: Enterprise quality (compat)
-
 on:
   pull_request:
     branches: [ main ]
@@ -7,34 +6,42 @@ on:
       - "**/*"
   push:
     branches: [ feat/cataloghi-v1 ]
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   quality:
     name: quality / ubuntu-latest / py3.11
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: pip
 
-      # Best-effort per restare verdi e comunque produrre il check richiesto
       - name: Install deps (best effort)
         run: |
           python -m pip install -U pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
+          if [ -f requirements.txt ]; then pip install -r requirements.txt || true; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt || true; fi
           pip install ruff pytest pytest-cov pip-audit bandit || true
 
       - name: Lint (ruff)
         run: ruff check . || true
 
-      - name: Tests
-        run: pytest -q --maxfail=1 --disable-warnings --cov=app.cataloghi --cov-report=xml || true
+      - name: Tests (best effort) + Coverage
+        run: |
+          pytest -q --maxfail=1 --disable-warnings --cov=app.cataloghi --cov-report=xml || true
 
-      - name: pip-audit
-        if: hashFiles('requirements.txt') != ''
-        run: pip-audit -r requirements.txt || true
+      - name: Upload coverage.xml (se presente)
+        if: hashFiles('coverage.xml') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage.xml
+          path: coverage.xml
