@@ -1,0 +1,26 @@
+﻿{
+    "when":  "2025-11-01",
+    "phase":  "OGGI",
+    "status":  "pass",
+    "evidence":  {
+                     "first_import":  {
+                                          "invalid":  0,
+                                          "skipped":  0,
+                                          "inserted":  2,
+                                          "updated":  0
+                                      },
+                     "second_import":  {
+                                           "invalid":  0,
+                                           "skipped":  2,
+                                           "inserted":  0,
+                                           "updated":  0
+                                       },
+                     "template_sheets":  null,
+                     "template_head":  "200 + correct MIME"
+                 },
+    "metrics":  {
+                    "duration_ms":  24,
+                    "batch":  2
+                },
+    "correlationId":  "1eeb380a-1348-4f7b-aa5e-6d3e8f2e2b6e"
+}
