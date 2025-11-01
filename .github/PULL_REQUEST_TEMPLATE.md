@@ -1,14 +1,16 @@
-# CI: Enterprise Gates
+﻿## Scopo
+<!-- breve descrizione -->
 
-## Checklist
-- [ ] CI runs on Ubuntu & Windows
-- [ ] Lint: ruff
-- [ ] Types: mypy (best-effort)
-- [ ] Tests: pytest + coverage.xml generated
-- [ ] Security: bandit + pip-audit
-- [ ] Trivy SARIF uploaded to Code Scanning
-- [ ] Templates, scripts, runbook present
+## Checklist (Agente B — Builder)
+- [ ] Test aggiornati/nuovi e verdi
+- [ ] Coverage invariata o ↑ (target >= 70% ora; step up successivi)
+- [ ] Migrazioni/Schema (se serve) + esempi dati
+- [ ] Docs aggiornate (endpoint/usage)
 
-## Notes
-Link to artifacts (coverage, SARIF, audit): Attach CI run links here.
+## Gate (Agente A — Orchestratore)
+- [ ] CI verde (quality 3.11, compat fino ad allineamento)
+- [ ] SAST/Dependency audit ok (no High/Critical)
+- [ ] SBOM e CodeQL (se attivi su repo)
+- [ ] 1 review approvata
 
+Closes #<issue>
