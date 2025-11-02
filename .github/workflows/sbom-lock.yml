@@ -1,4 +1,4 @@
-﻿name: sbom-lock
+name: sbom-lock
 on:
   push: { branches: ["main"] }
   pull_request:
