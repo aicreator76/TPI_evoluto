@@ -1,0 +1,20 @@
+﻿{
+    "when":  "2025-11-01T21:19:17",
+    "correlationId":  "ad1bcd72-0911-4d07-b4d4-21df9f912238",
+    "gate":  "B",
+    "base_url":  "http://localhost:8000",
+    "totals":  {
+                   "ancoraggi":  0,
+                   "dpi":  0
+               },
+    "import":  {
+
+               },
+    "idempotence":  {
+
+                    },
+    "notes":  [
+                  "Template HEAD non disponibile: Impossibile effettuare la connessione al server remoto.",
+                  "Import non eseguito: Impossibile effettuare la connessione al server remoto."
+              ]
+}

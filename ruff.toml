@@ -1,0 +1,8 @@
+﻿line-length = 100
+exclude = [
+  ".git",
+  ".venv", "venv", ".venv*", "venv*",
+  "**/site-packages/**",
+  "build", "dist", ".eggs",
+  "__pycache__", ".mypy_cache", ".pytest_cache"
+]

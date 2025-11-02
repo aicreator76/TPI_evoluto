@@ -1,37 +1,28 @@
-﻿import os, time
-from fastapi import HTTPException
+from fastapi import APIRouter, Request, Response
+import csv
+import io
 
-MAX_BYTES = 5 * 1024 * 1024
-EXPECTED = HEADER.split(",")
+# Router "contenitore" richiesto da app.main (include_router)
+router = APIRouter()
 
-@router.post("/import")
-async def csv_import(file: UploadFile = File(...)):
-    raw = await file.read()
-    if len(raw) > MAX_BYTES:
-        raise HTTPException(status_code=413, detail="file_too_large")
 
-    # salva il file grezzo (con BOM ripulito) per auditing
-    os.makedirs("data/imports", exist_ok=True)
-    ts = time.strftime("%Y%m%d-%H%M%S")
-    raw_path = f"data/imports/dpi_import_{ts}.csv"
-    with open(raw_path, "wb") as f:
-        f.write(raw)
+def _csv_router(prefix: str) -> APIRouter:
+    r = APIRouter(prefix=prefix, tags=["cataloghi"])
 
-    text = raw.decode("utf-8-sig", errors="ignore").splitlines()
-    if not text:
-        return {"status": "ok", "rows": 0}
+    @r.head("/template")
+    async def template_head():
+        return Response(status_code=204)
 
-    header = [h.strip() for h in text[0].split(",")]
-    if header != EXPECTED:
-        raise HTTPException(status_code=400, detail="bad_header")
+    @r.post("/import")
+    async def import_csv(request: Request):
+        raw = await request.body()
+        text = raw.decode("utf-8", errors="ignore")
+        rows = list(csv.DictReader(io.StringIO(text))) if text.strip() else []
+        return {"status": "ok", "rows": len(rows), "preview": rows[:3]}
 
-    rows = [r for r in text[1:] if r.strip()]
-    # TODO: parsing -> dict e persistenza DB
-    return {"status": "ok", "rows": len(rows), "file": raw_path}
-    )
+    return r
 
-@router.post("/import")
-async def csv_import(file: UploadFile = File(...)):
-    data = (await file.read()).decode("utf-8-sig", errors="ignore").splitlines()
-    rows = [r for r in data[1:] if r.strip()]
-    return {"status": "ok", "rows": len(rows)}
+
+# Compat: vecchio e nuovo path
+router.include_router(_csv_router("/v1/cataloghi/csv"))
+router.include_router(_csv_router("/api/dpi/csv"))
