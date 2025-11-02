@@ -1,25 +1,28 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, Request, Response
+import csv
+import io
 
+# Router "contenitore" richiesto da app.main (include_router)
 router = APIRouter()
 
-MAX_BYTES = 5 * 1024 * 1024
-HEADER = "id,code,desc"  # TODO: aggiorna allo schema reale
-EXPECTED = HEADER.split(",")
+
+def _csv_router(prefix: str) -> APIRouter:
+    r = APIRouter(prefix=prefix, tags=["cataloghi"])
+
+    @r.head("/template")
+    async def template_head():
+        return Response(status_code=204)
+
+    @r.post("/import")
+    async def import_csv(request: Request):
+        raw = await request.body()
+        text = raw.decode("utf-8", errors="ignore")
+        rows = list(csv.DictReader(io.StringIO(text))) if text.strip() else []
+        return {"status": "ok", "rows": len(rows), "preview": rows[:3]}
+
+    return r
 
 
-@router.post("/import")
-async def csv_import(file: UploadFile = File(...)):
-    raw = await file.read()
-    if len(raw) > MAX_BYTES:
-        raise HTTPException(status_code=413, detail="File troppo grande")
-
-    data = raw.decode("utf-8-sig", errors="ignore").splitlines()
-    if not data:
-        raise HTTPException(status_code=400, detail="CSV vuoto")
-
-    # Esempio di validazione header (abilita se vuoi)
-    # if data[0].strip() != HEADER:
-    #     raise HTTPException(status_code=400, detail="Header CSV non valido")
-
-    rows = [r for r in data[1:] if r.strip()]
-    return {"status": "ok", "rows": len(rows), "file": getattr(file, "filename", None)}
+# Compat: vecchio e nuovo path
+router.include_router(_csv_router("/v1/cataloghi/csv"))
+router.include_router(_csv_router("/api/dpi/csv"))
