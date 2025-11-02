@@ -1,0 +1,30 @@
+﻿name: sbom-lock
+on:
+  push: { branches: ["main"] }
+  pull_request:
+  schedule: [{ cron: "0 4 * * 1" }]
+permissions:
+  contents: read
+  actions: read
+  security-events: write
+jobs:
+  lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install pip-tools
+      - run: pip-compile -q --generate-hashes -o requirements.lock.txt requirements.txt
+      - uses: actions/upload-artifact@v4
+        with: { name: lockfile, path: requirements.lock.txt }
+  sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install cyclonedx-bom
+      - run: cyclonedx-py --format json --output sbom.json --requirements requirements.txt
+      - uses: actions/upload-artifact@v4
+        with: { name: sbom-cyclonedx, path: sbom.json }
