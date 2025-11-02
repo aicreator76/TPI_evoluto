@@ -21,3 +21,8 @@ coverage.xml
 # editor/OS
 *.swp
 .DS_Store
+logs/
+uvicorn.log
+evidence/
+data/cataloghi/imports/
+data/cataloghi/.tmp/
