@@ -1,9 +1,14 @@
-﻿[
-  {"id": 1, "codice": "DPI-001", "descrizione": "Casco protettivo", "taglia": "L", "stato": "attivo"},
-  {"id": 2, "codice": "DPI-002", "descrizione": "Guanti isolanti", "taglia": "M", "stato": "attivo"},
-  {"id": 3, "codice": "DPI-003", "descrizione": "Imbracatura anticaduta", "taglia": "UNI", "stato": "manutenzione"}
-<<<<<<< HEAD
+[
+  {
+    "codice": "X",
+    "descrizione": "Desc",
+    "prezzo": "",
+    "gruppo": "dpi"
+  },
+  {
+    "codice": "Y",
+    "descrizione": "Corda 12mm",
+    "prezzo": "19.90",
+    "gruppo": "anticaduta"
+  }
 ]
-=======
-]
->>>>>>> a92b547 (chore(savepoint): snapshot 2025-10-21)
