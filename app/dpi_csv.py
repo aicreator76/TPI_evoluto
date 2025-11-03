@@ -1,79 +1,109 @@
+# app/dpi_csv.py
 from __future__ import annotations
+
+import csv
+import io
+import json
+from pathlib import Path
+from typing import Any, Dict, List, Tuple
 
 from fastapi import APIRouter, Body
 from fastapi.responses import PlainTextResponse
-from pathlib import Path
-import csv, io, json
-from datetime import datetime
 
 router = APIRouter(prefix="/api/dpi/csv", tags=["csv"])
 
-# --- paths & storage helpers -------------------------------------------------
-ROOT = Path(__file__).resolve().parents[1]  # repo root
-DATA_DIR = ROOT / "data"
-IMPORTS_DIR = DATA_DIR / "cataloghi" / "imports"
-IMPORTS_DIR.mkdir(parents=True, exist_ok=True)
+# --- percorsi e util ---
+BASE = Path("data")
+CATALOGHI_DIR = BASE / "cataloghi"
+IMPORTS_DIR = CATALOGHI_DIR / "imports"
+ITEMS_JSON = BASE / "dpi_items.json"
 
-DPI_JSON = DATA_DIR / "dpi_items.json"
+for d in (BASE, CATALOGHI_DIR, IMPORTS_DIR):
+    d.mkdir(parents=True, exist_ok=True)
+if not ITEMS_JSON.exists():
+    ITEMS_JSON.write_text("[]", encoding="utf-8")
+
+FIELDS = ["codice", "descrizione", "prezzo", "gruppo"]
 
 
-def _load_json() -> list[dict]:
-    if not DPI_JSON.exists():
+def _load_json() -> List[Dict[str, str]]:
+    try:
+        return json.loads(ITEMS_JSON.read_text(encoding="utf-8"))
+    except Exception:
         return []
-    return json.loads(DPI_JSON.read_text(encoding="utf-8"))
 
 
-def _save_json(items: list[dict]) -> None:
-    DPI_JSON.write_text(
-        json.dumps(items, ensure_ascii=False, indent=2),
-        encoding="utf-8",
-    )
+def _save_json(items: List[Dict[str, str]]) -> None:
+    ITEMS_JSON.write_text(json.dumps(items, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def _merge_items(items: list[dict], rows: list[dict]) -> tuple[int, int]:
-    """Merge su chiave 'codice': aggiorna se esiste, altrimenti aggiunge."""
-    index = {it.get("codice", ""): i for i, it in enumerate(items)}
+def _merge_items(
+    existing: List[Dict[str, str]], incoming: List[Dict[str, str]]
+) -> Tuple[int, int]:
+    """
+    Merge by 'codice' (case-insensitive). Aggiorna se esiste, altrimenti append.
+    Ritorna: (updated_count, parsed_count)
+    """
+    index = { (it.get("codice") or "").strip().lower(): i for i, it in enumerate(existing) }
+
     updated = 0
-    for row in rows:
-        code = (row.get("codice") or "").strip()
-        if not code:
-            continue
-        if code in index:
-            items[index[code]] = {**items[index[code]], **row}
+    parsed = 0
+    for row in incoming:
+        parsed += 1
+        codice = (row.get("codice") or "").strip()
+        if not codice:
+            continue  # salta righe senza codice
+
+        key = codice.lower()
+        normalized = {
+            "codice": codice,
+            "descrizione": (row.get("descrizione") or "").strip(),
+            "prezzo": (row.get("prezzo") or "").strip(),
+            "gruppo": (row.get("gruppo") or "").strip(),
+        }
+
+        if key in index:
+            existing[index[key]].update(normalized)
             updated += 1
         else:
-            items.append(row)
-    return updated, len(rows)
+            existing.append(normalized)
+            index[key] = len(existing) - 1
+
+    return updated, parsed
 
 
-# --- endpoints ---------------------------------------------------------------
+# ---- Endpoints ----
 
-@router.get("/template", response_class=PlainTextResponse, summary="Header CSV di esempio")
-def template() -> str:
-    return "codice,descrizione,prezzo,gruppo\n"
+@router.get("/template", response_class=PlainTextResponse, summary="Restituisce l'header CSV")
+def template_csv() -> str:
+    return ",".join(FIELDS) + "\n"
 
 
-@router.post("/save", summary="Importa CSV e salva/aggiorna il catalogo")
-async def save_csv(raw: bytes = Body(..., media_type="text/csv")):
-    # 1) salva copia grezza del CSV importato
+@router.post("/save", summary="Importa CSV e salva nel catalogo")
+async def import_and_save_csv(raw: bytes = Body(..., media_type="text/csv")) -> Dict[str, Any]:
+    # salva anche una copia grezza in /data/cataloghi/imports/
+    from datetime import datetime
+
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     dest = IMPORTS_DIR / f"catalogo_{ts}.csv"
     dest.write_bytes(raw)
 
-    # 2) parse CSV (utf-8 con fallback)
-    text = raw.decode("utf-8", errors="replace")
+    # parse CSV in memoria (tollerante a BOM e fallback encoding)
+    try:
+        text = raw.decode("utf-8-sig")
+    except Exception:
+        text = raw.decode("latin-1", errors="replace")
+
     rdr = csv.DictReader(io.StringIO(text))
-    rows = [
-        {
+    rows: List[Dict[str, str]] = []
+    for r in rdr:
+        rows.append({
             "codice": (r.get("codice") or "").strip(),
             "descrizione": (r.get("descrizione") or "").strip(),
             "prezzo": (r.get("prezzo") or "").strip(),
             "gruppo": (r.get("gruppo") or "").strip(),
-        }
-        for r in rdr
-    ]
+        })
 
-    # 3) merge su JSON persistente
     items = _load_json()
     updated, parsed = _merge_items(items, rows)
     _save_json(items)
@@ -81,7 +111,7 @@ async def save_csv(raw: bytes = Body(..., media_type="text/csv")):
     return {
         "status": "ok",
         "saved": True,
-        "csv_path": str(dest.as_posix()),
+        "csv_path": str(dest).replace("\\", "/"),
         "rows_parsed": parsed,
         "updated_existing": updated,
         "total_items": len(items),
@@ -89,27 +119,21 @@ async def save_csv(raw: bytes = Body(..., media_type="text/csv")):
 
 
 @router.get("/catalogo", summary="Ritorna il catalogo DPI corrente (JSON)")
-def get_catalogo():
+def get_catalogo() -> Dict[str, Any]:
     items = _load_json()
     return {"count": len(items), "items": items}
 
 
 @router.get(
     "/export",
-    summary="Esporta il catalogo DPI in CSV",
     response_class=PlainTextResponse,
+    summary="Esporta catalogo corrente in CSV (text/csv)",
 )
-def export_catalogo_csv():
+def export_catalogo_csv() -> PlainTextResponse:
     items = _load_json()
-    fieldnames = ["codice", "descrizione", "prezzo", "gruppo"]
     buf = io.StringIO()
-    w = csv.DictWriter(buf, fieldnames=fieldnames, lineterminator="\n")
+    w = csv.DictWriter(buf, fieldnames=FIELDS)
     w.writeheader()
     for it in items:
-        w.writerow({k: it.get(k, "") for k in fieldnames})
+        w.writerow({k: (it.get(k) or "") for k in FIELDS})
     return PlainTextResponse(buf.getvalue(), media_type="text/csv")
-
-
-# Compat: vecchio+nuovo path
-router.include_router(_csv_router("/v1/cataloghi/csv"))
-router.include_router(_csv_router("/api/dpi/csv"))
