@@ -29,3 +29,25 @@ data/cataloghi/.tmp/
 
 # demo export
 /catalogo_export.csv
+## Test rapidi API (PowerShell)
+
+```powershell
+# Avvia server locale
+uvicorn app.main:app --reload
+
+# Esegui test end-to-end (version/health/import/export)
+.\tools\test_api.ps1
+Remove-Item alias:curl -ErrorAction SilentlyContinue
+Remove-Item alias:wget -ErrorAction SilentlyContinue
+
+## 2) Aggiungi CTA “Sostieni Camelot” in Home (enterprise++)
+```powershell
+Add-Content .\docs\index.md "`r`n[**Sostieni Camelot →**](fondi.md)"
+pre-commit run -a
+git add README.md docs/http/api-tests.http tools/test_api.ps1 docs/index.md
+git commit -m "docs+tools: test http, script PS one-click e note PowerShell; CTA fondi in Home"
+git push
+@'
+# Dati locali (non versionare)
+data/*.csv
+data/cataloghi/
