@@ -1,0 +1,9 @@
+{
+  "name": "TPI",
+  "short_name": "TPI",
+  "display": "standalone",
+  "start_url": "/TPI_evoluto/",
+  "background_color": "#ffffff",
+  "theme_color": "#3f51b5",
+  "icons": []
+}

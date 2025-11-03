@@ -56,12 +56,22 @@ curl -sS -F "file=@dpi_template.csv" http://127.0.0.1:{PORT}/api/dpi/csv/import
 
 <!-- AELIS: CSV API BADGE START -->
 [![CSV API](https://img.shields.io/badge/CSV%20API-ready-brightgreen?style=flat-square)](docs/http/api-tests.http)
+<<<<<<< HEAD
 [![Endpoints](https://img.shields.io/badge/Endpoints-5-blue?style=flat-square)](docs/http/api-tests.http)
 
 **Endpoints pronti**  
 `GET /api/dpi/csv/template` · `POST /api/dpi/csv/save` · `GET /api/dpi/csv/catalogo` · `GET /api/dpi/csv/export` · `POST /api/dpi/csv/import-file`
+=======
+[![Endpoints](https://img.shields.io/badge/Endpoints-4-blue?style=flat-square)](docs/http/api-tests.http)
+
+**Endpoints pronti**  
+`GET /api/dpi/csv/template` · `POST /api/dpi/csv/save` · `GET /api/dpi/csv/catalogo` · `GET /api/dpi/csv/export`
+>>>>>>> site/nov-2025-polish
 
 ➡️ Prove rapide: [docs/http/api-tests.http](docs/http/api-tests.http)
 <!-- AELIS: CSV API BADGE END -->
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> site/nov-2025-polish
