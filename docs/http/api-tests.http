@@ -1,9 +1,3 @@
-﻿
-GET CSV template
-
-GET http://127.0.0.1:8010/api/dpi/csv/template
-
-HEAD CSV template
-
-HEAD http://127.0.0.1:8010/api/dpi/csv/template
-
+### Export catalog (CSV)
+GET http://127.0.0.1:8000/api/dpi/csv/export
+Accept: text/csv
