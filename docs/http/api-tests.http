@@ -1,9 +1,17 @@
-﻿
-GET CSV template
+﻿### Template CSV
+GET http://127.0.0.1:8000/api/dpi/csv/template
 
-GET http://127.0.0.1:8010/api/dpi/csv/template
+### Save (example payload)
+POST http://127.0.0.1:8000/api/dpi/csv/save
+Content-Type: text/csv
 
-HEAD CSV template
+codice,descrizione,prezzo,gruppo
+X,Desc,,dpi
+Y,Corda 12mm,19.90,anticaduta
 
-HEAD http://127.0.0.1:8010/api/dpi/csv/template
+### Catalogo (JSON)
+GET http://127.0.0.1:8000/api/dpi/csv/catalogo
 
+### Export catalog (CSV)
+GET http://127.0.0.1:8000/api/dpi/csv/export
+Accept: text/csv

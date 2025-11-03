@@ -26,3 +26,6 @@ uvicorn.log
 evidence/
 data/cataloghi/imports/
 data/cataloghi/.tmp/
+
+# demo export
+/catalogo_export.csv
