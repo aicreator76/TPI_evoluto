@@ -57,15 +57,15 @@ curl -sS -F "file=@dpi_template.csv" http://127.0.0.1:{PORT}/api/dpi/csv/import
 <!-- AELIS: CSV API BADGE START -->
 [![CSV API](https://img.shields.io/badge/CSV%20API-ready-brightgreen?style=flat-square)](docs/http/api-tests.http)
 <<<<<<< HEAD
-[![Endpoints](https://img.shields.io/badge/Endpoints-9-blue?style=flat-square)](docs/http/api-tests.http)
+[![Endpoints](https://img.shields.io/badge/Endpoints-11-blue?style=flat-square)](docs/http/api-tests.http)
 
 **Endpoints pronti**  
-`GET /api/dpi/csv/template` · `POST /api/dpi/csv/save` · `GET /api/dpi/csv/catalogo` · `GET /api/dpi/csv/export?gruppo=...&columns=...` · `POST /api/dpi/csv/import-file` · `GET /api/dpi/csv/metrics` · `GET /healthz` · `GET /version` · `GET /metrics` · `POST /api/dpi/csv/import-file`
+`GET /api/dpi/csv/template` · `POST /api/dpi/csv/save` · `GET /api/dpi/csv/catalogo` · `GET /api/dpi/csv/export?gruppo=...&columns=...` · `POST /api/dpi/csv/import-file` · `GET /api/dpi/csv/metrics` · `GET /healthz` · `GET /version` · `GET /metrics` · `GET /api/dpi/csv/report.html` · `POST /api/dpi/csv/import-file`
 =======
-[![Endpoints](https://img.shields.io/badge/Endpoints-9-blue?style=flat-square)](docs/http/api-tests.http)
+[![Endpoints](https://img.shields.io/badge/Endpoints-11-blue?style=flat-square)](docs/http/api-tests.http)
 
 **Endpoints pronti**  
-`GET /api/dpi/csv/template` · `POST /api/dpi/csv/save` · `GET /api/dpi/csv/catalogo` · `GET /api/dpi/csv/export?gruppo=...&columns=...` · `POST /api/dpi/csv/import-file` · `GET /api/dpi/csv/metrics` · `GET /healthz` · `GET /version` · `GET /metrics`
+`GET /api/dpi/csv/template` · `POST /api/dpi/csv/save` · `GET /api/dpi/csv/catalogo` · `GET /api/dpi/csv/export?gruppo=...&columns=...` · `POST /api/dpi/csv/import-file` · `GET /api/dpi/csv/metrics` · `GET /healthz` · `GET /version` · `GET /metrics` · `GET /api/dpi/csv/report.html`
 >>>>>>> site/nov-2025-polish
 
 ➡️ Prove rapide: [docs/http/api-tests.http](docs/http/api-tests.http)
@@ -75,5 +75,6 @@ curl -sS -F "file=@dpi_template.csv" http://127.0.0.1:{PORT}/api/dpi/csv/import
 
 =======
 >>>>>>> site/nov-2025-polish
+
 
 

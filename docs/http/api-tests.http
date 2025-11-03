@@ -56,3 +56,9 @@ GET http://127.0.0.1:8000/api/dpi/csv/metrics
 
 ### Metrics (top-level)
 GET http://127.0.0.1:8000/metrics
+### Report HTML
+GET http://127.0.0.1:8000/api/dpi/csv/report.html?columns=listino
+
+### Export alias (short)
+GET http://127.0.0.1:8000/api/dpi/csv/export?columns=short
+Accept: text/csv
