@@ -47,3 +47,12 @@ Accept: text/csv
 GET http://127.0.0.1:8000/healthz
 
 GET http://127.0.0.1:8000/version
+### Export (colonne selezionate)
+GET http://127.0.0.1:8000/api/dpi/csv/export?columns=codice,prezzo
+Accept: text/csv
+
+### Metrics (router)
+GET http://127.0.0.1:8000/api/dpi/csv/metrics
+
+### Metrics (top-level)
+GET http://127.0.0.1:8000/metrics

@@ -4,7 +4,7 @@ import os
 import subprocess
 import logging
 from fastapi import FastAPI
-from app.dpi_csv import router as csv_router
+from app.dpi_csv import router as csv_router, compute_metrics as csv_compute_metrics
 
 log = logging.getLogger("tpi.app")
 
@@ -47,3 +47,8 @@ async def version():
         "version": app.version,
         "git": _git_short_sha() or os.getenv("GIT_SHA", "unknown"),
     }
+
+
+@app.get("/metrics", tags=["meta"])
+async def metrics():
+    return {"csv": csv_compute_metrics()}
