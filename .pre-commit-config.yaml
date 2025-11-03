@@ -1,16 +1,32 @@
-﻿repos:
+@'
+default_language_version:
+  python: python3
+
+repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.6.9
     hooks:
       - id: ruff
-        args: ["--fix"]
-      - id: ruff-format
+        name: ruff (lint+fix, repo-wide)
+        args: ["--fix", "."]
+        pass_filenames: false
+        always_run: true
+
   - repo: https://github.com/psf/black
-    rev: 24.10.0
+    rev: 24.8.0
     hooks:
       - id: black
+        name: black (format, repo-wide)
+        args: ["."]
+        pass_filenames: false
+        always_run: true
+
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
       - id: detect-secrets
-        args: ["--baseline", ".secrets.baseline"]
+        name: detect-secrets (baseline, repo-wide)
+        args: ["--baseline", ".secrets.baseline", "--all-files"]
+        pass_filenames: false
+        always_run: true
+'@ | Out-File -FilePath .\.pre-commit-config.yaml -Encoding UTF8 -Force
