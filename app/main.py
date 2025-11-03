@@ -1,13 +1,11 @@
-﻿import importlib
+import importlib
 import logging
-
 from fastapi import FastAPI
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("tpi.app")
 
 app = FastAPI()
-
 
 def try_include_router():
     try:
@@ -21,9 +19,7 @@ def try_include_router():
     except Exception as e:
         log.exception("Impossibile importare app.dpi_csv: %s", e)
 
-
 try_include_router()
-
 
 @app.get("/health")
 def health():
