@@ -15,3 +15,15 @@ GET http://127.0.0.1:8000/api/dpi/csv/catalogo
 ### Export catalog (CSV)
 GET http://127.0.0.1:8000/api/dpi/csv/export
 Accept: text/csv
+### Import file (multipart)
+# Esempio rapido con payload inline (alcuni client http supportano direttamente il file=)
+POST http://127.0.0.1:8000/api/dpi/csv/import-file
+Content-Type: multipart/form-data; boundary=BOUND
+
+--BOUND
+Content-Disposition: form-data; name="file"; filename="tmp_import.csv"
+Content-Type: text/csv
+
+codice,descrizione,prezzo,gruppo
+Z,Anticaduta prova,12.00,anticaduta
+--BOUND--
