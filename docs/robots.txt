@@ -1,0 +1,1 @@
+User-agent: *\nAllow: /\nSitemap: https://aicreator76.github.io/TPI_evoluto/sitemap.xml\n
