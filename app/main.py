@@ -1,25 +1,18 @@
-import importlib
+# app/main.py
 import logging
 from fastapi import FastAPI
 
+app = FastAPI()
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("tpi.app")
 
-app = FastAPI()
+try:
+    from app.dpi_csv import router as csv_router
+    app.include_router(csv_router)
+    log.info("Router CSV registrato: /api/dpi/csv/*")
+except Exception as e:
+    log.exception("Impossibile registrare router CSV: %s", e)
 
-def try_include_router():
-    try:
-        mod = importlib.import_module("app.dpi_csv")
-        router = getattr(mod, "router", None)
-        if router is None:
-            log.warning("app.dpi_csv importato ma 'router' non trovato")
-        else:
-            app.include_router(router)
-            log.info("Router CSV registrato: /api/dpi/csv/*")
-    except Exception as e:
-        log.exception("Impossibile importare app.dpi_csv: %s", e)
-
-try_include_router()
 
 @app.get("/health")
 def health():
