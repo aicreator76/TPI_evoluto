@@ -17,3 +17,7 @@ except Exception as e:
 @app.get("/health")
 def health():
     return {"status": "ok"}
+from routers import csv_import, csv_export_filtered, ops
+app.include_router(csv_import.router)
+app.include_router(csv_export_filtered.router)
+app.include_router(ops.router)
