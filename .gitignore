@@ -51,3 +51,6 @@ git push
 # Dati locali (non versionare)
 data/*.csv
 data/cataloghi/
+# Dati locali (non versionare)
+data/*.csv
+data/cataloghi/
