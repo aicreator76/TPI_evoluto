@@ -27,3 +27,23 @@ Content-Type: text/csv
 codice,descrizione,prezzo,gruppo
 Z,Anticaduta prova,12.00,anticaduta
 --BOUND--
+### Import file (multipart)
+POST http://127.0.0.1:8000/api/dpi/csv/import-file
+Content-Type: multipart/form-data; boundary=BOUND
+
+--BOUND
+Content-Disposition: form-data; name="file"; filename="tmp_import.csv"
+Content-Type: text/csv
+
+codice,descrizione,prezzo,gruppo
+Z,Anticaduta prova,12.00,anticaduta
+--BOUND--
+
+### Export filtrato
+GET http://127.0.0.1:8000/api/dpi/csv/export?gruppo=anticaduta
+Accept: text/csv
+
+### Meta
+GET http://127.0.0.1:8000/healthz
+
+GET http://127.0.0.1:8000/version
