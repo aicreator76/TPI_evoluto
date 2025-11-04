@@ -1,0 +1,21 @@
+﻿name: "Catalogo DPI – task"
+description: "Checklist e note per Catalogo DPI"
+title: "[Catalogo] "
+labels: ["catalogo","backend","frontend"]
+body:
+  - type: textarea
+    id: obiettivi
+    attributes:
+      label: Obiettivi
+      placeholder: "Es. pubblicare report.html, integrare Flutter, export con filtri…"
+    validations:
+      required: true
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Task
+      options:
+        - label: API pronte (/api/dpi/csv/*)
+        - label: Report HTML linkato in README
+        - label: Export filtrato (UI)
+        - label: Lista/Dettaglio Flutter

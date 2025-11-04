@@ -21,3 +21,6 @@
 - **INOX/Kanban** â€“ Schema ordini aperti per grandi clienti
 - **IKAR** â€“ Inserimento catalogo e lead tracking
 
+
+---
+[**Sostieni Camelot ?**](fondi.md) · [Privacy](legal/privacy.md) · [Cookie](legal/cookie.md)
