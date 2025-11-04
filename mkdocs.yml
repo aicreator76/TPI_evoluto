@@ -1,13 +1,5 @@
-nav:
-  - Home: index.md
-  - Roadmap: roadmap.md
-  - Moduli:
-      - DPI: moduli/dpi.md
-      - Impianti anticaduta: moduli/impianti.md
-      - INOX/Kanban: moduli/inox_kanban.md
-      - IKAR: moduli/ikar.md
-  - Download: download.md
-  - Contatti: contatti.md
-  - Legal:
-      - Privacy: legal/privacy.md
-      - Cookie: legal/cookie.md
+site_name: TPI evoluto
+theme:
+  name: material
+# …
+# (opzionale ma utile) forza file in UTF-8 quando generi contenuti in pipeline
