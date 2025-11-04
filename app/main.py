@@ -1,3 +1,4 @@
+from app.middleware_rate_limit import RateLimitMiddleware
 @'
 # app/main.py
 # ============================================================
