@@ -54,3 +54,8 @@ data/cataloghi/
 # Dati locali (non versionare)
 data/*.csv
 data/cataloghi/
+# Local artifacts (not versioned)
+/catalogo*.csv
+/export*.csv
+/tmp_import.csv
+/report.html

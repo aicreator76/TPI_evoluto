@@ -1,64 +1,21 @@
-﻿### Template CSV
-GET http://127.0.0.1:8000/api/dpi/csv/template
+﻿### Version
+GET http://127.0.0.1:8000/version
 
-### Save (example payload)
-POST http://127.0.0.1:8000/api/dpi/csv/save
-Content-Type: text/csv
-
-codice,descrizione,prezzo,gruppo
-X,Desc,,dpi
-Y,Corda 12mm,19.90,anticaduta
-
-### Catalogo (JSON)
-GET http://127.0.0.1:8000/api/dpi/csv/catalogo
-
-### Export catalog (CSV)
-GET http://127.0.0.1:8000/api/dpi/csv/export
-Accept: text/csv
-### Import file (multipart)
-# Esempio rapido con payload inline (alcuni client http supportano direttamente il file=)
-POST http://127.0.0.1:8000/api/dpi/csv/import-file
-Content-Type: multipart/form-data; boundary=BOUND
-
---BOUND
-Content-Disposition: form-data; name="file"; filename="tmp_import.csv"
-Content-Type: text/csv
-
-codice,descrizione,prezzo,gruppo
-Z,Anticaduta prova,12.00,anticaduta
---BOUND--
-### Import file (multipart)
-POST http://127.0.0.1:8000/api/dpi/csv/import-file
-Content-Type: multipart/form-data; boundary=BOUND
-
---BOUND
-Content-Disposition: form-data; name="file"; filename="tmp_import.csv"
-Content-Type: text/csv
-
-codice,descrizione,prezzo,gruppo
-Z,Anticaduta prova,12.00,anticaduta
---BOUND--
-
-### Export filtrato
-GET http://127.0.0.1:8000/api/dpi/csv/export?gruppo=anticaduta
-Accept: text/csv
-
-### Meta
+### Healthz
 GET http://127.0.0.1:8000/healthz
 
-GET http://127.0.0.1:8000/version
-### Export (colonne selezionate)
-GET http://127.0.0.1:8000/api/dpi/csv/export?columns=codice,prezzo
-Accept: text/csv
+### Import CSV (multipart)
+POST http://127.0.0.1:8000/api/dpi/csv/import-file
+Content-Type: multipart/form-data; boundary=WebKitFormBoundary
 
-### Metrics (router)
-GET http://127.0.0.1:8000/api/dpi/csv/metrics
+--WebKitFormBoundary
+Content-Disposition: form-data; name="file"; filename="catalogo.csv"
+Content-Type: text/csv
 
-### Metrics (top-level)
-GET http://127.0.0.1:8000/metrics
-### Report HTML
-GET http://127.0.0.1:8000/api/dpi/csv/report.html?columns=listino
+codice,descrizione,gruppo,nota
+DPI001,Casco base,HSE,ok
+DPI002,Imbracatura,OPS,ok
+--WebKitFormBoundary--
 
-### Export alias (short)
-GET http://127.0.0.1:8000/api/dpi/csv/export?columns=short
-Accept: text/csv
+### Export filtrato HSE
+GET http://127.0.0.1:8000/api/dpi/csv/export?gruppo=HSE
