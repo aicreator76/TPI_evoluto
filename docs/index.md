@@ -1,11 +1,11 @@
-# TPI — Tecnologia • Prevenzione • Innovazione
+﻿# TPI â€” Tecnologia â€¢ Prevenzione â€¢ Innovazione
 
 > **Suite enterprise** per DPI, impianti anticaduta e INOX.  
 > Progettata per Datore di lavoro, RSPP, HSE, Operatori e Revisori.
 
 [Scarica Demo Windows](download.md){ .md-button } [Scarica APK Android](download.md){ .md-button }
 
-## Perché TPI è enterprise
+## PerchÃ© TPI Ã¨ enterprise
 - Ruoli avanzati, tracciamento eventi, audit log
 - Export **PDF/Excel** e backup cifrati
 - Flussi **NFC** (solo HSE) e foto/video pre-uso con **geotag**
@@ -13,14 +13,14 @@
 - Multilingua (IT, DE/AT, DE, EN, ES, FR)
 
 !!! tip "Obiettivo del mese"
-    Rilascio **TPI v4.1 – IKAR–TECI** con roadmap visibile e KPI settimanali.
+    Rilascio **TPI v4.1 â€“ IKARâ€“TECI** con roadmap visibile e KPI settimanali.
 
 ## Moduli principali
-- **DPI** – Scadenze semaforo, notifiche 30/15/1, revisione con evidenze
-- **Impianti anticaduta** – Wizard indirizzo → satellite → Q&A
-- **INOX/Kanban** – Schema ordini aperti per grandi clienti
-- **IKAR** – Inserimento catalogo e lead tracking
+- **DPI** â€“ Scadenze semaforo, notifiche 30/15/1, revisione con evidenze
+- **Impianti anticaduta** â€“ Wizard indirizzo â†’ satellite â†’ Q&A
+- **INOX/Kanban** â€“ Schema ordini aperti per grandi clienti
+- **IKAR** â€“ Inserimento catalogo e lead tracking
 
 
 ---
-[**Sostieni Camelot ?**](fondi.md) � [Privacy](legal/privacy.md) � [Cookie](legal/cookie.md)
+[**Sostieni Camelot ?**](fondi.md) · [Privacy](legal/privacy.md) · [Cookie](legal/cookie.md)
