@@ -10,5 +10,17 @@
     "descrizione": "Corda 12mm",
     "prezzo": "19.90",
     "gruppo": "anticaduta"
+  },
+  {
+    "codice": "DEMO001",
+    "descrizione": "Casco base",
+    "prezzo": "29.90",
+    "gruppo": "HSE"
+  },
+  {
+    "codice": "DEMO002",
+    "descrizione": "Imbracatura X",
+    "prezzo": "79.00",
+    "gruppo": "anticaduta"
   }
 ]

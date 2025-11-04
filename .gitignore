@@ -59,3 +59,6 @@ data/cataloghi/
 /export*.csv
 /tmp_import.csv
 /report.html
+
+TPI_site_skeleton_Enterprise_*/
+site/
