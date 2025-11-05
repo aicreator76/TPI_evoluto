@@ -1,0 +1,128 @@
+name: Agent Snapshot
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Max items per categoria (PR/Issue/Run/Alerts)"
+        required: false
+        default: "30"
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: read
+  issues: read
+  security-events: read         # per code scanning (se abilitato)
+  dependabot-alerts: read       # per dependabot (se abilitato)
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (solo per avere repo context)
+        uses: actions/checkout@v4
+
+      - name: Ensure jq present
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y jq
+
+      - name: Collect data with gh
+        env:
+          LIMIT: ${{ inputs.limit }}
+          REPO_FULL: ${{ github.repository }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p agent_snapshot
+
+          echo "== Repo =="
+          gh api repos/$REPO_FULL > agent_snapshot/repo.json
+
+          echo "== PR open =="
+          gh pr list --state open --limit "$LIMIT" \
+            --json number,title,headRefName,labels,author,isDraft,url,createdAt,updatedAt \
+            > agent_snapshot/prs.json
+
+          echo "== Issues open =="
+          gh issue list --state open --limit "$LIMIT" \
+            --json number,title,labels,author,url,createdAt,updatedAt \
+            > agent_snapshot/issues.json
+
+          echo "== Last runs (any status) =="
+          gh run list --limit "$LIMIT" \
+            --json databaseId,name,workflowName,conclusion,status,event,headBranch,url,createdAt,updatedAt \
+            > agent_snapshot/runs.json
+
+          echo "== Dependabot alerts (best-effort) =="
+          gh api --paginate repos/$REPO_FULL/dependabot/alerts \
+            > agent_snapshot/dependabot.json || echo "[]" > agent_snapshot/dependabot.json
+
+          echo "== Code scanning alerts (best-effort) =="
+          gh api --paginate repos/$REPO_FULL/code-scanning/alerts \
+            > agent_snapshot/codeql.json || echo "[]" > agent_snapshot/codeql.json
+
+          echo "== Compose snapshot =="
+          jq -n \
+            --slurpfile repo agent_snapshot/repo.json \
+            --slurpfile prs agent_snapshot/prs.json \
+            --slurpfile issues agent_snapshot/issues.json \
+            --slurpfile runs agent_snapshot/runs.json \
+            --slurpfile dep agent_snapshot/dependabot.json \
+            --slurpfile cql agent_snapshot/codeql.json \
+            '{
+              collected_at: (now|todate),
+              repository: $repo[0],
+              counts: {
+                prs_open: ($prs[0] | length),
+                issues_open: ($issues[0] | length),
+                runs_listed: ($runs[0] | length),
+                dependabot_alerts: ($dep[0] | length),
+                code_scanning_alerts: ($cql[0] | length)
+              },
+              prs: $prs[0],
+              issues: $issues[0],
+              runs: $runs[0],
+              dependabot: $dep[0],
+              code_scanning: $cql[0]
+            }' > agent_snapshot/snapshot.json
+
+          echo "### Repo snapshot — $REPO_FULL" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Raccolta:** \$(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`json" >> $GITHUB_STEP_SUMMARY
+          jq '{collected_at, counts}' agent_snapshot/snapshot.json >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+
+          # Markdown sintetico per l’agente
+          {
+            echo "# Agent Snapshot"
+            echo ""
+            echo "- Repo: $REPO_FULL"
+            echo "- Collected: $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo ""
+            echo "## Counts"
+            jq -r '.counts | to_entries[] | "- \(.key): \(.value)"' agent_snapshot/snapshot.json
+            echo ""
+            echo "## Open PR (top $LIMIT)"
+            jq -r '.prs[] | "- [#\(.number)](\(.url)) \(.title) — `\(.headRefName)`"' agent_snapshot/snapshot.json
+            echo ""
+            echo "## Open Issues (top $LIMIT)"
+            jq -r '.issues[] | "- [#\(.number)](\(.url)) \(.title)"' agent_snapshot/snapshot.json
+            echo ""
+            echo "## Recent Runs (top $LIMIT)"
+            jq -r '.runs[] | "- \(.workflowName) [\(.status)/\(.conclusion)](\(.url)) — branch: `\(.headBranch)`"' agent_snapshot/snapshot.json
+            echo ""
+            echo "## Dependabot (count: $(jq '.dependabot|length' agent_snapshot/snapshot.json))"
+            jq -r '.dependabot[]? | "- \(.security_advisory.summary) — severity: \(.security_advisory.severity) — dep: \(.dependency.package.name)"' agent_snapshot/snapshot.json
+            echo ""
+            echo "## Code Scanning (count: $(jq '.code_scanning|length' agent_snapshot/snapshot.json))"
+            jq -r '.code_scanning[]? | "- \(.rule.id) — severity: \(.rule.severity) — state: \(.state) — [link](\(.html_url))"' agent_snapshot/snapshot.json
+          } > agent_snapshot/snapshot.md
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-snapshot
+          path: agent_snapshot
+          if-no-files-found: error
