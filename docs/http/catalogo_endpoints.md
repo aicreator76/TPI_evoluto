@@ -316,7 +316,7 @@ Non accettati: `€19.90`, `19.90€`, `19,90 EUR`
 - **Separatore CSV**: virgola (`,`)
 - **Line endings**: supporta CRLF, LF, mixed
 - **BOM**: gestito automaticamente (UTF-8-sig)
-- **Limite upload**: determinato dalla configurazione FastAPI (default ~2MB)
+- **Limite upload**: Configurabile in FastAPI (valore default specifico dipende dalla configurazione del server)
 - **Performance**: report.html limitato a 5000 righe max
 
 ---
