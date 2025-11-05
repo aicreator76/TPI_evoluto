@@ -1,4 +1,7 @@
 ﻿*.md      text eol=lf
-*.http    text eol=lf
+*.yml     text eol=lf
+*.yaml    text eol=lf
+*.py      text eol=lf
 *.csv     text eol=lf
 *.ps1     text eol=lf
+*.http    text eol=lf
