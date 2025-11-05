@@ -31,8 +31,11 @@ jobs:
 
       - name: pip-audit (High/Critical only)
         run: |
+          # Run pip-audit and save to JSON for artifact upload
           pip-audit --desc --severity high --format json > audit.json || true
-          pip-audit --desc --severity high
+          # Display results in logs (separate run for readability)
+          echo "=== pip-audit results (High/Critical only) ==="
+          pip-audit --desc --severity high || echo "Vulnerabilities found (see audit.json for details)"
         continue-on-error: true
 
       - name: Bandit (SAST)

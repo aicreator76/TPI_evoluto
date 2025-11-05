@@ -75,13 +75,13 @@ $rerunCount = 0
 foreach ($run in $runs) {
     try {
         Write-Host "  ⏳ Rerunning: $($run.workflowName) (ID: $($run.databaseId))" -ForegroundColor White
-        gh run rerun $run.databaseId --failed 2>&1 | Out-Null
+        $output = gh run rerun $run.databaseId --failed 2>&1
         
         if ($LASTEXITCODE -eq 0) {
             Write-Host "    ✓ Rerun queued successfully" -ForegroundColor Green
             $rerunCount++
         } else {
-            Write-Host "    ✗ Failed to rerun" -ForegroundColor Red
+            Write-Host "    ✗ Failed to rerun: $output" -ForegroundColor Red
         }
         
         # Small delay to avoid rate limiting
