@@ -1,5 +1,14 @@
-site_name: TPI evoluto
+site_url: https://aicreator76.github.io/TPI_evoluto/
+site_name: TPI_evoluto Docs
 theme:
   name: material
-# …
-# (opzionale ma utile) forza file in UTF-8 quando generi contenuti in pipeline
+plugins:
+  - search
+nav:
+  - Home: index.md
+  - Catalogo DPI:
+      - Overview: catalogo/index.md
+      - Endpoint HTTP: http/catalogo_endpoints.md
+      - Checklist Go Live: catalogo/checklist_go_live.md
+  - Frontend:
+      - Flutter TODO: frontend/catalogo_flutter_todo.md
