@@ -1,7 +1,0 @@
-﻿site_url: https://aicreator76.github.io/TPI_evoluto/
-site_name: TPI_evoluto Docs
-theme: { name: material }
-nav:
-  - Home: index.md
-  - Home: index.md
-
