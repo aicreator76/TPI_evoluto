@@ -1,0 +1,77 @@
+name: Rerun Failed Workflows
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_reruns:
+        description: 'Maximum number of failed runs to rerun'
+        required: false
+        default: '3'
+        type: string
+      branch:
+        description: 'Branch name (leave empty for current branch)'
+        required: false
+        default: ''
+        type: string
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  rerun-failed:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PowerShell
+        shell: bash
+        run: |
+          # Install PowerShell if not available
+          if ! command -v pwsh &> /dev/null; then
+            echo "PowerShell not found, installing..."
+            wget -q https://github.com/PowerShell/PowerShell/releases/download/v7.4.0/powershell_7.4.0-1.deb_amd64.deb
+            sudo dpkg -i powershell_7.4.0-1.deb_amd64.deb
+            sudo apt-get install -f -y
+          fi
+
+      - name: Install GitHub CLI
+        run: |
+          type -p gh >/dev/null || (
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            sudo apt update
+            sudo apt install gh -y
+          )
+
+      - name: Rerun failed workflows
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $maxReruns = [int]"${{ inputs.max_reruns }}"
+          $branch = "${{ inputs.branch }}"
+          if ([string]::IsNullOrWhiteSpace($branch)) {
+            $branch = "${{ github.ref_name }}"
+          }
+
+          Write-Host "Rerunning up to $maxReruns failed workflow runs on branch: $branch"
+
+          # Get failed workflow runs
+          $runs = gh run list --branch $branch --status failure --limit $maxReruns --json databaseId,name,conclusion | ConvertFrom-Json
+
+          if ($runs.Count -eq 0) {
+            Write-Host "No failed workflow runs found on branch $branch"
+            exit 0
+          }
+
+          Write-Host "Found $($runs.Count) failed run(s)"
+
+          foreach ($run in $runs) {
+            Write-Host "Rerunning workflow: $($run.name) (ID: $($run.databaseId))"
+            gh run rerun $run.databaseId --failed
+            Start-Sleep -Seconds 2
+          }
+
+          Write-Host "Rerun requests submitted for $($runs.Count) workflow(s)"

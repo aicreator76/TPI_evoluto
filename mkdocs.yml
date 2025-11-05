@@ -1,7 +1,42 @@
-﻿site_url: https://aicreator76.github.io/TPI_evoluto/
+site_url: https://aicreator76.github.io/TPI_evoluto/
 site_name: TPI_evoluto Docs
-theme: { name: material }
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+
+plugins:
+  - search
+  - git-revision-date-localized:
+      enable_creation_date: true
+
 nav:
   - Home: index.md
-  - Home: index.md
+  - Catalogo DPI:
+      - Overview: catalogo/index.md
+      - API Endpoints: http/catalogo_endpoints.md
+      - Go Live Checklist: catalogo/checklist_go_live.md
+      - Frontend TODO (Flutter): frontend/catalogo_flutter_todo.md
+  - Accessibilità: ACCESSIBILITY.md
+  - Aiuto: HELP.md
+  - Roadmap: roadmap.md
+  - Contatti: contatti.md
 
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
