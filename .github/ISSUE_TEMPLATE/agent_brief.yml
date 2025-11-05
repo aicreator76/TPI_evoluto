@@ -1,0 +1,31 @@
+name: "Agent Brief – Catalogo & CI"
+description: "Brief operativo per l'agente (obiettivi chiari, link, priorità)"
+title: "[Agent] "
+labels: ["agent","triage"]
+body:
+  - type: textarea
+    id: goals
+    attributes:
+      label: Obiettivi (short)
+      placeholder: "Es. portare in verde CI, pubblicare MkDocs, ripulire alert high/critical…"
+    validations:
+      required: true
+  - type: input
+    id: branch
+    attributes:
+      label: Branch di lavoro
+      placeholder: "feat/catalogo-save"
+  - type: textarea
+    id: links
+    attributes:
+      label: Link utili
+      placeholder: "PR aperte, Pages URL, workflow, dashboard run…"
+  - type: checkboxes
+    id: tasks
+    attributes:
+      label: Task rapidi
+      options:
+        - label: Raccogli snapshot (workflow Agent Snapshot)
+        - label: Apri/aggiorna PR con fix
+        - label: Verifica Pages on-line
+        - label: Chiudi issue/PR obsolete
