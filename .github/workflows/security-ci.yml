@@ -1,0 +1,57 @@
+name: Security CI
+
+on:
+  push:
+    branches: [ feat/catalogo-save ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  pip-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install project (best effort)
+        run: |
+          python -m pip install --upgrade pip
+          pip install . || true
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      # Se hai un requirements.txt, aggiungi:  pip-audit -r requirements.txt -f json -o audit.json || true
+      - name: Audit deps (JSON)
+        run: pip-audit -f json -o audit.json || true
+
+      - name: Fail only on HIGH/CRITICAL
+        run: |
+          python - <<'PY'
+          import json, sys
+          data = json.load(open("audit.json"))
+          vulns = []
+          for v in data:
+              sev = (v.get("severity") or "UNKNOWN").upper()
+              if sev in {"HIGH", "CRITICAL"}:
+                  vulns.append(v)
+          if vulns:
+              print("High/Critical vulnerabilities found:")
+              for v in vulns:
+                  print(f"- {v.get('id')} {v.get('severity')} {v.get('advisory','')[:120]}")
+              sys.exit(1)
+          PY
+
+      - name: SARIF (for dashboard)
+        run: pip-audit -f sarif -o audit.sarif || true
+
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: audit.sarif
