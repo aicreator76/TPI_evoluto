@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException
 from typing import List, Dict, Optional
 from pathlib import Path
 import csv

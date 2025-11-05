@@ -1,4 +1,4 @@
-﻿# Catalogo DPI – Go Live (bozza)
+# Catalogo DPI – Go Live (bozza)
 Questa sezione raccoglie materiali per pubblicare e usare il catalogo online.
 
 ## Cosa conterrà

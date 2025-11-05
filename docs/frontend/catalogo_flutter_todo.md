@@ -1,4 +1,4 @@
-﻿# Integrazione Flutter – Catalogo
+# Integrazione Flutter – Catalogo
 ## Endpoints utili
 - GET /api/dpi/csv/catalogo
 - GET /api/dpi/csv/export?gruppo=...&columns=...

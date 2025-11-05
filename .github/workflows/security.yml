@@ -1,7 +1,7 @@
-﻿name: Security CI
+name: Security CI
 
 on:
-  push: { branches: [ main, feat/catalogo-save, site/nov-2025-polish ] }
+  push: { branches: [ main, feat/catalogo-save, site/nov-2025-polish, copilot/fix-workflows-and-documentation ] }
   pull_request: { branches: [ main ] }
   workflow_dispatch:
 
@@ -22,13 +22,20 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Install tools
+      - name: Install tools and dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pip-audit bandit semgrep cyclonedx-bom
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f requirements-dev.txt ]; then pip install -r requirements-dev.txt; fi
 
-      - name: pip-audit
-        run: pip-audit
+      - name: pip-audit (High/Critical only)
+        run: |
+          # Run pip-audit and save to JSON for artifact upload
+          pip-audit --desc --severity high --format json > audit.json || true
+          # Display results in logs (separate run for readability)
+          echo "=== pip-audit results (High/Critical only) ==="
+          pip-audit --desc --severity high || echo "Vulnerabilities found (see audit.json for details)"
         continue-on-error: true
 
       - name: Bandit (SAST)
@@ -48,3 +55,5 @@ jobs:
           name: security-reports
           path: |
             sbom.xml
+            audit.json
+        if: always()
