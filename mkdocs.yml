@@ -40,3 +40,6 @@ markdown_extensions:
   - attr_list
   - md_in_html
   - tables
+
+exclude_docs: |
+  catalogo/README.md
