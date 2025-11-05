@@ -1,4 +1,4 @@
-﻿# app/middleware_security.py
+# app/middleware_security.py
 from __future__ import annotations
 from uuid import uuid4
 from starlette.types import ASGIApp, Receive, Scope, Send
