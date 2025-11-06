@@ -1,4 +1,4 @@
-﻿name: Docs CI
+name: Docs CI
 on:
   push: { branches: [ feat/catalogo-save, site/nov-2025-polish ] }
   pull_request: { branches: [ main ] }

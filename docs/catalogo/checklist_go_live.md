@@ -1,4 +1,4 @@
-# Checklist Go Live – Catalogo Online
+# Checklist Go Live â€“ Catalogo Online
 - [ ] Report HTML disponibile e linkato
 - [ ] Export filtrato (gruppo/columns) testato
 - [ ] Import CSV (UploadFile) validato

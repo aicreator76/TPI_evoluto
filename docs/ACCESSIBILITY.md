@@ -1,9 +1,9 @@
-# Linee guida accessibilitÃ  (WCAG quick)
+# Linee guida accessibilitÃƒÂ  (WCAG quick)
 
-- Contrasto testo â‰¥ 4.5:1 (usa colori brand + verifica contrasto).
+- Contrasto testo Ã¢â€°Â¥ 4.5:1 (usa colori brand + verifica contrasto).
 - Focus visibile: `:focus-visible` su link e bottoni.
 - Semantica: `aria-label`, `role` per componenti custom; titoli gerarchici.
-- Tastiera: tutti i controlli tab-navigabili; niente â€œkeyboard trapâ€.
+- Tastiera: tutti i controlli tab-navigabili; niente Ã¢â‚¬Å“keyboard trapÃ¢â‚¬Â.
 - Motion: rispetta `prefers-reduced-motion`.
 - Alt testuale: immagini con `alt` descrittivo; icone decorative con `aria-hidden="true"`.
 

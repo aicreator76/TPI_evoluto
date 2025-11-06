@@ -1,4 +1,4 @@
-# Piano novembre TPI — Cabina di Regia (AELIS)
+# Piano novembre TPI â€” Cabina di Regia (AELIS)
 
 ## Stato attuale
 - CSV catalogo **OK**: template/save/catalogo/export operativi
@@ -12,10 +12,10 @@
 - Export:    Invoke-WebRequest http://127.0.0.1:8000/api/dpi/csv/export -OutFile .\catalogo_export.csv
 
 ## Prossime mosse (AELIS Orchestrator)
-1. Badge in README ✅
-2. Chiudere PR #42 (auto-merge) ✅ in attesa dei check
+1. Badge in README âœ…
+2. Chiudere PR #42 (auto-merge) âœ… in attesa dei check
 3. Preparare **route /import-file** (UploadFile) + validazioni soft
 4. Esporti aggiuntivi: CSV per gruppi e price-list
-5. Docs: mini sezione “Cataloghi DPI” (uso da desktop e da CI)
+5. Docs: mini sezione â€œCataloghi DPIâ€ (uso da desktop e da CI)
 
-— AELIS
+â€” AELIS

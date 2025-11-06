@@ -1,4 +1,4 @@
-﻿## Sicurezza & Deploy
+## Sicurezza & Deploy
 
 [![Security CI](https://github.com/aicreator76/TPI_evoluto/actions/workflows/security.yml/badge.svg)](https://github.com/aicreator76/TPI_evoluto/actions/workflows/security.yml)
 [![Pages](https://github.com/aicreator76/TPI_evoluto/actions/workflows/pages.yml/badge.svg)](https://github.com/aicreator76/TPI_evoluto/actions/workflows/pages.yml)

@@ -1,4 +1,4 @@
-﻿# Endpoint HTTP — Catalogo DPI
+# Endpoint HTTP — Catalogo DPI
 
 - `GET /api/dpi/csv/template`
 - `POST /api/dpi/csv/save` (Body: text/csv)

@@ -347,7 +347,7 @@ def report_html(
 
     html = f"""<!doctype html>
 <html lang="it"><meta charset="utf-8">
-<title>Catalogo DPI – Report</title>
+<title>Catalogo DPI â€“ Report</title>
 <style>
 body{{font-family:system-ui,Segoe UI,Arial,sans-serif;margin:24px}}
 .card{{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:16px}}
@@ -360,13 +360,13 @@ th{{background:#f8fafc}}
 </style>
 <div class="card">
   <h1>Report Catalogo DPI <span class="badge">{len(items)} elementi</span></h1>
-  <div class="small">Colonne: {", ".join(cols)}{(" · Filtro gruppo: " + esc(gruppo)) if gruppo else ""}</div>
+  <div class="small">Colonne: {", ".join(cols)}{(" Â· Filtro gruppo: " + esc(gruppo)) if gruppo else ""}</div>
 </div>
 <div class="card">
   <h2>Metriche</h2>
   <ul>
     <li>Totale: {metrics["total_items"]}</li>
-    <li>Con prezzo: {metrics["price_filled"]} · Senza prezzo: {metrics["price_missing"]}</li>
+    <li>Con prezzo: {metrics["price_filled"]} Â· Senza prezzo: {metrics["price_missing"]}</li>
     <li>Per gruppo:</li>
   </ul>
   <ul>{by_group_html}</ul>

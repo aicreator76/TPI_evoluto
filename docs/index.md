@@ -1,4 +1,4 @@
-﻿# TPI_evoluto Docs
+# TPI_evoluto Docs
 
 ## Catalogo DPI – Go Live
 - Router CSV: `/api/dpi/csv/{template,save,catalogo,export,import-file,metrics,report.html}`

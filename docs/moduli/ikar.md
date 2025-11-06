@@ -1,4 +1,4 @@
 # Modulo IKAR
 
-- Catalogo DPI di qualitÃ 
+- Catalogo DPI di qualitÃƒÂ 
 - Gestione lead e offerte

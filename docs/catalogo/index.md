@@ -1,4 +1,4 @@
-﻿# Catalogo DPI — Overview
+# Catalogo DPI — Overview
 
 ### Endpoint principali
 - `GET /api/dpi/csv/template`

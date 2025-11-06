@@ -48,6 +48,6 @@ jobs:
         run: |
           set -e
           if git grep -Il $'\xEF\xBB\xBF' -- . | grep -q .; then
-            echo "BOM detected"; git grep -Il $'\xEF\xBB\xBF' -- .; exit 1; else echo "No BOM ✓"; fi
+            echo "BOM detected"; git grep -Il $'\xEF\xBB\xBF' -- .; exit 1; else echo "No BOM âœ“"; fi
           if git grep -Il $'\r' -- . | grep -q .; then
-            echo "CRLF detected"; git grep -Il $'\r' -- .; exit 1; else echo "No CRLF ✓"; fi
+            echo "CRLF detected"; git grep -Il $'\r' -- .; exit 1; else echo "No CRLF âœ“"; fi

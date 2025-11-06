@@ -1,4 +1,4 @@
-﻿name: Rerun failed workflows
+name: Rerun failed workflows
 on:
   workflow_dispatch:
     inputs:

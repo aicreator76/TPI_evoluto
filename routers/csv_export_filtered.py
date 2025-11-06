@@ -10,7 +10,7 @@ router = APIRouter(tags=["CSV"])
 
 @router.get(
     "/api/dpi/csv/export",
-    summary="Esporta catalogo DPI (CSV) – filtro gruppo opzionale",
+    summary="Esporta catalogo DPI (CSV) â€“ filtro gruppo opzionale",
 )
 def export_csv(gruppo: Optional[str] = None):
     p = Path("data/catalogo.csv")

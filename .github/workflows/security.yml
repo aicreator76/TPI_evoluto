@@ -1,4 +1,4 @@
-﻿name: Security CI
+name: Security CI
 
 on:
   push: { branches: [ main, feat/catalogo-save, site/nov-2025-polish ] }

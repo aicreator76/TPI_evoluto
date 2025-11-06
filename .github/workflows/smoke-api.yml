@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      # Installa dipendenze in modalità "best effort" (non blocca lo smoke)
+      # Installa dipendenze in modalitÃ  "best effort" (non blocca lo smoke)
       - name: Install deps
         run: |
           pip install -r requirements.txt || true

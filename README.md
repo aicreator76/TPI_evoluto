@@ -1,4 +1,4 @@
-﻿# TPI_evoluto
+# TPI_evoluto
 ![CI](https://github.com/aicreator76/TPI_evoluto/actions/workflows/ci.yml/badge.svg)
 
 ## TPI / AELIS â€“ Dashboard & Agenti (#7 Operativo, #8 Ordini DPI)
