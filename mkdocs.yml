@@ -4,16 +4,16 @@ edit_uri: blob/main/docs/
 
 theme:
   name: material
+
+
+
+
   features:
     - navigation.tabs
     - navigation.sections
-    - content.code.copy
-
-nav:
-  - Home: index.md
-  - Catalogo DPI:
-    - "Catalogo DPI – Go Live": catalogo-dpi-go-live.md
+@@ -18,3 +16,4 @@ nav:
   - API:
     - OpenAPI: openapi.md
     - "Schema (JSON)": openapi.json
+
 
