@@ -7,8 +7,7 @@ plugins:
 nav:
   - Home: index.md
   - Catalogo DPI:
-      - Overview: catalogo/index.md
-      - Endpoint HTTP: http/catalogo_endpoints.md
-      - Checklist Go Live: catalogo/checklist_go_live.md
-  - Frontend:
-      - Flutter TODO: frontend/catalogo_flutter_todo.md
+    - Overview: catalogo/index.md
+    - Endpoint HTTP: http/catalogo_endpoints.md
+    - Checklist Go Live: catalogo/checklist_go_live.md
+    - Frontend Flutter TODO: frontend/catalogo_flutter_todo.md
