@@ -1,36 +1,53 @@
-﻿name: Python CI
+name: Python CI
+
 on:
   push:
     branches: [ feat/catalogo-save ]
+    paths:
+      - "**/*.py"
+      - "requirements*.txt"
+      - ".github/workflows/python-ci.yml"
+      - "tests/**"
   pull_request:
+  workflow_dispatch:
+
 permissions:
   contents: read
+
 jobs:
-  ci:
+  lint-test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.10','3.11']
+        python-version: [ "3.10", "3.11" ]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: actions/cache@v4
+      - name: Cache pip
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
-          restore-keys: ${{ runner.os }}-pip-
-      - name: Install deps (best-effort)
+          restore-keys: |
+            ${{ runner.os }}-pip-
+      - name: Install deps
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt || true
           pip install ruff black pytest
-      - name: Lint & Format
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Ruff (fix)
+        run: ruff check --fix .
+      - name: Black (check)
+        run: black --check .
+      - name: Tests (if present)
         run: |
-          ruff check --fix .
-          ruff format .
-          black --check .
-      - name: Tests
+          if [ -d tests ]; then pytest -q; else echo "No tests/ dir"; fi
+      - name: BOM/EOL gate
         run: |
-          pytest -q || true
+          set -e
+          if git grep -Il $'\xEF\xBB\xBF' -- . | grep -q .; then
+            echo "BOM detected"; git grep -Il $'\xEF\xBB\xBF' -- .; exit 1; else echo "No BOM ✓"; fi
+          if git grep -Il $'\r' -- . | grep -q .; then
+            echo "CRLF detected"; git grep -Il $'\r' -- .; exit 1; else echo "No CRLF ✓"; fi
