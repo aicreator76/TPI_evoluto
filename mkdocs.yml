@@ -4,8 +4,31 @@ theme:
   name: material
 plugins:
   - search
+  - git-revision-date-localized:
+      fallback_to_build_date: true
+strict: true
+
 nav:
   - Home: index.md
-  - Catalogo:
-    - Overview: catalogo/index.md
-    - Endpoint HTTP: http/catalogo_endpoints.md
+  - Catalogo DPI:
+      - Overview: catalogo/index.md
+      - Endpoint HTTP: http/catalogo_endpoints.md
+      - Checklist Go Live: catalogo/checklist_go_live.md
+      - Flutter TODO: frontend/catalogo_flutter_todo.md
+  - Sezioni:
+      - DPI: moduli/dpi.md
+      - IKAR: moduli/ikar.md
+      - Impianti: moduli/impianti.md
+      - Inox Kanban: moduli/inox_kanban.md
+  - Legal:
+      - Privacy: legal/privacy.md
+      - Cookie: legal/cookie.md
+  - Info:
+      - ACCESSIBILITY: ACCESSIBILITY.md
+      - HELP: HELP.md
+      - Handover AELIS Orchestrator: Handover_AELIS_Orchestrator.md
+      - Contatti: contatti.md
+      - Download: download.md
+      - Fondi: fondi.md
+      - Roadmap: roadmap.md
+      - Piano Novembre 2025: piani/2025-11_piano-novembre-TPI.md
