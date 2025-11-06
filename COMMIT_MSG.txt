@@ -1,0 +1,4 @@
+fix(yaml): valid ISSUE_TEMPLATE/config.yml (stop check-yaml loop)
+chore(eol): normalize LF; CRLF only for .ps1 via .gitattributes
+ci(pre-commit): ruff lint only + black; detect-secrets baseline/excludes
+docs: mkdocs build OK (strict) locally

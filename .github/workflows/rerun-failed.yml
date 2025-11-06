@@ -1,0 +1,20 @@
+﻿name: Rerun failed workflows
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Numero massimo di run falliti da rilanciare"
+        required: false
+        default: "10"
+jobs:
+  rerun:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Rerun last failed
+        run: |
+          LIMIT=${{ github.event.inputs.limit }}
+          gh run list --status failure --limit "$LIMIT" --json databaseId --jq '.[].databaseId' | while read id; do
+            gh run rerun "$id"
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

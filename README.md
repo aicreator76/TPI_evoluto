@@ -24,7 +24,7 @@ Questo repository ospita la dashboard TPI e lâ€™integrazione con gli agenti
 - Campo richiesto: `file` (CSV).
 - **Limite**: 5 MB.
 - **Validazioni**:
-  - Presenza intestazione:  
+  - Presenza intestazione:
     `codice,descrizione,marca,modello,matricola,assegnato_a,data_inizio,data_fine,certificazione,scadenza,note`
   - Ignora BOM e line endings misti.
 - **Audit**: salva il file grezzo in `data/imports/` con timestamp.
@@ -59,12 +59,12 @@ curl -sS -F "file=@dpi_template.csv" http://127.0.0.1:{PORT}/api/dpi/csv/import
 <<<<<<< HEAD
 [![Endpoints](https://img.shields.io/badge/Endpoints-11-blue?style=flat-square)](docs/http/api-tests.http)
 
-**Endpoints pronti**  
+**Endpoints pronti**
 `GET /api/dpi/csv/template` · `POST /api/dpi/csv/save` · `GET /api/dpi/csv/catalogo` · `GET /api/dpi/csv/export?gruppo=...&columns=...` · `POST /api/dpi/csv/import-file` · `GET /api/dpi/csv/metrics` · `GET /healthz` · `GET /version` · `GET /metrics` · `GET /api/dpi/csv/report.html` · `POST /api/dpi/csv/import-file`
 =======
 [![Endpoints](https://img.shields.io/badge/Endpoints-11-blue?style=flat-square)](docs/http/api-tests.http)
 
-**Endpoints pronti**  
+**Endpoints pronti**
 `GET /api/dpi/csv/template` · `POST /api/dpi/csv/save` · `GET /api/dpi/csv/catalogo` · `GET /api/dpi/csv/export?gruppo=...&columns=...` · `POST /api/dpi/csv/import-file` · `GET /api/dpi/csv/metrics` · `GET /healthz` · `GET /version` · `GET /metrics` · `GET /api/dpi/csv/report.html`
 >>>>>>> site/nov-2025-polish
 
@@ -75,6 +75,3 @@ curl -sS -F "file=@dpi_template.csv" http://127.0.0.1:{PORT}/api/dpi/csv/import
 
 =======
 >>>>>>> site/nov-2025-polish
-
-
-

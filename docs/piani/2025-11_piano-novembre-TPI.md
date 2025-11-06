@@ -1,4 +1,4 @@
-﻿# Piano novembre TPI — Cabina di Regia (AELIS)
+# Piano novembre TPI — Cabina di Regia (AELIS)
 
 ## Stato attuale
 - CSV catalogo **OK**: template/save/catalogo/export operativi

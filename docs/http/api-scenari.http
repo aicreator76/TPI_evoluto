@@ -1,4 +1,4 @@
-﻿### Scenario: seed + export listino
+### Scenario: seed + export listino
 GET http://127.0.0.1:8000/api/dpi/csv/report.html?columns=listino
 
 ### Scenario: export colonne short (tutto)

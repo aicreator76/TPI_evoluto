@@ -1,4 +1,4 @@
-﻿# app/middleware_rate_limit.py
+# app/middleware_rate_limit.py
 from __future__ import annotations
 import time
 from collections import deque, defaultdict

@@ -1,0 +1,25 @@
+﻿repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.3
+    hooks:
+      - id: ruff
+        args: [--fix]
+
+  - repo: https://github.com/psf/black
+    rev: 25.9.0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+
+  - repo: local
+    hooks:
+      - id: enforce-utf8-md
+        name: Enforce UTF-8 on Markdown
+        language: system
+        entry: python tools/enforce_utf8_md.py
+        types: [markdown]
+        pass_filenames: true
