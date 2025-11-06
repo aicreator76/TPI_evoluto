@@ -1,14 +1,14 @@
 # app/main.py
 # ============================================================
-# AELIS — FastAPI main (robusto per prod/dev)
+# AELIS — FastAPI main (robusto per dev/prod)
 # - Log a livello da ENV: LOG_LEVEL
 # - Correlation-ID + security headers (HSTS solo in prod)
 # - HTTPS redirect & TrustedHost SOLO in prod
 # - CORS: in dev "*" senza credenziali; in prod lista esplicita
 # - Rate limit per-IP (burst/finestra da ENV)
-# - Handler eccezioni uniformi con request-id
-# - /health, /healthz (UTC), /version e "/" (ping veloce)
+# - Handler eccezioni uniformi (con X-Request-ID)
 # - Registrazione router tollerante a moduli mancanti
+# - Probes: /health, /healthz (UTC), /version
 # - Startup/shutdown via lifespan (moderno)
 # ============================================================
 
@@ -18,6 +18,7 @@ import logging
 import os
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
+from typing import AsyncIterator
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -25,29 +26,48 @@ from fastapi.responses import JSONResponse
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from app.middleware_security import CorrelationIdMiddleware, SecurityHeadersMiddleware
+from app.middleware_security import (
+    CorrelationIdMiddleware,
+    SecurityHeadersMiddleware,
+)
 from app.middleware_rate_limit import RateLimitMiddleware
 
 # ----------------------------
-# Config da ENV
+# Config da ENV (con fallback)
 # ----------------------------
-LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
-APP_VERSION = os.getenv("APP_VERSION", "dev")
-GIT_SHA = os.getenv("GIT_SHA", "")
-BUILD_TIME = os.getenv("BUILD_TIME", "")
-ENV = os.getenv("ENV", "dev").lower()
+def _getenv(key: str, default: str) -> str:
+    v = os.getenv(key)
+    return v if v is not None and str(v).strip() != "" else default
 
-# ALLOWED_HOSTS: stringa tipo "example.com,api.example.com" oppure "*"
-ALLOWED_HOSTS = [
-    h.strip() for h in os.getenv("ALLOWED_HOSTS", "*").split(",") if h.strip()
-]
+def _getenv_int(key: str, default: int) -> int:
+    try:
+        return int(_getenv(key, str(default)))
+    except ValueError:
+        return default
 
-# Rate-limit
-RATE_BURST = int(os.getenv("RATE_BURST", "5"))
-RATE_WINDOW = int(os.getenv("RATE_WINDOW", "60"))
+LOG_LEVEL   = _getenv("LOG_LEVEL", "INFO").upper()
+APP_VERSION = _getenv("APP_VERSION", "dev")
+GIT_SHA     = _getenv("GIT_SHA", "")
+BUILD_TIME  = _getenv("BUILD_TIME", "")
+ENV         = _getenv("ENV", "dev").lower()
+
+# hosts consentiti (in prod usa lista esplicita, in dev = "*")
+_raw_hosts     = _getenv("ALLOWED_HOSTS", "*" if ENV != "prod" else "")
+ALLOWED_HOSTS  = [h.strip() for h in _raw_hosts.split(",") if h.strip()] or (["*"] if ENV != "prod" else [])
+
+# rate limit
+RATE_BURST  = _getenv_int("RATE_BURST", 5)
+RATE_WINDOW = _getenv_int("RATE_WINDOW", 60)
+
+# CORS: in prod lista esplicita, in dev "*"
+if ENV == "prod":
+    _origins_env = _getenv("CORS_ALLOW_ORIGINS", "")
+    CORS_ORIGINS = [o.strip() for o in _origins_env.split(",") if o.strip()]
+else:
+    CORS_ORIGINS = ["*"]
 
 # ----------------------------
-# Logging
+# Logging base
 # ----------------------------
 logging.basicConfig(
     level=LOG_LEVEL,
@@ -55,27 +75,22 @@ logging.basicConfig(
 )
 log = logging.getLogger("tpi.app")
 
-
 # ----------------------------
 # Lifespan (startup/shutdown)
 # ----------------------------
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     log.info(
         "TPI_evoluto avvio — env=%s version=%s sha=%s build_time=%s",
-        ENV,
-        APP_VERSION,
-        GIT_SHA,
-        BUILD_TIME,
+        ENV, APP_VERSION, GIT_SHA, BUILD_TIME
     )
     try:
         yield
     finally:
         log.info("TPI_evoluto arresto in corso…")
 
-
 # ----------------------------
-# App
+# Istanza FastAPI
 # ----------------------------
 app = FastAPI(
     title="TPI_evoluto",
@@ -86,88 +101,71 @@ app = FastAPI(
 )
 
 # --------------------------------------------------
-# Middleware
-#   ordine: correlation → headers → https/hosts → CORS → rate-limit
+# Middleware (ordine importante)
 # --------------------------------------------------
+# 1) Correlation-ID per audit
 app.add_middleware(CorrelationIdMiddleware)
+
+# 2) Security headers (HSTS solo in prod)
 app.add_middleware(SecurityHeadersMiddleware, enable_hsts=(ENV == "prod"))
 
-# HTTPS redirect + Trusted hosts SOLO in prod (in dev spesso crea 400 indesiderati)
+# 3) HTTPS redirect & Trusted hosts SOLO in prod
 if ENV == "prod":
     app.add_middleware(HTTPSRedirectMiddleware)
-    # se ALLOWED_HOSTS = ["*"] consenti tutto, altrimenti rispetta lista
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS or ["*"])
+    # In prod devi elencare esplicitamente gli host (no "*")
+    if not ALLOWED_HOSTS:
+        # fallback sicuro per evitare blocchi se variabile non è impostata
+        ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS or ["*"])
 
-# CORS
-if ENV == "prod":
-    origins = [
-        o.strip()
-        for o in os.getenv("CORS_ALLOW_ORIGINS", "").split(",")
-        if o.strip()
-    ]
-else:
-    # In dev: wildcard senza credenziali (altrimenti Starlette rifiuta "*"+credentials)
-    origins = ["*"]
-
-allow_credentials = False if "*" in origins else True
+# 4) CORS
+#    In dev: allow_origins=["*"] ma SENZA credenziali (sicurezza).
+#    In prod: specifica i domini in CORS_ALLOW_ORIGINS, credenziali ammesse.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=allow_credentials,
+    allow_origins=CORS_ORIGINS,
+    allow_credentials=(ENV == "prod"),
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Rate limit per-IP
+# 5) Rate limit per-IP
 app.add_middleware(RateLimitMiddleware, burst=RATE_BURST, window_sec=RATE_WINDOW)
 
 # --------------------------------------------------
-# Helpers
+# Helpers / exception handlers
 # --------------------------------------------------
 def _reqid(request: Request) -> str:
+    # header scritto dal CorrelationIdMiddleware
     return request.headers.get("x-request-id", "-")
 
-
-# --------------------------------------------------
-# Exception handlers
-# --------------------------------------------------
 @app.exception_handler(HTTPException)
-async def http_exception_handler(request: Request, exc: HTTPException):
+async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
     log.warning(
         "HTTP %s %s → %s (req:%s)",
-        request.method,
-        request.url.path,
-        exc.detail,
-        _reqid(request),
+        request.method, request.url.path, exc.detail, _reqid(request)
     )
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
-
 @app.exception_handler(Exception)
-async def unhandled_exception_handler(request: Request, exc: Exception):
-    log.exception(
-        "Unhandled error on %s %s (req:%s)",
-        request.method,
-        request.url.path,
-        _reqid(request),
-    )
+async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    log.exception("Unhandled error on %s %s (req:%s)", request.method, request.url.path, _reqid(request))
     return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
 
-
 # --------------------------------------------------
-# Router (tollerante)
+# Registrazione router (tollerante)
 # --------------------------------------------------
+# Router storico → /api/dpi/csv/*
 try:
     from app.dpi_csv import router as csv_router  # type: ignore
-
     app.include_router(csv_router)
     log.info("Router storico registrato: /api/dpi/csv/*")
 except Exception as e:
     log.warning("Router storico app.dpi_csv non disponibile: %s", e)
 
+# Nuovi router CSV
 try:
     from routers import csv_import  # POST /api/dpi/csv/import-file
-
     app.include_router(csv_import.router)
     log.info("Router csv_import registrato")
 except Exception as e:
@@ -175,41 +173,35 @@ except Exception as e:
 
 try:
     from routers import csv_export_filtered  # GET /api/dpi/csv/export?gruppo=...
-
     app.include_router(csv_export_filtered.router)
     log.info("Router csv_export_filtered registrato")
 except Exception as e:
     log.warning("Impossibile registrare routers.csv_export_filtered: %s", e)
 
+# Router ops (healthz, version)
 try:
     from routers import ops  # /healthz, /version
-
     app.include_router(ops.router)
     log.info("Router ops registrato")
 except Exception as e:
     log.warning("Impossibile registrare routers.ops: %s", e)
 
-
 # --------------------------------------------------
-# Probes & info
+# Probes
 # --------------------------------------------------
-@app.get("/")
-def root() -> dict:
-    return {"status": "ok", "app": "TPI_evoluto", "version": APP_VERSION}
-
-
 @app.get("/health")
 def health() -> dict:
+    """Probe semplice per retro-compatibilità."""
     return {"status": "ok"}
-
 
 @app.get("/healthz")
 def healthz() -> dict:
+    """Probe preferita con timestamp UTC ISO 8601."""
     return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
-
 
 @app.get("/version")
 def version() -> dict:
+    """Info versione leggibili da automazioni/monitoring."""
     return {
         "app": "TPI_evoluto",
         "version": APP_VERSION,
