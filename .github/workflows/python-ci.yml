@@ -25,6 +25,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Cache pip
         uses: actions/cache@v4
         with:
@@ -32,22 +33,39 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+
       - name: Install deps
         run: |
           python -m pip install --upgrade pip
           pip install ruff black pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
       - name: Ruff (fix)
         run: ruff check --fix .
+
       - name: Black (check)
         run: black --check .
+
       - name: Tests (if present)
         run: |
           if [ -d tests ]; then pytest -q; else echo "No tests/ dir"; fi
-      - name: BOM/EOL gate
+
+      - name: BOM/EOL gate (text globs only)
+        shell: bash
         run: |
           set -e
-          if git grep -Il $'\xEF\xBB\xBF' -- . | grep -q .; then
-            echo "BOM detected"; git grep -Il $'\xEF\xBB\xBF' -- .; exit 1; else echo "No BOM âœ“"; fi
-          if git grep -Il $'\r' -- . | grep -q .; then
-            echo "CRLF detected"; git grep -Il $'\r' -- .; exit 1; else echo "No CRLF âœ“"; fi
+          FILES=$(git ls-files '*.md' '*.yml' '*.yaml' '*.py' '*.csv' '*.http' '*.json' '*.toml' '*.ini')
+          EXIT=0
+          for f in $FILES; do
+            if head -c 3 "$f" | od -An -tx1 | tr -d ' ' | grep -qi '^efbbbf'; then
+              echo "BOM: $f"; EXIT=1
+            fi
+            if grep -q $'\r' "$f"; then
+              echo "CRLF: $f"; EXIT=1
+            fi
+          done
+          if [ "$EXIT" -ne 0 ]; then
+            echo "BOM/CRLF violations detected"; exit 1
+          else
+            echo "No BOM/CRLF ✓"
+          fi

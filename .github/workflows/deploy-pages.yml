@@ -31,8 +31,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-docs.txt
-      - name: Build MkDocs (strict)
-        run: mkdocs build --strict
+      - name: Show versions & nav
+        run: |
+          python --version
+          mkdocs --version
+          echo "----- mkdocs.yml -----"
+          cat mkdocs.yml
+      - name: Build MkDocs (strict, verbose)
+        run: mkdocs build --strict -v
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
