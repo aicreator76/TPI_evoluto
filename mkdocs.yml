@@ -1,13 +1,31 @@
-site_url: https://aicreator76.github.io/TPI_evoluto/
 site_name: TPI_evoluto Docs
+site_url: https://aicreator76.github.io/TPI_evoluto/
+repo_url: https://github.com/aicreator76/TPI_evoluto
+repo_name: aicreator76/TPI_evoluto
+
 theme:
   name: material
-plugins:
-  - search
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+
 nav:
   - Home: index.md
   - Catalogo DPI:
-    - Overview: catalogo/index.md
-    - Endpoint HTTP: http/catalogo_endpoints.md
-    - Checklist Go Live: catalogo/checklist_go_live.md
-    - Frontend Flutter TODO: frontend/catalogo_flutter_todo.md
+      - Go Live: catalogo-dpi-go-live.md
+      - API CSV: api-csv.md
+  - Info:
+      - Versione: info/version.md
+      - Legal: legal.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+
+plugins:
+  - search
