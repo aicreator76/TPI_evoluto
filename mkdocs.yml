@@ -1,31 +1,8 @@
-site_name: TPI_evoluto Docs
-site_url: https://aicreator76.github.io/TPI_evoluto/
-repo_url: https://github.com/aicreator76/TPI_evoluto
-repo_name: aicreator76/TPI_evoluto
-
-theme:
-  name: material
-  features:
-    - navigation.tabs
-    - navigation.indexes
-    - content.code.copy
-    - search.suggest
-    - search.highlight
-
+# mkdocs.yml  (solo la parte nav, esempio)
 nav:
   - Home: index.md
   - Catalogo DPI:
-      - Go Live: catalogo-dpi-go-live.md
-      - API CSV: api-csv.md
-  - Info:
-      - Versione: info/version.md
-      - Legal: legal.md
-
-markdown_extensions:
-  - admonition
-  - pymdownx.details
-  - pymdownx.highlight
-  - pymdownx.superfences
-
-plugins:
-  - search
+      - "Catalogo DPI – Go Live": catalogo-dpi-go-live.md
+  - API:
+      - OpenAPI: openapi.md
+      - Schema (JSON): openapi.json
