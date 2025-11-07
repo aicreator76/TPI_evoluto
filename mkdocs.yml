@@ -1,11 +1,11 @@
-site_name: TPI_evoluto Docs
-edit_uri: blob/main/docs/
+
+
 theme:
   name: material
-  palette:
-    - scheme: slate
-      primary: indigo
-      accent: indigo
+
+
+
+
   features:
     - navigation.tabs
     - navigation.sections
@@ -18,3 +18,4 @@ nav:
   - API:
     - OpenAPI: openapi.md
     - "Schema (JSON)": openapi.json
+
