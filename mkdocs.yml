@@ -1,21 +1,17 @@
-
+site_name: TPI_evoluto Docs
+repo_url: https://github.com/aicreator76/TPI_evoluto
+edit_uri: blob/main/docs/
 
 theme:
   name: material
-
-
-
-
   features:
     - navigation.tabs
     - navigation.sections
-    - content.code.copy
 
 nav:
   - Home: index.md
   - Catalogo DPI:
-    - "Catalogo DPI – Go Live": catalogo-dpi-go-live.md
+      - "Catalogo DPI – Go Live": catalogo-dpi-go-live.md
   - API:
-    - OpenAPI: openapi.md
-    - "Schema (JSON)": openapi.json
-
+      - OpenAPI: openapi.md
+      - "Schema (JSON)": openapi.json
