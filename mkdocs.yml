@@ -1,6 +1,6 @@
 site_name: TPI_evoluto Docs
 repo_url: https://github.com/aicreator76/TPI_evoluto
-edit_uri: blob/main/docs/
+edit_uri: edit/main/docs/
 
 theme:
   name: material
