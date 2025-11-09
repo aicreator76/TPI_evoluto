@@ -15,16 +15,16 @@ SCHEDE = [{"id": "SCH-001", "catalogo_id": "CAT-001", "titolo": "Imbracatura X"}
 PERCORSI = [{"id": "PER-001", "nome": "Linea vita tetto A", "stato": "attivo"}]
 
 
-def _csv_response(rows, filename):
+def _csv_response(rows, filename: str) -> StreamingResponse:
     buf = io.StringIO(newline="")
-    w = (
-        csv.DictWriter(buf, fieldnames=rows[0].keys())
+    writer = (
+        csv.DictWriter(buf, fieldnames=list(rows[0].keys()))
         if rows
         else csv.DictWriter(buf, fieldnames=["vuoto"])
     )
-    w.writeheader()
-    for r in rows:
-        w.writerow(r)
+    writer.writeheader()
+    for row in rows:
+        writer.writerow(row)
     data = buf.getvalue().encode("utf-8-sig")  # BOM
     return StreamingResponse(
         io.BytesIO(data),
@@ -34,27 +34,30 @@ def _csv_response(rows, filename):
 
 
 @router.get("/cataloghi/export")
-def export_cataloghi():
+def export_cataloghi() -> StreamingResponse:
     return _csv_response(CATALOGHI, "cataloghi.csv")
 
 
 @router.get("/schede/export")
-def export_schede():
+def export_schede() -> StreamingResponse:
     return _csv_response(SCHEDE, "schede.csv")
 
 
 @router.get("/percorsi/export")
-def export_percorsi():
+def export_percorsi() -> StreamingResponse:
     return _csv_response(PERCORSI, "percorsi.csv")
 
 
 @router.post("/cataloghi/import")
-async def import_cataloghi(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith(".csv"):
+async def import_cataloghi(file: UploadFile = File(...)) -> dict:
+    # UploadFile.filename è str | None → gestiamo il caso None
+    filename = file.filename or ""
+    if not filename.lower().endswith(".csv"):
         raise HTTPException(400, "Carica un CSV")
+
     text = (await file.read()).decode("utf-8-sig")
-    rdr = csv.DictReader(io.StringIO(text))
-    rows = list(rdr)
+    reader = csv.DictReader(io.StringIO(text))
+    rows = list(reader)
     if rows:  # replace mock for now
         global CATALOGHI
         CATALOGHI = rows
@@ -62,10 +65,10 @@ async def import_cataloghi(file: UploadFile = File(...)):
 
 
 @router.post("/schede/import")
-async def import_schede(file: UploadFile = File(...)):
+async def import_schede(file: UploadFile = File(...)) -> dict:
     text = (await file.read()).decode("utf-8-sig")
-    rdr = csv.DictReader(io.StringIO(text))
-    rows = list(rdr)
+    reader = csv.DictReader(io.StringIO(text))
+    rows = list(reader)
     if rows:
         global SCHEDE
         SCHEDE = rows
@@ -73,10 +76,10 @@ async def import_schede(file: UploadFile = File(...)):
 
 
 @router.post("/percorsi/import")
-async def import_percorsi(file: UploadFile = File(...)):
+async def import_percorsi(file: UploadFile = File(...)) -> dict:
     text = (await file.read()).decode("utf-8-sig")
-    rdr = csv.DictReader(io.StringIO(text))
-    rows = list(rdr)
+    reader = csv.DictReader(io.StringIO(text))
+    rows = list(reader)
     if rows:
         global PERCORSI
         PERCORSI = rows

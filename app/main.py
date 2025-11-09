@@ -179,7 +179,7 @@ async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONR
 # --------------------------------------------------
 # Router storico → /api/dpi/csv/*
 try:
-    from app.dpi_csv import router as csv_router  # type: ignore
+    from app.dpi_csv import router as csv_router
 
     app.include_router(csv_router)
     log.info("Router storico registrato: /api/dpi/csv/*")
