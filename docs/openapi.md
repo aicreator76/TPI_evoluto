@@ -1,3 +1,12 @@
-# OpenAPI
+# \# API – OpenAPI
 
-Schema: [openapi.json](./openapi.json)
+# 
+
+# \[Scarica `openapi.json`](openapi.json)
+
+# 
+
+# <swagger-ui src="openapi.json" />
+
+
+
