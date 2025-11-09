@@ -1,73 +1,58 @@
-from __future__ import annotations
-
-import importlib
-import json
-import sys
+from typing import Optional, List
 from pathlib import Path
-from typing import Any
+import csv
+import io
 
-from fastapi import FastAPI
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 
-"""
-Genera docs/openapi.json a partire dalla FastAPI app principale di TPI_evoluto.
-"""
-
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-OPENAPI_PATH = PROJECT_ROOT / "docs" / "openapi.json"
+router = APIRouter(tags=["CSV"])
 
 
-def ensure_project_on_path() -> None:
-    """Assicura che la root del progetto sia in sys.path."""
-    root_str = str(PROJECT_ROOT)
-    if root_str not in sys.path:
-        sys.path.insert(0, root_str)
+@router.get(
+    "/api/dpi/csv/export",
+    summary="Esporta catalogo DPI (CSV) - filtro gruppo opzionale",
+)
+def export_csv(gruppo: Optional[str] = None):
+    """Esporta il catalogo DPI come CSV, con filtro opzionale per gruppo."""
+    p = Path("data/catalogo.csv")
+    if not p.exists():
+        raise HTTPException(status_code=404, detail="Catalogo non trovato")
 
+    # Legge tutte le righe e si tiene le intestazioni
+    with p.open("r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        rows = list(reader)
+        fieldnames: List[str] = list(reader.fieldnames or [])
 
-def load_app() -> FastAPI:
-    """Carica l'istanza FastAPI `app` dal progetto.
+    if not fieldnames:
+        raise HTTPException(
+            status_code=500,
+            detail="Intestazioni CSV mancanti nel catalogo",
+        )
 
-    Ordine tentativi:
-    1. app.main:app
-    2. app:app
-    3. mini_app:app
-    """
-    ensure_project_on_path()
+    # Filtro opzionale per gruppo
+    if gruppo:
+        rows = [r for r in rows if (r.get("gruppo") or "").strip() == gruppo]
 
-    candidates: list[tuple[str, str]] = [
-        ("app.main", "app"),
-        ("app", "app"),
-        ("mini_app", "app"),
-    ]
+    if not rows:
+        raise HTTPException(
+            status_code=404,
+            detail="Nessuna riga per i criteri richiesti",
+        )
 
-    last_exc: Exception | None = None
+    # Scrive il CSV in memoria
+    out = io.StringIO()
+    writer = csv.DictWriter(out, fieldnames=fieldnames)
+    writer.writeheader()
+    for r in rows:
+        writer.writerow(r)
+    out.seek(0)
 
-    for module_name, attr_name in candidates:
-        try:
-            module = importlib.import_module(module_name)
-            app_obj = getattr(module, attr_name)
-            if isinstance(app_obj, FastAPI):
-                return app_obj
-        except Exception as exc:  # noqa: BLE001
-            last_exc = exc
-
-    raise RuntimeError(
-        "FastAPI app not found. "
-        f"Tried modules: {[m for m, _ in candidates]}. Last error: {last_exc!r}"
+    return StreamingResponse(
+        io.BytesIO(out.getvalue().encode("utf-8")),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": 'attachment; filename="catalogo_export.csv"',
+        },
     )
-
-
-def main() -> None:
-    app = load_app()
-    schema: dict[str, Any] = app.openapi()
-
-    OPENAPI_PATH.parent.mkdir(parents=True, exist_ok=True)
-    OPENAPI_PATH.write_text(
-        json.dumps(schema, indent=2, ensure_ascii=False),
-        encoding="utf-8",
-    )
-
-    print(f"[generate_openapi] Wrote OpenAPI schema to {OPENAPI_PATH}")
-
-
-if __name__ == "__main__":
-    main()
