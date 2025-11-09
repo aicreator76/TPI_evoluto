@@ -1,52 +1,42 @@
 # .pre-commit-config.yaml
-# Ganci pre-commit per qualità codice e sicurezza del repo TPI_evoluto.
-# Ordine dei repo: utility base → lint/format → sicurezza (detect-secrets).
+# Config semplificata e stabile per TPI_evoluto.
 
-minimum_pre_commit_version: "3.5.0"   # richiede pre-commit ≥ 3.5
-default_language_version:              # usa il Python di sistema
+minimum_pre_commit_version: "3.5.0"
+
+default_language_version:
   python: python3
 
 repos:
-  # 1) Utility di base (sempre utili, veloci)
+  # 1) Controllo YAML
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
-      - id: check-yaml            # valida YAML (evita errori di indentazione)
+      - id: check-yaml
         name: Check YAML syntax
-      - id: end-of-file-fixer     # garantisce newline finale
-      - id: trailing-whitespace   # rimuove spazi in coda di riga
 
-  # 2) Ruff: linter + autofix e formattatore (sostituisce molti linter)
+  # 2) Ruff: solo lint + fix (niente formatter separato)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.7.1
     hooks:
       - id: ruff
         name: Ruff (lint + fix)
-        args: [--fix]             # prova a correggere automaticamente
-      - id: ruff-format
-        name: Ruff Format         # formattatore compatibile Black
+        args: [--fix]
 
-  # 3) Black: seconda rete di sicurezza sul formato (solo check)
+  # 3) Black: formato ufficiale (unico formatter)
   - repo: https://github.com/psf/black
     rev: 24.10.0
     hooks:
       - id: black
         name: Black (verify formatting)
 
-  # 4) Sicurezza: detect-secrets con baseline del repository
+  # 4) Detect-secrets: controllo segreti
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
       - id: detect-secrets
         name: Detect secrets (baseline)
-        # Usa la baseline del repo e ignora file/percorsi non interessanti.
         args:
           - --baseline
           - .secrets.baseline
-          - --exclude-files
-          - '(^site/|^TPI_site_skeleton_.*|^\.ruff_cache/|^\.secrets\.baseline$)'
-          # Se vuoi che il commit fallisca quando ci sono voci "unaudited",
-          # decommenta le due righe sotto (e ricordati di completare l'audit):
-          # - --fail-on-unaudited
-        pass_filenames: false      # scansiona tutto in base alla baseline
-        stages: [commit, push]     # controlla sia al commit che al push
+        pass_filenames: false
+        stages: [commit, push]

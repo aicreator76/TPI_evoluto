@@ -1,0 +1,7 @@
+/* Brand base per look enterprise */
+:root {
+  --md-text-font: "Inter", "Roboto", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+}
+.md-typeset h1, .md-typeset h2 { letter-spacing: .2px; }
+.md-typeset { line-height: 1.6; }
+.md-grid { max-width: 1200px; }

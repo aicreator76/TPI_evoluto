@@ -1,0 +1,3 @@
+### Export catalog (CSV)
+GET http://127.0.0.1:8000/api/dpi/csv/export
+Accept: text/csv

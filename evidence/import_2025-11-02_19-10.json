@@ -1,0 +1,35 @@
+{
+    "when":  "2025-11-02T19:10:06",
+    "base":  "http://127.0.0.1:8000",
+    "import":  "/v1/cataloghi/csv/import",
+    "dpi":  {
+                "status":  "ok",
+                "rows":  2,
+                "preview":  [
+                                {
+                                    "ï»¿codice":  "7334201",
+                                    "descrizione":  "Imbracatura anticaduta C3 Rapid TB â EN 361; universale",
+                                    "prezzo":  "",
+                                    "gruppo":  "dpi"
+                                },
+                                {
+                                    "ï»¿codice":  "7334200",
+                                    "descrizione":  "Imbracatura anticaduta C2 Simple â EN 361; universale",
+                                    "prezzo":  "",
+                                    "gruppo":  "dpi"
+                                }
+                            ]
+            },
+    "anc":  {
+                "status":  "ok",
+                "rows":  1,
+                "preview":  [
+                                {
+                                    "ï»¿codice":  "7334207",
+                                    "descrizione":  "Fune in acciaio con cappio â 1 m",
+                                    "prezzo":  "",
+                                    "gruppo":  "ancoraggi"
+                                }
+                            ]
+            }
+}

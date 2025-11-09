@@ -18,4 +18,3 @@ nav:
   - API:
     - OpenAPI: openapi.md
     - "Schema (JSON)": openapi.json
-
