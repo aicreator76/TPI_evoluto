@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "TPI_evoluto",
-    "description": "API TPI \u2014 CSV DPI, Health, Version",
+    "description": "API TPI — CSV DPI, Health, Version",
     "contact": {
       "name": "TPI",
       "email": "sistemianticaduta@gmail.com"
@@ -16,6 +16,7 @@
           "csv"
         ],
         "summary": "Template Csv",
+        "description": "Restituisce il template CSV base per il catalogo DPI.",
         "operationId": "template_csv_api_dpi_csv_template_get",
         "responses": {
           "200": {
@@ -37,6 +38,7 @@
           "csv"
         ],
         "summary": "Import And Save Csv",
+        "description": "Import diretto da CSV grezzo (body) e salvataggio su file + JSON.",
         "operationId": "import_and_save_csv_api_dpi_csv_save_post",
         "requestBody": {
           "content": {
@@ -55,7 +57,11 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Import And Save Csv Api Dpi Csv Save Post"
+                }
               }
             }
           },
@@ -78,13 +84,18 @@
           "csv"
         ],
         "summary": "Get Catalogo",
+        "description": "Restituisce il catalogo DPI aggregato.",
         "operationId": "get_catalogo_api_dpi_csv_catalogo_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {}
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Get Catalogo Api Dpi Csv Catalogo Get"
+                }
               }
             }
           }
@@ -96,7 +107,7 @@
         "tags": [
           "CSV"
         ],
-        "summary": "Esporta catalogo DPI (CSV) \u00e2\u20ac\u201c filtro gruppo opzionale",
+        "summary": "Esporta catalogo DPI (CSV) â€“ filtro gruppo opzionale",
         "operationId": "export_csv_api_dpi_csv_export_get",
         "parameters": [
           {
@@ -240,7 +251,7 @@
     "/health": {
       "get": {
         "summary": "Health",
-        "description": "Probe semplice per retro-compatibilit\u00e0.",
+        "description": "Probe semplice per retro-compatibilità.",
         "operationId": "health_health_get",
         "responses": {
           "200": {
