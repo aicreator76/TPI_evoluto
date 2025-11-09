@@ -1,14 +1,13 @@
-"""Genera docs/openapi.json a partire dalla FastAPI app."""
+"""Genera docs/openapi.json a partire dalla FastAPI app principale."""
 
 from pathlib import Path
 import importlib
 import json
 
 CANDIDATE_MODULES = [
-    "mini_app",  # esiste già nel repo TPI_evoluto
+    "mini_app",  # presente nel repo TPI_evoluto
     "app.main",
     "app",
-    "main",
 ]
 
 
@@ -34,7 +33,8 @@ def main() -> None:
     out_path = Path("docs") / "openapi.json"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(
-        json.dumps(schema, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(schema, ensure_ascii=False, indent=2),
+        encoding="utf-8",
     )
     print(f"[generate_openapi] wrote {out_path} ({out_path.stat().st_size} bytes)")
 

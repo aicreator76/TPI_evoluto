@@ -1,22 +1,26 @@
 site_name: TPI_evoluto Docs
-site_url: https://aicreator76.github.io/TPI_evoluto/
 repo_url: https://github.com/aicreator76/TPI_evoluto
 edit_uri: edit/main/docs/
 
 theme:
   name: material
-
-plugins:
-  - search
-  - swagger-ui-tag
+  features:
+    - navigation.tabs
+    - navigation.sections
 
 nav:
   - Home: index.md
-  - API: openapi.md
+  - Catalogo DPI:
+      - "Catalogo DPI – Go Live": catalogo-dpi-go-live.md
+  - API:
+      - "OpenAPI": openapi.md
+      - "Schema (JSON)": openapi.json
+
+plugins:
+  - search
 
 markdown_extensions:
-  - admonition
+  - toc
   - tables
-  - toc:
-      permalink: true
-
+  - fenced_code
+  - admonition

@@ -1,7 +1,6 @@
 mkdocs>=1.6
 mkdocs-material>=9.5
-mkdocs-swagger-ui-tag>=0.7.6
 pymdown-extensions>=10.8
-fastapi>=0.115
+fastapi>=0.120.1
 httpx>=0.27
-uvicorn>=0.30
+uvicorn>=0.38.0
