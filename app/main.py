@@ -208,3 +208,9 @@ def version() -> dict:
         "git_sha": GIT_SHA,
         "build_time": BUILD_TIME,
     }
+try:
+    from routers import nfc_routes  # type: ignore
+    app.include_router(nfc_routes.router)
+    log.info("Router nfc_routes registrato")
+except Exception as e:
+    log.warning("Impossibile registrare routers.nfc_routes: %s", e)
