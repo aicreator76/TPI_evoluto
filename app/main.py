@@ -99,6 +99,28 @@ app = FastAPI(
     contact={"name": "TPI", "email": "sistemianticaduta@gmail.com"},
     lifespan=lifespan,
 )
+diff --git a/app/main.py b/app/main.py
+index 1234567..89abcde 100644
+--- a/app/main.py
++++ b/app/main.py
+@@ -160,6 +160,16 @@ except Exception as e:
+     log.warning("Impossibile registrare routers.csv_export_filtered: %s", e)
+ 
+ # Router ops (healthz, version)
+ try:
+     from routers import ops  # /healthz, /version
+     app.include_router(ops.router)
+     log.info("Router ops registrato")
+ except Exception as e:
+     log.warning("Impossibile registrare routers.ops: %s", e)
+ 
++# Router NFC (landing + log accessi)
++try:
++    from routers import nfc_routes  # type: ignore
++    app.include_router(nfc_routes.router)
++    log.info("Router nfc_routes registrato: /a/{uid}, /api/nfc/log, /app/open")
++except Exception as e:
++    log.warning("Impossibile registrare routers.nfc_routes: %s", e)
 
 # --------------------------------------------------
 # Middleware (ordine importante)
