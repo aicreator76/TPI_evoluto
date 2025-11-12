@@ -24,7 +24,7 @@ Questo repository ospita la dashboard TPI e l’integrazione con gli agenti AELI
 - Campo richiesto: `file` (CSV).
 - **Limite**: 5 MB.
 - **Validazioni**:
-  - Presenza intestazione:  
+  - Presenza intestazione:
     `codice,descrizione,marca,modello,matricola,assegnato_a,data_inizio,data_fine,certificazione,scadenza,note`
   - Ignora BOM e line endings misti.
 - **Audit**: salva il file grezzo in `data/imports/` con timestamp.
@@ -53,4 +53,3 @@ curl -sS -F "file=@dpi_template.csv" http://127.0.0.1:{PORT}/api/dpi/csv/import
 [![CI](https://github.com/aicreator76/TPI_evoluto/actions/workflows/ci.yml/badge.svg)](../../actions/workflows/ci.yml)
 [![Docs](https://github.com/aicreator76/TPI_evoluto/actions/workflows/docs.yml/badge.svg)](../../actions/workflows/docs.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-

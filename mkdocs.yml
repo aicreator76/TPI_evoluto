@@ -13,5 +13,14 @@ nav:
   - Catalogo DPI:
       - "Catalogo DPI – Go Live": catalogo-dpi-go-live.md
   - API:
-      - OpenAPI: openapi.md
+      - "OpenAPI": openapi.md
       - "Schema (JSON)": openapi.json
+
+plugins:
+  - search
+
+markdown_extensions:
+  - toc
+  - tables
+  - fenced_code
+  - admonition

@@ -32,6 +32,7 @@ from app.middleware_security import (
 )
 from app.middleware_rate_limit import RateLimitMiddleware
 
+
 # ----------------------------
 # Config da ENV (con fallback)
 # ----------------------------
@@ -39,24 +40,28 @@ def _getenv(key: str, default: str) -> str:
     v = os.getenv(key)
     return v if v is not None and str(v).strip() != "" else default
 
+
 def _getenv_int(key: str, default: int) -> int:
     try:
         return int(_getenv(key, str(default)))
     except ValueError:
         return default
 
-LOG_LEVEL   = _getenv("LOG_LEVEL", "INFO").upper()
+
+LOG_LEVEL = _getenv("LOG_LEVEL", "INFO").upper()
 APP_VERSION = _getenv("APP_VERSION", "dev")
-GIT_SHA     = _getenv("GIT_SHA", "")
-BUILD_TIME  = _getenv("BUILD_TIME", "")
-ENV         = _getenv("ENV", "dev").lower()
+GIT_SHA = _getenv("GIT_SHA", "")
+BUILD_TIME = _getenv("BUILD_TIME", "")
+ENV = _getenv("ENV", "dev").lower()
 
 # hosts consentiti (in prod usa lista esplicita, in dev = "*")
-_raw_hosts     = _getenv("ALLOWED_HOSTS", "*" if ENV != "prod" else "")
-ALLOWED_HOSTS  = [h.strip() for h in _raw_hosts.split(",") if h.strip()] or (["*"] if ENV != "prod" else [])
+_raw_hosts = _getenv("ALLOWED_HOSTS", "*" if ENV != "prod" else "")
+ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(",") if h.strip()] or (
+    ["*"] if ENV != "prod" else []
+)
 
 # rate limit
-RATE_BURST  = _getenv_int("RATE_BURST", 5)
+RATE_BURST = _getenv_int("RATE_BURST", 5)
 RATE_WINDOW = _getenv_int("RATE_WINDOW", 60)
 
 # CORS: in prod lista esplicita, in dev "*"
@@ -75,6 +80,7 @@ logging.basicConfig(
 )
 log = logging.getLogger("tpi.app")
 
+
 # ----------------------------
 # Lifespan (startup/shutdown)
 # ----------------------------
@@ -82,12 +88,16 @@ log = logging.getLogger("tpi.app")
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
     log.info(
         "TPI_evoluto avvio — env=%s version=%s sha=%s build_time=%s",
-        ENV, APP_VERSION, GIT_SHA, BUILD_TIME
+        ENV,
+        APP_VERSION,
+        GIT_SHA,
+        BUILD_TIME,
     )
     try:
         yield
     finally:
         log.info("TPI_evoluto arresto in corso…")
+
 
 # ----------------------------
 # Istanza FastAPI
@@ -154,6 +164,7 @@ app.add_middleware(
 # 5) Rate limit per-IP
 app.add_middleware(RateLimitMiddleware, burst=RATE_BURST, window_sec=RATE_WINDOW)
 
+
 # --------------------------------------------------
 # Helpers / exception handlers
 # --------------------------------------------------
@@ -161,25 +172,37 @@ def _reqid(request: Request) -> str:
     # header scritto dal CorrelationIdMiddleware
     return request.headers.get("x-request-id", "-")
 
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request: Request, exc: HTTPException) -> JSONResponse:
     log.warning(
         "HTTP %s %s → %s (req:%s)",
-        request.method, request.url.path, exc.detail, _reqid(request)
+        request.method,
+        request.url.path,
+        exc.detail,
+        _reqid(request),
     )
     return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
+
 @app.exception_handler(Exception)
 async def unhandled_exception_handler(request: Request, exc: Exception) -> JSONResponse:
-    log.exception("Unhandled error on %s %s (req:%s)", request.method, request.url.path, _reqid(request))
+    log.exception(
+        "Unhandled error on %s %s (req:%s)",
+        request.method,
+        request.url.path,
+        _reqid(request),
+    )
     return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
+
 
 # --------------------------------------------------
 # Registrazione router (tollerante)
 # --------------------------------------------------
 # Router storico → /api/dpi/csv/*
 try:
-    from app.dpi_csv import router as csv_router  # type: ignore
+    from app.dpi_csv import router as csv_router
+
     app.include_router(csv_router)
     log.info("Router storico registrato: /api/dpi/csv/*")
 except Exception as e:
@@ -188,6 +211,7 @@ except Exception as e:
 # Nuovi router CSV
 try:
     from routers import csv_import  # POST /api/dpi/csv/import-file
+
     app.include_router(csv_import.router)
     log.info("Router csv_import registrato")
 except Exception as e:
@@ -195,6 +219,7 @@ except Exception as e:
 
 try:
     from routers import csv_export_filtered  # GET /api/dpi/csv/export?gruppo=...
+
     app.include_router(csv_export_filtered.router)
     log.info("Router csv_export_filtered registrato")
 except Exception as e:
@@ -203,10 +228,12 @@ except Exception as e:
 # Router ops (healthz, version)
 try:
     from routers import ops  # /healthz, /version
+
     app.include_router(ops.router)
     log.info("Router ops registrato")
 except Exception as e:
     log.warning("Impossibile registrare routers.ops: %s", e)
+
 
 # --------------------------------------------------
 # Probes
@@ -216,10 +243,12 @@ def health() -> dict:
     """Probe semplice per retro-compatibilità."""
     return {"status": "ok"}
 
+
 @app.get("/healthz")
 def healthz() -> dict:
     """Probe preferita con timestamp UTC ISO 8601."""
     return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
+
 
 @app.get("/version")
 def version() -> dict:
