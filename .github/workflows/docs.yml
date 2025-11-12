@@ -1,15 +1,29 @@
 name: Docs
+
 on:
   push:
-    branches: ["main"]
-    paths: ["docs/**","mkdocs.yml"]
+    branches:
+      - main
+    paths:
+      - "mkdocs.yml"
+      - "docs/**"
+      - "scripts/generate_openapi.py"
+      - "requirements-docs.txt"
   workflow_dispatch:
+
 permissions:
   contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
 jobs:
   build:
-    name: Docs build (no deploy)
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
