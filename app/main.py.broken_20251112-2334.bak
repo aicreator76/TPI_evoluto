@@ -1,0 +1,20 @@
+﻿# app/main.py
+    log.warning("Impossibile registrare routers.nfc_routes: %s", e)
+# Router ops (healthz, version)
+try:
+    from routers import ops  # /healthz, /version
+    app.include_router(ops.router)
+    log.info("Router ops registrato")
+except Exception as e:  # pragma: no cover - log only
+    log.warning("Impossibile registrare routers.ops: %s", e)
+
+# Router NFC (landing + log accessi)
+try:
+    from routers import nfc_routes  # type: ignore
+    app.include_router(nfc_routes.router)
+    log.info(
+        "Router nfc_routes registrato: "
+        "/a/{uid}, /api/nfc/log, /app/open, /accessi, /api/nfc/whatsapp-link"
+    )
+except Exception as e:  # pragma: no cover - log only
+    log.warning("Impossibile registrare routers.nfc_routes: %s", e)
