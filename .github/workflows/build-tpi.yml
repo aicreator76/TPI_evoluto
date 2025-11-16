@@ -1,0 +1,49 @@
+﻿name: Build TPI (WIN + APK)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-tpi:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PowerShell
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12" # solo per avere pwsh disponibile sui runner
+
+      - name: Build WIN + APK (placeholder)
+        shell: pwsh
+        run: |
+          $date    = Get-Date -Format 'yyyy-MM-dd'
+          $version = "${{ github.ref_name }}"
+
+          Write-Host "Avvio build TPI per versione $version (data $date)"
+
+          $projectRoot = "$PWD"
+          $releaseRoot = Join-Path $PWD "RELEASE_TPI"
+
+          # Assicura cartella RELEASE_TPI
+          New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null
+
+          pwsh -File "ci/Build-TPI-WIN.ps1" -ProjectRoot $projectRoot -ReleaseRoot $releaseRoot -Date $date -Version $version
+          pwsh -File "ci/Build-TPI-APK.ps1" -ProjectRoot $projectRoot -ReleaseRoot $releaseRoot -Date $date -Version $version
+
+      - name: Pubblica artefatti WIN
+        uses: actions/upload-artifact@v4
+        with:
+          name: tpi-win-${{ github.run_id }}
+          path: RELEASE_TPI/**/WIN/*
+
+      - name: Pubblica artefatti APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: tpi-apk-${{ github.run_id }}
+          path: RELEASE_TPI/**/ANDROID/*
