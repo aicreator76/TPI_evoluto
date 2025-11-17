@@ -1,49 +1,74 @@
-﻿name: Build TPI (WIN + APK)
+﻿name: Build TPI (stub)
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Versione TPI (es. v0.1.1, vTEST-CI)'
+        required: false
+        default: ''
   push:
     tags:
-      - "v*"
+      - 'v*'
 
 jobs:
-  build-tpi:
+  build-win:
+    name: Build Windows (stub)
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup PowerShell
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12" # solo per avere pwsh disponibile sui runner
-
-      - name: Build WIN + APK (placeholder)
+      - name: Stub build Windows
         shell: pwsh
         run: |
-          $date    = Get-Date -Format 'yyyy-MM-dd'
-          $version = "${{ github.ref_name }}"
+          $version = '${{ inputs.version }}'
+          if (-not $version) { $version = '${{ github.ref_name }}' }
 
-          Write-Host "Avvio build TPI per versione $version (data $date)"
+          $scriptPath  = "${{ github.workspace }}/ci/CESARE_BUILD_TPI_WIN.ps1"
+          $releaseRoot = "${{ github.workspace }}/RELEASE_TPI"
 
-          $projectRoot = "$PWD"
-          $releaseRoot = Join-Path $PWD "RELEASE_TPI"
+          & $scriptPath `
+            -Version $version `
+            -ReleaseRoot $releaseRoot `
+            -CiMode
 
-          # Assicura cartella RELEASE_TPI
-          New-Item -ItemType Directory -Path $releaseRoot -Force | Out-Null
-
-          pwsh -File "ci/Build-TPI-WIN.ps1" -ProjectRoot $projectRoot -ReleaseRoot $releaseRoot -Date $date -Version $version
-          pwsh -File "ci/Build-TPI-APK.ps1" -ProjectRoot $projectRoot -ReleaseRoot $releaseRoot -Date $date -Version $version
-
-      - name: Pubblica artefatti WIN
+      - name: Upload artefatti Windows
         uses: actions/upload-artifact@v4
         with:
-          name: tpi-win-${{ github.run_id }}
-          path: RELEASE_TPI/**/WIN/*
+          name: tpi-win-${{ github.ref_name }}
+          path: ${{ github.workspace }}/RELEASE_TPI/**/WIN/*
 
-      - name: Pubblica artefatti APK
+  build-apk:
+    name: Build Android (stub)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install PowerShell (pwsh)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y powershell
+
+      - name: Stub build APK
+        shell: pwsh
+        run: |
+          $version = '${{ inputs.version }}'
+          if (-not $version) { $version = '${{ github.ref_name }}' }
+
+          $scriptPath  = "${{ github.workspace }}/ci/CESARE_BUILD_TPI_APK.ps1"
+          $releaseRoot = "${{ github.workspace }}/RELEASE_TPI"
+
+          & $scriptPath `
+            -Version $version `
+            -ReleaseRoot $releaseRoot `
+            -CiMode
+
+      - name: Upload artefatti APK
         uses: actions/upload-artifact@v4
         with:
-          name: tpi-apk-${{ github.run_id }}
-          path: RELEASE_TPI/**/ANDROID/*
+          name: tpi-apk-${{ github.ref_name }}
+          path: ${{ github.workspace }}/RELEASE_TPI/**/APK/*
