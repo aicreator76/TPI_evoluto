@@ -1,0 +1,1 @@
+Stub build WIN per versione vTEST-CI-LOCAL (CiMode=True)
