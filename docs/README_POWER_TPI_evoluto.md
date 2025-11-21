@@ -49,3 +49,11 @@ Script principale (lato Sovrano) per simulare una release giornaliera.
   powershell -NoProfile -ExecutionPolicy Bypass `
     -File "E:\CLONAZIONE\CESARE_COMANDI\scripts\CESARE_RELEASE_TPI_DEMO.ps1" `
     -Version "vTEST-DEMO-002"
+
+## Build TPI (stub) – Collegamento CESARE ↔ GitHub Actions
+
+- Lo script CESARE_TPI_CI_BRIDGE.ps1 crea tag 	pi-v* (es. 	pi-vTEST-CI-BRIDGE-001)
+  e attiva il workflow GitHub **Build TPI (stub)**.
+- Il workflow usa solo script stub (ci/CESARE_BUILD_TPI_WIN.ps1, ci/CESARE_BUILD_TPI_APK.ps1)
+  e genera file STUB, non EXE/APK reali.
+- Il dettaglio operativo è in docs/CI_TPI_BUILD.md.
