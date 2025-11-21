@@ -1,4 +1,4 @@
-﻿import csv
+import csv
 import io
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
