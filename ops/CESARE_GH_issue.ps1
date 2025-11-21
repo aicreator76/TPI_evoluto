@@ -12,7 +12,8 @@
 [CmdletBinding()]
 param(
     [string]$Repo,
-    [switch]$DryRun
+    [switch]$DryRun,
+    [switch]$Agente0
 )
 
 function Test-GhInstalled {
@@ -45,7 +46,7 @@ if (-not $Repo) {
 }
 
 Write-Host ""
-Write-Host "CESARE_GH_issue – Repo corrente: $Repo" -ForegroundColor Cyan
+Write-Host ("CESARE_GH_issue - Repo corrente: {0}" -f $Repo) -ForegroundColor Cyan
 Write-Host ""
 
 # =========================
@@ -81,30 +82,46 @@ if (-not $milestones -or $milestones.Count -eq 0) {
     exit 1
 }
 
-Write-Host ""
-Write-Host "Seleziona la milestone:" -ForegroundColor Green
+$selectedMilestone = $null
 
-for ($i = 0; $i -lt $milestones.Count; $i++) {
-    $idx   = $i + 1
-    $title = $milestones[$i].title
-    $desc  = $milestones[$i].description
+if ($Agente0) {
+    # Proviamo a prendere automaticamente una milestone che inizia con "M2"
+    $selectedMilestone = $milestones | Where-Object { $_.title -like "M2*" } | Select-Object -First 1
 
-    if ($desc -and $desc.Length -gt 60) {
-        $desc = $desc.Substring(0,57) + "..."
+    if (-not $selectedMilestone) {
+        # fallback: prima milestone
+        $selectedMilestone = $milestones[0]
     }
 
-    if (-not $desc) { $desc = "" }
+    Write-Host ""
+    Write-Host ("[Agente0] Milestone scelta automaticamente: {0}" -f $selectedMilestone.title) -ForegroundColor Green
+} else {
+    Write-Host ""
+    Write-Host "Seleziona la milestone:" -ForegroundColor Green
 
-    Write-Host ("[{0}] {1}  {2}" -f $idx, $title, $desc)
+    for ($i = 0; $i -lt $milestones.Count; $i++) {
+        $idx   = $i + 1
+        $title = $milestones[$i].title
+        $desc  = $milestones[$i].description
+
+        if ($desc -and $desc.Length -gt 60) {
+            $desc = $desc.Substring(0,57) + "..."
+        }
+
+        if (-not $desc) { $desc = "" }
+
+        Write-Host ("[{0}] {1}  {2}" -f $idx, $title, $desc)
+    }
+
+    [int]$choice = 0
+    while ($choice -lt 1 -or $choice -gt $milestones.Count) {
+        $choice = Read-Host "Numero della milestone"
+    }
+
+    $selectedMilestone = $milestones[$choice - 1]
 }
 
-[int]$choice = 0
-while ($choice -lt 1 -or $choice -gt $milestones.Count) {
-    $choice = Read-Host "Numero della milestone"
-}
-
-$selectedMilestone = $milestones[$choice - 1]
-$milestoneTitle    = $selectedMilestone.title
+$milestoneTitle = $selectedMilestone.title
 
 Write-Host ""
 Write-Host ("Milestone scelta: {0}" -f $milestoneTitle) -ForegroundColor Cyan
@@ -126,7 +143,18 @@ $prefix = "[" + $milestoneCode + "]"
 # =========================
 
 Write-Host ""
-$titoloBreve = Read-Host "Titolo breve dell'Issue (es. CRUD DPI con stati principali)"
+
+if ($Agente0) {
+    $suggestedTitle = "Agente 0 - integrazione n8n per notifiche DPI"
+    $inputTitle = Read-Host "Titolo breve dell'Issue (INVIO per usare suggerimento: $suggestedTitle)"
+    if ([string]::IsNullOrWhiteSpace($inputTitle)) {
+        $titoloBreve = $suggestedTitle
+    } else {
+        $titoloBreve = $inputTitle
+    }
+} else {
+    $titoloBreve = Read-Host "Titolo breve dell'Issue (es. CRUD DPI con stati principali)"
+}
 
 if (-not $titoloBreve) {
     Write-Error "Titolo breve vuoto. Interrotto."
@@ -155,34 +183,56 @@ if (-not $templates -or $templates.Count -eq 0) {
     exit 1
 }
 
-Write-Host ""
-Write-Host "Template disponibili:" -ForegroundColor Green
-for ($i = 0; $i -lt $templates.Count; $i++) {
-    $idx = $i + 1
-    Write-Host ("[{0}] {1}" -f $idx, $templates[$i].Name)
+$selectedTemplate = $null
+
+if ($Agente0) {
+    $selectedTemplate = $templates | Where-Object { $_.Name -eq "M2-orchestratore0.md" } | Select-Object -First 1
+    if ($selectedTemplate) {
+        Write-Host ("[Agente0] Template scelto automaticamente: {0}" -f $selectedTemplate.Name) -ForegroundColor Green
+    }
 }
 
-[int]$tchoice = 0
-while ($tchoice -lt 1 -or $tchoice -gt $templates.Count) {
-    $tchoice = Read-Host "Numero del template"
+if (-not $selectedTemplate) {
+    Write-Host ""
+    Write-Host "Template disponibili:" -ForegroundColor Green
+    for ($i = 0; $i -lt $templates.Count; $i++) {
+        $idx = $i + 1
+        Write-Host ("[{0}] {1}" -f $idx, $templates[$i].Name)
+    }
+
+    [int]$tchoice = 0
+    while ($tchoice -lt 1 -or $tchoice -gt $templates.Count) {
+        $tchoice = Read-Host "Numero del template"
+    }
+
+    $selectedTemplate = $templates[$tchoice - 1]
 }
 
-$selectedTemplate = $templates[$tchoice - 1]
 $bodyFile = $selectedTemplate.FullName
 
-Write-Host ("Userò il template: {0}" -f $selectedTemplate.Name) -ForegroundColor Cyan
+Write-Host ("Usero il template: {0}" -f $selectedTemplate.Name) -ForegroundColor Cyan
 
 # =========================
 # 5) Label
 # =========================
 
 Write-Host ""
-Write-Host "Label di default: area:backend, type:feature, priority:high" -ForegroundColor Green
+
+[string[]]$defaultLabels = @()
+
+if ($Agente0) {
+    Write-Host "Label di default: area:backend, area:orchestrator, type:feature, priority:high" -ForegroundColor Green
+    $defaultLabels = @("area:backend","area:orchestrator","type:feature","priority:high")
+} else {
+    Write-Host "Label di default: area:backend, type:feature, priority:high" -ForegroundColor Green
+    $defaultLabels = @("area:backend","type:feature","priority:high")
+}
+
 $labelInput = Read-Host "Label (separate da virgola, INVIO per usare default)"
 
 [string[]]$labels = @()
 if ([string]::IsNullOrWhiteSpace($labelInput)) {
-    $labels = @("area:backend","type:feature","priority:high")
+    $labels = $defaultLabels
 } else {
     $tmp = $labelInput.Split(",")
     foreach ($l in $tmp) {
@@ -226,4 +276,4 @@ if ($DryRun) {
 }
 
 Write-Host ""
-Write-Host "CESARE_GH_issue – Done." -ForegroundColor Cyan
+Write-Host "CESARE_GH_issue - Done." -ForegroundColor Cyan
