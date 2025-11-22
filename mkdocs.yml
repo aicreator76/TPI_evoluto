@@ -1,12 +1,37 @@
 site_name: TPI_evoluto Docs
+site_description: "Pipeline DPI/Funi: ingest, validazione, report"
+site_url: https://aicreator76.github.io/TPI_evoluto/
+
 repo_url: https://github.com/aicreator76/TPI_evoluto
+repo_name: aicreator76/TPI_evoluto
 edit_uri: edit/main/docs/
 
 theme:
   name: material
+  language: it
+  palette:
+    - scheme: default
+      primary: blue
+      accent: deep orange
+      toggle:
+        icon: material/weather-night
+        name: "Tema scuro"
+    - scheme: slate
+      primary: blue
+      accent: deep orange
+      toggle:
+        icon: material/weather-sunny
+        name: "Tema chiaro"
+  font:
+    text: Roboto
+    code: JetBrains Mono
   features:
     - navigation.tabs
     - navigation.sections
+    - navigation.instant
+    - toc.integrate
+    - content.code.copy
+    - header.autohide
 
 nav:
   - Home: index.md
@@ -15,3 +40,8 @@ nav:
   - API:
       - OpenAPI: openapi.md
       - "Schema (JSON)": openapi.json
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc
