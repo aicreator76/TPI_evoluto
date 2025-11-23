@@ -14,3 +14,5 @@
 1. Chiudere docs/index.md in stile prodotto.
 2. Rifinire docs/catalogo/index.md con curl + percorsi.
 3. Aprire/chiudere PR docs/theme-refresh → main.
+
+- PR DOCS homepage+Catalogo: https://github.com/aicreator76/TPI_evoluto/pull/63

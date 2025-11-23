@@ -106,7 +106,7 @@ Da parte del Consiglio Tecnico:
 1. Conferma formale del **Nodo Camelot** (nome macchina / posizione).
 2. Definizione congiunta di:
    - modalit√† di accesso remoto (VPN / altro)
-   - fasce orarie garantite di disponibilit√
+   - fasce orarie garantite di disponibilit
 3. Allineamento con AELIS per:
    - adeguamento degli script
    - adeguamento delle pipeline al nuovo standard di rete
