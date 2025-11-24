@@ -7,7 +7,7 @@
 # - CORS:
 #     * dev  → allow_origins=["*"], no credenziali
 #     * prod → lista esplicita da ENV
-# - Rate limit per-IP (burst/finestra da ENV) in-memory
+# - Rate limit per-IP (burst/finestra da ENV) in-memory, con whitelist
 # - Handler eccezioni uniformi (con X-Request-ID / X-Correlation-ID)
 # - Registrazione router tollerante a moduli mancanti
 # - Probes: /health, /healthz (UTC), /version
@@ -24,7 +24,7 @@ import time
 import uuid
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from typing import Any, AsyncIterator, Dict, List
+from typing import Any, AsyncIterator, Dict, List, Tuple, Set
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -72,6 +72,20 @@ ALLOWED_HOSTS = [h.strip() for h in _raw_hosts.split(",") if h.strip()] or (
 # Rate limit
 RATE_BURST = _getenv_int("RATE_BURST", 5)
 RATE_WINDOW = _getenv_int("RATE_WINDOW", 60)
+
+# Endpoints esclusi dal rate limit (metodo, path)
+RATE_LIMIT_WHITELIST: Set[Tuple[str, str]] = {
+    ("GET", "/health"),
+    ("GET", "/healthz"),
+    ("GET", "/version"),
+    ("GET", "/debug/routes"),  # solo dev
+    # Catalogo DPI: usati nello smoke e nei flussi base
+    ("GET", "/api/dpi/csv/template"),
+    ("POST", "/api/dpi/csv/import"),
+    ("POST", "/api/dpi/csv/save"),
+    ("GET", "/api/dpi/csv/catalogo"),
+    ("GET", "/api/dpi/csv/export"),
+}
 
 # CORS
 if ENV == "prod":
@@ -156,25 +170,57 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
     """
     Rate limit grezzo per-IP (in-memory, single-process).
     Adatto per dev / piccole installazioni on-prem.
+
+    NOTE:
+    - Non solleva HTTPException (che in middleware viene visto come 500),
+      ma restituisce direttamente una JSONResponse 429.
+    - Supporta una whitelist di (metodo, path) che saltano il rate limit.
     """
 
-    def __init__(self, app: ASGIApp, burst: int, window_sec: int) -> None:
+    def __init__(
+        self,
+        app: ASGIApp,
+        burst: int,
+        window_sec: int,
+        whitelist: Set[Tuple[str, str]] | None = None,
+    ) -> None:
         super().__init__(app)
         self.burst = max(burst, 1)
         self.window = float(max(window_sec, 1))
         self._hits: dict[str, list[float]] = {}
         self._lock = asyncio.Lock()
+        self.whitelist: Set[Tuple[str, str]] = whitelist or set()
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
+        method = request.method.upper()
+        path = request.url.path
+
+        # Esclusioni: OPTIONS e path whitelisted (es. smoke Catalogo DPI)
+        if method == "OPTIONS" or (method, path) in self.whitelist:
+            return await call_next(request)
+
         client_ip = request.client.host if request.client else "unknown"
         now = time.time()
 
         async with self._lock:
             hits = self._hits.get(client_ip, [])
+            # tieni solo le richieste nella finestra configurata
             hits = [ts for ts in hits if now - ts <= self.window]
+
             if len(hits) >= self.burst:
-                log.warning("Rate limit superato per %s", client_ip)
-                raise HTTPException(status_code=429, detail="Too Many Requests")
+                log.warning(
+                    "Rate limit superato per %s path=%s hits=%s",
+                    client_ip,
+                    path,
+                    len(hits),
+                )
+                # Risposta diretta 429, senza passare per gli handler globali
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "Too Many Requests"},
+                    headers={"Retry-After": str(int(self.window))},
+                )
+
             hits.append(now)
             self._hits[client_ip] = hits
 
@@ -342,11 +388,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 5) Rate limit per-IP
+# 5) Rate limit per-IP (whitelistato per gli endpoint critici)
 app.add_middleware(
     RateLimitMiddleware,
     burst=RATE_BURST,
     window_sec=RATE_WINDOW,
+    whitelist=RATE_LIMIT_WHITELIST,
 )
 
 
