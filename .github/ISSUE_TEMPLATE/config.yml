@@ -1,5 +1,5 @@
-<<<<<<< HEAD
-﻿blank_issues_enabled: false
-=======
-﻿blank_issues_enabled: false
->>>>>>> a92b547 (chore(savepoint): snapshot 2025-10-21)
+blank_issues_enabled: false
+contact_links:
+  - name: Supporto TPI_evoluto
+    url: https://github.com/aicreator76/TPI_evoluto/discussions
+    about: "Domande generali su TPI_evoluto (evita issue tecniche qui)."
