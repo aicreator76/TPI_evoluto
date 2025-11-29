@@ -1,4 +1,4 @@
-# Cruscotto TPI – Catena Release DEMO
+ï»¿# Cruscotto TPI â€“ Catena Release DEMO
 
 ## 1. CESARE_RELEASE_TPI_DEMO.ps1
 - Script: E:\CLONAZIONE\CESARE_COMANDI\scripts\CESARE_RELEASE_TPI_DEMO.ps1
@@ -27,5 +27,5 @@
 ## 5. Cronache Regina
 - File: E:\CLONAZIONE\Cronache_Regina\Cronache_Regina_YYYY-MM.md
 - Effetto: riassume la giornata con:
-  - semafori 001–BLD / 002–GIT / 003–LMB
+  - semafori 001â€“BLD / 002â€“GIT / 003â€“LMB
   - riferimenti a STATUS_TPI_YYYY-MM-DD.json e ai log RELEASE_TPI

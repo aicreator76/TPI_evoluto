@@ -21,41 +21,11 @@ coverage.xml
 # editor/OS
 *.swp
 .DS_Store
+
 # Log CESARE / Maggiordomo
 LOG/
-# Catalogo DPI – Modulo TPI_evoluto
 
-## Obiettivo
-Tenere allineati DPI, scadenze e sostituzioni usando CSV + API, senza fogli sparsi.
-
-## Percorsi file sul nodo Camelot
-- E:\CLONAZIONE\tpi_evoluto\data\cataloghi\inbox
-- E:\CLONAZIONE\tpi_evoluto\data\cataloghi\clean
-- E:\CLONAZIONE\tpi_evoluto\data\cataloghi\imports
-- E:\CLONAZIONE\tpi_evoluto\data\cataloghi\reports
-- E:\CLONAZIONE\tpi_evoluto\data\cataloghi\mapping
-- E:\CLONAZIONE\tpi_evoluto\data\cataloghi\.tmp
-
-## Script di lavoro (cartella CESARE)
-- scripts\CESARE\setup_dati_cataloghi_2025-11-20.ps1
-- scripts\CESARE\smoke_catalogo_DPI_2025-11-20.ps1
-
-## Test rapidi Catalogo DPI (porta 8011)
-
-### Health API
-`ash
-curl.exe -sS http://127.0.0.1:8011/health
-curl.exe -i http://127.0.0.1:8011/api/dpi/csv/template
-curl.exe -fS http://127.0.0.1:8011/api/dpi/csv/template -o dpi_template.csv
-curl.exe -sS -F "file=@dpi_template.csv" http://127.0.0.1:8011/api/dpi/csv/import
-
-Poi stage dei docs (solo docs):
-
-`powershell
-git add docs\index.md docs\catalogo\index.md docs\CRUSCOTTO_COMPITI_REGINA_2025-11-23.md
-git status
-git commit -m "Docs: homepage e Catalogo DPI in stile prodotto"
-git push
-@"
-# Runtime Catalogo DPI (on-prem)
-data/cataloghi/
+# Dati e log runtime TPI_evoluto (non versionati)
+data/
+logs/
+config.yaml
