@@ -53,7 +53,7 @@ jobs:
       - name: Pytest
         run: pytest --maxfail=1 --disable-warnings -q --cov=. --cov-report=xml
       - name: Store coverage
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: coverage-xml
           path: coverage.xml
