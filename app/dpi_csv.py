@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, List, Tuple
 
-from fastapi import APIRouter, UploadFile, File, Body, Query
+from fastapi import APIRouter, UploadFile, File, Body, Query, FastAPI
 from fastapi.responses import PlainTextResponse, HTMLResponse, JSONResponse
 
 # ============================================================
@@ -22,6 +22,18 @@ from fastapi.responses import PlainTextResponse, HTMLResponse, JSONResponse
 # ============================================================
 
 router = APIRouter(prefix="/api/dpi/csv", tags=["csv"])
+
+# App FastAPI + health -------------------------------------------------
+
+app = FastAPI(title="Catalogo DPI API", version="1.0.0")
+
+
+@app.get("/health")
+def health() -> dict[str, str]:
+    """
+    Healthcheck semplice per smoke test / monitoraggio.
+    """
+    return {"status": "ok", "service": "catalogo_dpi_csv"}
 
 
 # ---------- Helpers filesystem / dati ----------
@@ -299,3 +311,7 @@ def catalogo_report_html() -> HTMLResponse:
 </html>
 """
     return HTMLResponse(html)
+
+
+# Monta il router sull'app FastAPI
+app.include_router(router)

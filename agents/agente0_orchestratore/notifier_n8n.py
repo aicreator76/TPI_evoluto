@@ -91,9 +91,12 @@ def load_dashboard(dashboard_path: Path) -> dict[str, Any]:
     if not dashboard_path.exists():
         raise FileNotFoundError(f"Dashboard agente0 non trovata: {dashboard_path}")
 
-    raw = dashboard_path.read_text(encoding="utf-8")
-    data = json.loads(raw) or {}
-    return data
+    try:
+        raw = dashboard_path.read_text(encoding="utf-8")
+        data = json.loads(raw) or {}
+        return data
+    except Exception as exc:  # noqa: BLE001
+        raise RuntimeError(f"ERRORE parsing JSON dashboard: {exc}") from exc
 
 
 def build_feed_from_dashboard(
@@ -103,8 +106,9 @@ def build_feed_from_dashboard(
     Prende agente0_dashboard.json e costruisce un feed con:
     - dpi_warning: righe WARNING
     - dpi_scaduti: righe SCADUTO
+    - conteggio: numeri coerenti derivati dalle righe
     """
-    conteggio = dashboard.get("conteggio", {}) or {}
+    conteggio: dict[str, Any] = dashboard.get("conteggio", {}) or {}
     rows = dashboard.get("rows", []) or []
 
     dpi_warning: list[dict[str, Any]] = []
@@ -117,10 +121,22 @@ def build_feed_from_dashboard(
         elif stato == "SCADUTO":
             dpi_scaduti.append(r)
 
-    tot_alert = len(dpi_warning) + len(dpi_scaduti)
+    # Deriva conteggio "sicuro" dalle righe
+    derived_tot = len(rows)
+    derived_warn = len(dpi_warning)
+    derived_scad = len(dpi_scaduti)
+
+    # Merge: se mancano o sono 0, sovrascrive con i derivati
+    merged_conteggio: dict[str, Any] = {
+        "totale_dpi": conteggio.get("totale_dpi", derived_tot) or derived_tot,
+        "warning": conteggio.get("warning", derived_warn) or derived_warn,
+        "scaduti": conteggio.get("scaduti", derived_scad) or derived_scad,
+    }
+
+    tot_alert = int(merged_conteggio["warning"]) + int(merged_conteggio["scaduti"])
 
     feed: dict[str, Any] = {
-        "conteggio": conteggio,
+        "conteggio": merged_conteggio,
         "totale_dpi_allarme": tot_alert,
         "dpi_warning": dpi_warning,
         "dpi_scaduti": dpi_scaduti,
@@ -138,8 +154,10 @@ def build_feed_from_dashboard(
 
     print(f"[NOTIFIER] Scritto feed notifiche: {out_path}")
     print(
-        f"[NOTIFIER] DPI in allarme: WARNING={len(dpi_warning)}, "
-        f"SCADUTI={len(dpi_scaduti)}, TOT={tot_alert}"
+        "[NOTIFIER] DPI in allarme: "
+        f"WARNING={merged_conteggio['warning']}, "
+        f"SCADUTI={merged_conteggio['scaduti']}, "
+        f"TOT={tot_alert}"
     )
 
     return feed
@@ -150,8 +168,21 @@ def get_notifiche_cfg(cfg: dict[str, Any]) -> dict[str, Any]:
 
     enabled = bool(blocco.get("enabled", False))
     url = (blocco.get("n8n_webhook_url") or "").strip()
-    timeout_sec = int(blocco.get("timeout_sec", 10))
-    min_dpi_allarme = int(blocco.get("min_dpi_allarme", 1))
+
+    # Normalizza numeri (niente valori negativi o non numerici)
+    try:
+        timeout_sec = int(blocco.get("timeout_sec", 10))
+    except Exception:  # noqa: BLE001
+        timeout_sec = 10
+    if timeout_sec <= 0:
+        timeout_sec = 10
+
+    try:
+        min_dpi_allarme = int(blocco.get("min_dpi_allarme", 1))
+    except Exception:  # noqa: BLE001
+        min_dpi_allarme = 1
+    if min_dpi_allarme < 1:
+        min_dpi_allarme = 1
 
     return {
         "enabled": enabled,
