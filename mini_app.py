@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Optional
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 # ==========================
 
 ENV: str = os.getenv("ENV", "local")
-TPI_STAGING_TOKEN: str | None = os.getenv("TPI_STAGING_TOKEN")
+TPI_STAGING_TOKEN: Optional[str] = os.getenv("TPI_STAGING_TOKEN")
 
 # ALLOWED_ORIGINS può essere una lista separata da virgole in ENV,
 # es: "http://localhost:3000,https://tpi-frontend-staging.vercel.app"
@@ -30,6 +30,7 @@ else:
 async def token_guard_middleware(request: Request, call_next):
     """
     Protezione semplice per STAGING/PROD:
+
     - /health SEMPRE accessibile (monitoring)
     - se TPI_STAGING_TOKEN non è impostato -> nessun blocco (sviluppo locale)
     - altrimenti richiede header: X-TPI-Token: <token>
@@ -44,7 +45,6 @@ async def token_guard_middleware(request: Request, call_next):
     if not TPI_STAGING_TOKEN:
         return await call_next(request)
 
-    # Controllo header
     token = request.headers.get("X-TPI-Token")
     if token != TPI_STAGING_TOKEN:
         return JSONResponse(
