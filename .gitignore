@@ -21,3 +21,11 @@ coverage.xml
 # editor/OS
 *.swp
 .DS_Store
+
+# Log CESARE / Maggiordomo
+LOG/
+
+# Dati e log runtime TPI_evoluto (non versionati)
+data/
+logs/
+config.yaml

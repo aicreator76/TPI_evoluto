@@ -1,17 +1,58 @@
 site_name: TPI_evoluto Docs
+site_description: "Pipeline DPI/Funi: ingest, validazione, report"
+site_url: https://aicreator76.github.io/TPI_evoluto/
+
 repo_url: https://github.com/aicreator76/TPI_evoluto
+repo_name: aicreator76/TPI_evoluto
 edit_uri: edit/main/docs/
 
 theme:
   name: material
+  language: it
+  palette:
+    - scheme: default
+      primary: blue
+      accent: deep orange
+      toggle:
+        icon: material/weather-night
+        name: "Tema scuro"
+    - scheme: slate
+      primary: blue
+      accent: deep orange
+      toggle:
+        icon: material/weather-sunny
+        name: "Tema chiaro"
+  font:
+    text: Roboto
+    code: JetBrains Mono
   features:
     - navigation.tabs
     - navigation.sections
+    - navigation.instant
+    - toc.integrate
+    - content.code.copy
+    - header.autohide
 
 nav:
   - Home: index.md
+
   - Catalogo DPI:
+      - "Panoramica Catalogo": catalogo/index.md
       - "Catalogo DPI – Go Live": catalogo-dpi-go-live.md
+      - "Endpoint scadenze (mock)": http/scadenze_endpoints_mock_2025-11-22.md
+
+  - Orchestratore & Agenti:
+      - "Agente 0 – n8n (Fase 1)": orchestrator/AGENTE0_n8n_SPEC_2025-11-22.md
+      - "Agenti del Regno": AGENTI_DEL_REGNO_OVERVIEW.md
+      - "Canale operativo Camelot": CANALE_OPERATIVO_CAMELOT_2025-11-23.md
+      - "Cruscotto Regina 23/11": CRUSCOTTO_COMPITI_REGINA_2025-11-23.md
+      - "Ordini ORCHESTRA-PRIME 24/11": ORDINI_ORCHESTRA_PRIME_2025-11-24.md
+
   - API:
-      - OpenAPI: openapi.md
+      - "OpenAPI (UI)": openapi.md
       - "Schema (JSON)": openapi.json
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc

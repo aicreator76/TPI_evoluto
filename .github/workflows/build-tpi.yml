@@ -1,0 +1,42 @@
+name: Build TPI (stub)
+
+on:
+  push:
+    tags:
+      - "tpi-v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-stub:
+    name: Build TPI stub artifacts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Derive version from tag
+        id: version
+        run: |
+          ref="${GITHUB_REF#refs/tags/}"
+          echo "version=$ref" >> "$GITHUB_OUTPUT"
+
+      - name: Show version
+        run: |
+          echo "Building TPI (stub) for version: ${{ steps.version.outputs.version }}"
+
+      - name: Create stub artifacts (WIN/APK)
+        run: |
+          mkdir -p artifacts
+          echo "Stub WIN build for ${{ steps.version.outputs.version }}" > artifacts/TPI_WIN_STUB.txt
+          echo "Stub APK build for ${{ steps.version.outputs.version }}" > artifacts/TPI_APK_STUB.txt
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tpi-stub-${{ steps.version.outputs.version }}
+          path: artifacts
+          if-no-files-found: error
