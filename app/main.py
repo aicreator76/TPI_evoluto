@@ -10,8 +10,10 @@
 # - Rate limit per-IP (burst/finestra da ENV) in-memory
 # - Handler eccezioni uniformi (con X-Request-ID / X-Correlation-ID)
 # - Registrazione router tollerante a moduli mancanti
+# - Auth JWT dev: /auth/token
 # - Probes: /health, /healthz (UTC), /version
 # - Endpoint /debug/routes in dev
+# - Endpoint /: panoramica rapida stato API
 # ============================================================
 
 from __future__ import annotations
@@ -33,6 +35,8 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.types import ASGIApp
+
+from app.auth.router import router as auth_router
 
 
 # --------------------------------------------------
@@ -204,7 +208,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 # --------------------------------------------------
 app = FastAPI(
     title="TPI_evoluto",
-    description="API TPI — Catalogo DPI, Health, Version, NFC",
+    description="API TPI — Catalogo DPI, Health, Version, NFC, Auth",
     version=APP_VERSION,
     contact={"name": "TPI", "email": "sistemianticaduta@gmail.com"},
     lifespan=lifespan,
@@ -281,6 +285,10 @@ def _include_optional_router(import_path: str, description: str) -> None:
         )
 
 
+# Router /auth (JWT dev)
+app.include_router(auth_router)
+log.info("Router auth registrato (/auth/* — JWT dev)")
+
 # Router storico Catalogo DPI → /api/dpi/csv/*
 _include_optional_router(
     "app.dpi_csv:router",
@@ -289,23 +297,23 @@ _include_optional_router(
 
 # Nuovi router CSV (import/export evoluti) se presenti
 _include_optional_router(
-    "routers.csv_import:router",
+    "app.routers.csv_import:router",
     "Import CSV avanzato (POST /api/dpi/csv/import-file)",
 )
 _include_optional_router(
-    "routers.csv_export_filtered:router",
+    "app.routers.csv_export_filtered:router",
     "Export filtrato (GET /api/dpi/csv/export?gruppo=...)",
 )
 
-# Router ops: /healthz, /version, eventuali metriche
+# Router ops: /api/ops/healthz, /api/ops/version, eventuali metriche
 _include_optional_router(
-    "routers.ops:router",
-    "Ops /healthz /version",
+    "app.routers.ops:router",
+    "Ops /api/ops/healthz /api/ops/version",
 )
 
 # Router NFC (landing / log accessi / deep link app)
 _include_optional_router(
-    "routers.nfc_routes:router",
+    "app.routers.nfc_routes:router",
     "NFC landing / log / app open",
 )
 
@@ -351,8 +359,56 @@ app.add_middleware(
 
 
 # --------------------------------------------------
-# Probes
+# Helpers per introspezione
 # --------------------------------------------------
+def _list_router_names() -> List[str]:
+    """
+    Ritorna una lista *grezza* di nomi di router presenti,
+    basandosi sui prefix registrati.
+    Solo per avere un'idea nello /.
+    """
+    prefixes: set[str] = set()
+    for route in app.routes:
+        prefix = getattr(route, "path", None)
+        if not prefix:
+            continue
+        # Prendiamo solo i prefix di "namespace" principali
+        if prefix.startswith("/auth"):
+            prefixes.add("auth")
+        elif prefix.startswith("/api/dpi/csv"):
+            prefixes.add("dpi_csv")
+        elif prefix.startswith("/api/ops"):
+            prefixes.add("ops")
+        elif prefix.startswith("/api/nfc"):
+            prefixes.add("nfc_routes")
+    return sorted(prefixes)
+
+
+# --------------------------------------------------
+# Endpoint base e probes
+# --------------------------------------------------
+@app.get("/")
+def root() -> Dict[str, Any]:
+    """
+    Panoramica rapida stato API.
+
+    Utile per check manuali / browser senza dover aprire la docs.
+    """
+    return {
+        "app": "TPI_evoluto",
+        "env": ENV,
+        "version": APP_VERSION,
+        "git_sha": GIT_SHA,
+        "build_time": BUILD_TIME,
+        "routers": _list_router_names(),
+        "docs": {
+            "openapi": "/openapi.json",
+            "swagger_ui": "/docs",
+            "redoc": "/redoc",
+        },
+    }
+
+
 @app.get("/health")
 def health() -> Dict[str, Any]:
     """Probe semplice per retro-compatibilità."""

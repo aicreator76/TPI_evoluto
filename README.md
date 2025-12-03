@@ -59,4 +59,12 @@ curl -fS http://127.0.0.1:{PORT}/api/dpi/csv/template -o dpi_template.csv
 
 # Import (usa un CSV reale)
 curl -sS -F "file=@dpi_template.csv" \
-  http://127.0.0.1:{PORT}/api/dpi/csv/import
+  http://127.0.0.1:{PORT}/api/dpi/csv/import## Migrazioni DB (Alembic)
+
+### Prerequisiti
+- Python 3.11+
+- Alembic installato (es. tramite Poetry: `poetry add alembic --dev`)
+- Variabile ambiente `DATABASE_URL` impostata, es.:
+
+  ```bash
+  export DATABASE_URL="postgresql+psycopg2://user:pass@localhost:5432/tpidb"
