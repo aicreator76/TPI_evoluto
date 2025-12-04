@@ -1,0 +1,1 @@
+﻿***INCOLLA QUI README_LYNX.txt***
