@@ -1,34 +1,33 @@
-﻿codice_articolo,nome_breve,categoria_macro,descrizione_breve
-100600,Am'D,ACCESSORI,Moschettone a D in alluminio per sistemi di assicurazione e lavoro.
-100601,OK,ACCESSORI,Moschettone ovale per carrucole e bloccanti.
-100602,WILLIAM,ACCESSORI,Moschettone a grande apertura per manovre multiple.
-100603,ATTACHE,ACCESSORI,Moschettone compatto con ghiera per assicurazione e manovre.
-100604,SPIRIT,ACCESSORI,Moschettone leggero ideale per connessioni frequenti.
-100605,SM'D,ACCESSORI,Moschettone a D ultraleggero multifunzione.
-100606,CAPTIV,ACCESSORI,Barretta di posizionamento per connettori Petzl.
-100607,MGO Open,ACCESSORI,Connettore con ampia apertura per strutture metalliche.
-100608,EASHOOK,ACCESSORI,Gancio con chiusura automatica per longe doppie.
-100609,VULCAN,ACCESSORI,Moschettone in acciaio ad alta resistenza.
-100610,OXAN,ACCESSORI,Moschettone in acciaio per ambienti severi.
-100611,PRO TRAXION,ACCESSORI,Carrucola di sollevamento con bloccante integrato.
-100612,MINI,ACCESSORI,Carrucola compatta ad alto rendimento.
-100613,MICRO,ACCESSORI,Carrucola ultraleggera per manovre rapide.
-100614,FIXE,ACCESSORI,Carrucola semplice per scorrimento di linea.
-100615,JAG,ACCESSORI,Carrucola ad alta efficienza per sistemi di sollevamento.
-100616,JAG TRAXION,ACCESSORI,Carrucola-bloccante ad altissime prestazioni.
-100617,I'D S,ACCESSORI,Discensore con funzione anti-panico per corde sottili.
-100618,I'D L,ACCESSORI,Discensore con alta resistenza per corde più grandi.
-100619,RIG,ACCESSORI,Discensore compatto per operatori esperti.
-100620,STOP,ACCESSORI,Discensore autobloccante per speleologia e lavoro.
-100621,MAESTRO S,ACCESSORI,Discensore con carrucola integrata per soccorso.
-100622,MAESTRO L,ACCESSORI,Versione grande del MAESTRO per carichi importanti.
-100623,ASCENSION,ACCESSORI,Bloccante per mano destro o sinistro.
-100624,CROLL S,ACCESSORI,Bloccante toracico compatto.
-100625,CROLL L,ACCESSORI,Bloccante toracico per corda di diametro maggiore.
-100626,BASIC,ACCESSORI,Bloccante versatile per manovre su corda.
-100627,PANTIN,ACCESSORI,Bloccante da piede per risalite efficienti.
-100628,TIBLOC,ACCESSORI,Micro-bloccante ultraleggero in acciaio.
-100629,ABSORBICA,ACCESSORI,Assorbitore di energia per sistemi anticaduta.
-100630,ABSORBICA-Y,ACCESSORI,Longe doppia con assorbitore integrato.
-100631,PROGRESS,ACCESSORI,Longe regolabile per posizionamento.
-100632,PROGRESS ADJUST,ACCESSORI,Longe con regolazione precisa del posizionamento.
+﻿"100600","Am'D","ACCESSORI","Moschettone a D in alluminio per sistemi di assicurazione e lavoro.","famiglia_dpi","linea_modello"
+"100601","OK","ACCESSORI","Moschettone ovale per carrucole e bloccanti.","",""
+"100602","WILLIAM","ACCESSORI","Moschettone a grande apertura per manovre multiple.","",""
+"100603","ATTACHE","ACCESSORI","Moschettone compatto con ghiera per assicurazione e manovre.","",""
+"100604","SPIRIT","ACCESSORI","Moschettone leggero ideale per connessioni frequenti.","",""
+"100605","SM'D","ACCESSORI","Moschettone a D ultraleggero multifunzione.","",""
+"100606","CAPTIV","ACCESSORI","Barretta di posizionamento per connettori Petzl.","",""
+"100607","MGO Open","ACCESSORI","Connettore con ampia apertura per strutture metalliche.","",""
+"100608","EASHOOK","ACCESSORI","Gancio con chiusura automatica per longe doppie.","",""
+"100609","VULCAN","ACCESSORI","Moschettone in acciaio ad alta resistenza.","",""
+"100610","OXAN","ACCESSORI","Moschettone in acciaio per ambienti severi.","",""
+"100611","PRO TRAXION","ACCESSORI","Carrucola di sollevamento con bloccante integrato.","",""
+"100612","MINI","ACCESSORI","Carrucola compatta ad alto rendimento.","",""
+"100613","MICRO","ACCESSORI","Carrucola ultraleggera per manovre rapide.","",""
+"100614","FIXE","ACCESSORI","Carrucola semplice per scorrimento di linea.","",""
+"100615","JAG","ACCESSORI","Carrucola ad alta efficienza per sistemi di sollevamento.","",""
+"100616","JAG TRAXION","ACCESSORI","Carrucola-bloccante ad altissime prestazioni.","",""
+"100617","I'D S","ACCESSORI","Discensore con funzione anti-panico per corde sottili.","",""
+"100618","I'D L","ACCESSORI","Discensore con alta resistenza per corde più grandi.","",""
+"100619","RIG","ACCESSORI","Discensore compatto per operatori esperti.","",""
+"100620","STOP","ACCESSORI","Discensore autobloccante per speleologia e lavoro.","",""
+"100621","MAESTRO S","ACCESSORI","Discensore con carrucola integrata per soccorso.","",""
+"100622","MAESTRO L","ACCESSORI","Versione grande del MAESTRO per carichi importanti.","",""
+"100623","ASCENSION","ACCESSORI","Bloccante per mano destro o sinistro.","",""
+"100624","CROLL S","ACCESSORI","Bloccante toracico compatto.","",""
+"100625","CROLL L","ACCESSORI","Bloccante toracico per corda di diametro maggiore.","",""
+"100626","BASIC","ACCESSORI","Bloccante versatile per manovre su corda.","",""
+"100627","PANTIN","ACCESSORI","Bloccante da piede per risalite efficienti.","",""
+"100628","TIBLOC","ACCESSORI","Micro-bloccante ultraleggero in acciaio.","",""
+"100629","ABSORBICA","ACCESSORI","Assorbitore di energia per sistemi anticaduta.","",""
+"100630","ABSORBICA-Y","ACCESSORI","Longe doppia con assorbitore integrato.","",""
+"100631","PROGRESS","ACCESSORI","Longe regolabile per posizionamento.","",""
+"100632","PROGRESS ADJUST","ACCESSORI","Longe con regolazione precisa del posizionamento.","",""

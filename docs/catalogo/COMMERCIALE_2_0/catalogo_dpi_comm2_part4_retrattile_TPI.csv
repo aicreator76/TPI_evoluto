@@ -1,14 +1,13 @@
-﻿codice_articolo,nome_breve,categoria_macro,descrizione_breve
-100700,HRA 6,SISTEMI RETRATTILI,Retrattile con funzione di recupero e cavo da 6m.
-100701,HRA 12,SISTEMI RETRATTILI,Retrattile con recupero integrato e cavo da 12m.
-100702,HRA 18,SISTEMI RETRATTILI,Retrattile con recupero per lavori in quota fino a 18m.
-100703,HRA 24,SISTEMI RETRATTILI,SRL professionale con recupero e cavo da 24m.
-100704,HWL 6,SISTEMI RETRATTILI,Retrattile leggero in alluminio con cavo da 6m.
-100705,HWL 12,SISTEMI RETRATTILI,Retrattile in alluminio progettato per 12m di lavoro verticale.
-100706,HWL 18,SISTEMI RETRATTILI,Retrattile a lunga estensione per uso industriale.
-100707,HWP 6,SISTEMI RETRATTILI,Retrattile con cavo in acciaio per condizioni severe.
-100708,HWP 12,SISTEMI RETRATTILI,Retrattile in acciaio con capacità di 12m.
-100709,HWP 18,SISTEMI RETRATTILI,Retrattile per ambienti aggressivi con cavo da 18m.
-100710,ABS 3,SISTEMI RETRATTILI,Retrattile compatto da 3m per lavori rapidi e sicuri.
-100711,ABS 4,SISTEMI RETRATTILI,Retrattile compatto con cavo da 4m.
-100712,ABS 5,SISTEMI RETRATTILI,Retrattile con capacità di 5m per operazioni frequenti.
+﻿"100700","HRA 6","SISTEMI RETRATTILI","Retrattile con funzione di recupero e cavo da 6m.","famiglia_dpi","linea_modello"
+"100701","HRA 12","SISTEMI RETRATTILI","Retrattile con recupero integrato e cavo da 12m.","",""
+"100702","HRA 18","SISTEMI RETRATTILI","Retrattile con recupero per lavori in quota fino a 18m.","",""
+"100703","HRA 24","SISTEMI RETRATTILI","SRL professionale con recupero e cavo da 24m.","",""
+"100704","HWL 6","SISTEMI RETRATTILI","Retrattile leggero in alluminio con cavo da 6m.","",""
+"100705","HWL 12","SISTEMI RETRATTILI","Retrattile in alluminio progettato per 12m di lavoro verticale.","",""
+"100706","HWL 18","SISTEMI RETRATTILI","Retrattile a lunga estensione per uso industriale.","",""
+"100707","HWP 6","SISTEMI RETRATTILI","Retrattile con cavo in acciaio per condizioni severe.","",""
+"100708","HWP 12","SISTEMI RETRATTILI","Retrattile in acciaio con capacità di 12m.","",""
+"100709","HWP 18","SISTEMI RETRATTILI","Retrattile per ambienti aggressivi con cavo da 18m.","",""
+"100710","ABS 3","SISTEMI RETRATTILI","Retrattile compatto da 3m per lavori rapidi e sicuri.","",""
+"100711","ABS 4","SISTEMI RETRATTILI","Retrattile compatto con cavo da 4m.","",""
+"100712","ABS 5","SISTEMI RETRATTILI","Retrattile con capacità di 5m per operazioni frequenti.","",""
