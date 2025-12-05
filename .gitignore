@@ -29,3 +29,12 @@ LOG/
 data/
 logs/
 config.yaml
+
+# TPI_evoluto – file locali / build
+site/
+public/demo/
+tmp_export_dpi.csv
+RELEASE_TPI/
+REPORT_DELTA/
+catalogo_work/
+docs_legacy/
