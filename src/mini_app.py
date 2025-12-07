@@ -7,19 +7,22 @@ from pydantic import BaseModel
 
 
 # =========================================================
-#  TPI_evoluto – MINI API STAGING (root + health + token)
+#  TPI_evoluto – MINI API STAGING
+#  - /health  → pubblico, no token (monitoring)
+#  - /       → root protetta da X-TPI-Token
 # =========================================================
 
-# --- Config base da env (solo info, non blocca) ---
+# --- Config base da env (con default sicuri per STAGING) ---
 
 TPI_ENV = os.getenv("TPI_ENV", "staging")
 TPI_VERSION = os.getenv("TPI_VERSION", "v1")
 
-# 🔐 Token STAGING FISSO (facile da ricordare e usare)
-#  Quando vorrai cambiare, modifichi SOLO questa riga.
-TPI_STAGING_TOKEN = "TPI-STAGING-LOCAL-SECRET"
+# 🔐 Token STAGING:
+# - se TPI_STAGING_TOKEN non è definito nella env,
+#   usiamo il default storico TPI-STAGING-LOCAL-SECRET
+TPI_STAGING_TOKEN = os.getenv("TPI_STAGING_TOKEN", "TPI-STAGING-LOCAL-SECRET")
 
-# CORS di base (puoi restringere più avanti)
+# CORS: in STAGING va bene "*" (più avanti si restringe)
 TPI_ALLOWED_ORIGINS = os.getenv("TPI_ALLOWED_ORIGINS", "*")
 
 
@@ -60,13 +63,13 @@ class RootResponse(BaseModel):
     message: Optional[str] = None
 
 
-# --- Endpoint ---
+# --- Endpoint /health (pubblico) ---
 
 
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     """
-    Endpoint di salute pubblico (senza token).
+    Endpoint di salute pubblico.
     Usato da Render e dai CESARI per verificare che la staging sia viva.
     """
     return HealthResponse(
@@ -76,11 +79,14 @@ def health() -> HealthResponse:
     )
 
 
+# --- Endpoint root "/" (protetto da X-TPI-Token) ---
+
+
 @app.get("/", response_model=RootResponse)
 def root(x_tpi_token: str = Header(default="", alias="X-TPI-Token")) -> RootResponse:
     """
     Root protetta da header X-TPI-Token.
-    In STAGING accettiamo SOLO il token TPI_STAGING_TOKEN.
+    In STAGING accettiamo SOLO il token configurato TPI_STAGING_TOKEN.
     """
     if not x_tpi_token or x_tpi_token != TPI_STAGING_TOKEN:
         raise HTTPException(
