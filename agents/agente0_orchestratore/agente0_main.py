@@ -1,9 +1,11 @@
 import os
 import json
-from datetime import datetime
+from datetime import datetime, date
+from typing import Dict, Any
 
 import pandas as pd
 
+# Root del progetto (adatta se serve)
 ROOT = r"E:\CLONAZIONE\tpi_evoluto"
 
 LOG_DIR = os.path.join(ROOT, "logs")
@@ -12,76 +14,145 @@ CRUSCOTTO_HTML = os.path.join(LOG_DIR, "agente0_cruscotto.html")
 
 DPI_CSV = os.path.join(ROOT, "data", "dpi.csv")
 
+# Parametri di business
+WARNING_DAYS = 30  # soglia warning in giorni
+MIN_VALID_YEAR = 1910  # sotto questo anno la data è considerata anomala
+
 
 def carica_dpi_da_csv() -> pd.DataFrame:
+    """Carica il file DPI; genera errore chiaro se manca."""
     if not os.path.exists(DPI_CSV):
         raise FileNotFoundError(f"File DPI non trovato: {DPI_CSV}")
+
     df = pd.read_csv(DPI_CSV)
+
+    # Normalizza nome colonna scadenza (se serve)
+    # Qui assumiamo che la colonna si chiami esattamente "scadenza"
+    if "scadenza" not in df.columns:
+        raise KeyError(
+            f"Colonna 'scadenza' non trovata in {DPI_CSV}. Colonne presenti: {list(df.columns)}"
+        )
+
     return df
 
 
-def calcola_cruscotto(df: pd.DataFrame) -> dict:
-    totale = len(df)
+def calcola_semaforo(ok: int, warning: int, scaduti: int, anomalie: int) -> str:
+    """
+    Regole semaforo modulo DPI:
+    - ROSSO: almeno 1 scaduto oppure anomalie > 0
+    - GIALLO: nessun scaduto, ma almeno 1 warning
+    - VERDE: tutto il resto (solo OK)
+    """
+    if scaduti > 0 or anomalie > 0:
+        return "ROSSO"
+    if warning > 0:
+        return "GIALLO"
+    return "VERDE"
+
+
+def calcola_cruscotto(df: pd.DataFrame) -> Dict[str, Any]:
+    """Calcola numeri DPI + contatore errori data + semaforo modulo."""
+    totale = int(len(df))
 
     ok = 0
     warning = 0
     scaduti = 0
     anomalie = 0
+    righe_errore_data = 0
 
-    oggi = datetime.now().date()
+    oggi: date = datetime.now().date()
 
     for _, riga in df.iterrows():
-        valore = riga.get("scadenza", None)
+        raw_val = riga.get("scadenza", "")
 
-        if pd.isna(valore):
+        # Valore mancante o vuoto → anomalia
+        if pd.isna(raw_val):
             anomalie += 1
+            righe_errore_data += 1
             continue
 
+        valore = str(raw_val).strip()
+        if not valore:
+            anomalie += 1
+            righe_errore_data += 1
+            continue
+
+        # Parsing data in formato "italiano" (dayfirst=True)
         try:
-            data_scad = pd.to_datetime(valore).date()
+            data_scad = pd.to_datetime(valore, dayfirst=True, errors="raise").date()
         except Exception:
             anomalie += 1
+            righe_errore_data += 1
             continue
 
-        # Date anomale (tipo 1900/1909 ecc.)
-        if data_scad.year < 1910:
+        # Date marce tipo 01/01/1900 ecc.
+        if data_scad.year < MIN_VALID_YEAR:
             anomalie += 1
+            righe_errore_data += 1
             continue
 
         diff = (data_scad - oggi).days
 
         if diff < 0:
             scaduti += 1
-        elif diff <= 30:
+        elif diff <= WARNING_DAYS:
             warning += 1
         else:
             ok += 1
 
+    semaforo = calcola_semaforo(
+        ok=ok, warning=warning, scaduti=scaduti, anomalie=anomalie
+    )
+
     return {
-        "totale_dpi": int(totale),
-        "ok": int(ok),
-        "warning": int(warning),
-        "scaduti": int(scaduti),
-        "anomalie": int(anomalie),
+        "totale_dpi": totale,
+        "ok": ok,
+        "warning": warning,
+        "scaduti": scaduti,
+        "anomalie": anomalie,
+        "righe_errore_data": righe_errore_data,
+        "semaforo_modulo_dpi": semaforo,
+        "updated_at": datetime.now().isoformat(timespec="seconds"),
     }
 
 
-def salva_cruscotto(cruscotto: dict) -> None:
+def salva_cruscotto(cruscotto: Dict[str, Any]) -> None:
+    """Scrive JSON + HTML del cruscotto DPI."""
     os.makedirs(LOG_DIR, exist_ok=True)
 
+    # JSON
     with open(CRUSCOTTO_JSON, "w", encoding="utf-8") as f:
         json.dump(cruscotto, f, indent=2, ensure_ascii=False)
 
+    # HTML semplice ma informativo
     html = f"""<html>
-<head><meta charset="UTF-8"><title>Cruscotto DPI</title></head>
+<head>
+  <meta charset="UTF-8">
+  <title>Cruscotto DPI</title>
+  <style>
+    body {{
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }}
+    .semaforo {{
+      font-size: 1.4em;
+      font-weight: bold;
+    }}
+  </style>
+</head>
 <body>
 <h1>Cruscotto DPI</h1>
+
+<p class="semaforo">Semaforo modulo DPI: {cruscotto['semaforo_modulo_dpi']}</p>
+<p><strong>Ultimo aggiornamento:</strong> {cruscotto['updated_at']}</p>
+
 <ul>
   <li>Totale DPI: {cruscotto['totale_dpi']}</li>
   <li>OK: {cruscotto['ok']}</li>
-  <li>Warning (≤30gg): {cruscotto['warning']}</li>
+  <li>Warning (≤{WARNING_DAYS}gg): {cruscotto['warning']}</li>
   <li>Scaduti: {cruscotto['scaduti']}</li>
   <li>Anomalie: {cruscotto['anomalie']}</li>
+  <li>Righe con errore data: {cruscotto['righe_errore_data']}</li>
 </ul>
 </body>
 </html>
