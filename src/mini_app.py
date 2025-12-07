@@ -1,107 +1,96 @@
+from typing import Optional
 import os
-from typing import List, Optional
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 
-# ==========================
-# CONFIGURAZIONE DI BASE
-# ==========================
+# =========================================================
+#  TPI_evoluto – MINI API STAGING (root + health + token)
+# =========================================================
 
-ENV: str = os.getenv("ENV", "local")
-TPI_STAGING_TOKEN: Optional[str] = os.getenv("TPI_STAGING_TOKEN")
+# --- Config base da env (solo info, non blocca) ---
 
-# ALLOWED_ORIGINS può essere una lista separata da virgole in ENV,
-# es: "http://localhost:3000,https://tpi-frontend-staging.vercel.app"
-_raw_origins = os.getenv("ALLOWED_ORIGINS", "*")
-if _raw_origins.strip() == "*":
-    ALLOWED_ORIGINS: List[str] = ["*"]
-else:
-    ALLOWED_ORIGINS = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+TPI_ENV = os.getenv("TPI_ENV", "staging")
+TPI_VERSION = os.getenv("TPI_VERSION", "v1")
 
+# 🔐 Token STAGING FISSO (facile da ricordare e usare)
+#  Quando vorrai cambiare, modifichi SOLO questa riga.
+TPI_STAGING_TOKEN = "TPI-STAGING-LOCAL-SECRET"
 
-# ==========================
-# MIDDLEWARE DI SICUREZZA
-# ==========================
+# CORS di base (puoi restringere più avanti)
+TPI_ALLOWED_ORIGINS = os.getenv("TPI_ALLOWED_ORIGINS", "*")
 
 
-async def token_guard_middleware(request: Request, call_next):
-    """
-    Protezione semplice per STAGING/PROD:
-
-    - /health SEMPRE accessibile (monitoring)
-    - se TPI_STAGING_TOKEN non è impostato -> nessun blocco (sviluppo locale)
-    - altrimenti richiede header: X-TPI-Token: <token>
-    """
-    path = request.url.path
-
-    # Endpoint sempre libero per health check
-    if path.startswith("/health"):
-        return await call_next(request)
-
-    # Nessun token configurato -> non blocchiamo (utile in dev)
-    if not TPI_STAGING_TOKEN:
-        return await call_next(request)
-
-    token = request.headers.get("X-TPI-Token")
-    if token != TPI_STAGING_TOKEN:
-        return JSONResponse(
-            status_code=401,
-            content={"detail": "Unauthorized – missing or invalid X-TPI-Token"},
-        )
-
-    return await call_next(request)
-
-
-# ==========================
-# APP FASTAPI
-# ==========================
+# --- FastAPI app ---
 
 app = FastAPI(
-    title="TPI Evoluto – Backend",
-    version="0.1.0",
-    description="Backend FastAPI per progetto TPI_evoluto (Camelot staging).",
+    title="TPI_evoluto – staging mini API",
+    version=TPI_VERSION,
 )
 
+if TPI_ALLOWED_ORIGINS == "*":
+    allowed_origins = ["*"]
+else:
+    allowed_origins = [o.strip() for o in TPI_ALLOWED_ORIGINS.split(",") if o.strip()]
 
-# CORS pronto per frontend (Netlify/Vercel)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Token guard su tutte le richieste HTTP
-app.middleware("http")(token_guard_middleware)
+
+# --- Schemi di risposta ---
 
 
-# ==========================
-# ENDPOINTS BASE
-# ==========================
+class HealthResponse(BaseModel):
+    status: str
+    env: str
+    version: str
 
 
-@app.get("/health", tags=["system"])
-def health():
+class RootResponse(BaseModel):
+    status: str
+    env: str
+    version: str
+    message: Optional[str] = None
+
+
+# --- Endpoint ---
+
+
+@app.get("/health", response_model=HealthResponse)
+def health() -> HealthResponse:
     """
-    Healthcheck semplice per Render / monitor.
-    SEMPRE accessibile (anche senza token).
+    Endpoint di salute pubblico (senza token).
+    Usato da Render e dai CESARI per verificare che la staging sia viva.
     """
-    return {"status": "ok", "env": ENV}
+    return HealthResponse(
+        status="ok",
+        env=TPI_ENV,
+        version=TPI_VERSION,
+    )
 
 
-@app.get("/", tags=["system"])
-def root():
+@app.get("/", response_model=RootResponse)
+def root(x_tpi_token: str = Header(default="", alias="X-TPI-Token")) -> RootResponse:
     """
-    Endpoint root protetto da token (in staging/prod).
-    Utile per verificare configurazione e versione.
+    Root protetta da header X-TPI-Token.
+    In STAGING accettiamo SOLO il token TPI_STAGING_TOKEN.
     """
-    return {
-        "app": "TPI_evoluto backend",
-        "env": ENV,
-        "message": "Backend TPI_evoluto operativo",
-        "docs": "/docs",
-    }
+    if not x_tpi_token or x_tpi_token != TPI_STAGING_TOKEN:
+        raise HTTPException(
+            status_code=401,
+            detail="Unauthorized – missing or invalid X-TPI-Token",
+        )
+
+    return RootResponse(
+        status="ok",
+        env=TPI_ENV,
+        version=TPI_VERSION,
+        message="TPI_evoluto staging root reachable",
+    )
