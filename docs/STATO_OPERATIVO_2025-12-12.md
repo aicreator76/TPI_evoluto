@@ -16,3 +16,5 @@ Data: 2025-12-12
 - Integrare WOW nella home principale + 3 pulsanti navigazione visibili.
 
 Fine documento.
+
+- Nota: PR test branch (2025-12-12)
