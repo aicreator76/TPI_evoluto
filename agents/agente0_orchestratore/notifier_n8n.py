@@ -71,9 +71,7 @@ def get_paths(repo_root: Path, cfg: dict[str, Any]) -> dict[str, Path]:
     logs_dir = Path(percorsi.get("logs_dir", root / "logs"))
 
     # dashboard: prima da agente0.dashboard_json, poi da dashboard_file
-    dashboard_default = root / (
-        cfg.get("dashboard_file") or "logs/agente0_dashboard.json"
-    )
+    dashboard_default = root / (cfg.get("dashboard_file") or "logs/agente0_dashboard.json")
     dashboard_path = Path(agente0_cfg.get("dashboard_json", dashboard_default))
 
     feed_default = logs_dir / "agente0_feed_notifiche.json"
@@ -99,9 +97,7 @@ def load_dashboard(dashboard_path: Path) -> dict[str, Any]:
         raise RuntimeError(f"ERRORE parsing JSON dashboard: {exc}") from exc
 
 
-def build_feed_from_dashboard(
-    dashboard: dict[str, Any], out_path: Path
-) -> dict[str, Any]:
+def build_feed_from_dashboard(dashboard: dict[str, Any], out_path: Path) -> dict[str, Any]:
     """
     Prende agente0_dashboard.json e costruisce un feed con:
     - dpi_warning: righe WARNING
@@ -148,9 +144,7 @@ def build_feed_from_dashboard(
     }
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    out_path.write_text(
-        json.dumps(feed, ensure_ascii=False, indent=2), encoding="utf-8"
-    )
+    out_path.write_text(json.dumps(feed, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"[NOTIFIER] Scritto feed notifiche: {out_path}")
     print(
@@ -203,9 +197,7 @@ def send_to_n8n(feed: dict[str, Any], notif_cfg: dict[str, Any]) -> None:
         return
 
     if not url or "TUO-N8N-HOST" in url:
-        print(
-            "[NOTIFIER] URL webhook n8n non configurato o placeholder → nessun invio."
-        )
+        print("[NOTIFIER] URL webhook n8n non configurato o placeholder → nessun invio.")
         return
 
     tot_alert = int(feed.get("totale_dpi_allarme", 0))

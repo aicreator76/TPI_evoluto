@@ -39,9 +39,7 @@ def write_dashboard(dashboard_file: str, df: pd.DataFrame, summary: dict):
         "warning": int(summary.get("warning", 0)),
         "scaduti": int(summary.get("scaduti", 0)),
         "anomali": int(summary.get("anomali", 0)),
-        "righe_errore_data": int(
-            summary.get("righe_errore_data", summary.get("errore_data", 0))
-        ),
+        "righe_errore_data": int(summary.get("righe_errore_data", summary.get("errore_data", 0))),
     }
 
     df_safe = df.copy().astype(str)

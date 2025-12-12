@@ -19,9 +19,7 @@ def upgrade():
     # Create ENUM types for Postgres (safe to execute only on Postgres)
     bind = op.get_bind()
     if bind.dialect.name == "postgresql":
-        op.execute(
-            "CREATE TYPE ruolo_enum AS ENUM ('admin', 'operatore', 'superadmin')"
-        )
+        op.execute("CREATE TYPE ruolo_enum AS ENUM ('admin', 'operatore', 'superadmin')")
         op.execute(
             "CREATE TYPE stato_dpi_enum AS ENUM ('disponibile', 'assegnato', 'ritirato', 'scaduto')"
         )
@@ -92,9 +90,7 @@ def upgrade():
         sa.Column("data_scadenza", sa.Date(), nullable=True),
         sa.Column(
             "stato",
-            sa.Enum(
-                "disponibile", "assegnato", "ritirato", "scaduto", name="stato_dpi_enum"
-            ),
+            sa.Enum("disponibile", "assegnato", "ritirato", "scaduto", name="stato_dpi_enum"),
             nullable=False,
         ),
         sa.Column(

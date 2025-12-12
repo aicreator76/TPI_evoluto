@@ -1,19 +1,16 @@
-# ============================================================
+## ============================================================
 # AELIS — FastAPI main (robusto per dev/prod)
 #
 # - Config da ENV (LOG_LEVEL, ENV, CORS, rate limit, ecc.)
-# - Correlation-ID + security headers (HSTS solo in prod)
-# - HTTPS redirect & TrustedHost SOLO in prod
-# - CORS:
-#     * dev  → allow_origins=["*"], no credenziali
-#     * prod → lista esplicita da ENV
-# - Rate limit per-IP (burst/finestra da ENV) in-memory
-# - Handler eccezioni uniformi (con X-Request-ID / X-Correlation-ID)
-# - Registrazione router tollerante a moduli mancanti
-# - Auth JWT dev: /auth/token
-# - Probes: /health, /healthz (UTC), /version
-# - Endpoint /debug/routes in dev
-# - Endpoint /: panoramica rapida stato API
+# - Modalità DEV senza token (TPI_DEV_NO_AUTH=1) → gestita nei router
+# - Correlation-ID + security headers
+# - HSTS / HTTPS redirect SOLO in prod
+# - CORS dinamico
+# - Rate limit per-IP
+# - Handler eccezioni uniformi
+# - Auth JWT dev (/auth/token)
+# - Router modulari con import tollerante
+# - Health probe, version, debug routes
 # ============================================================
 
 from __future__ import annotations
@@ -36,7 +33,11 @@ from starlette.middleware.httpsredirect import HTTPSRedirectMiddleware
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 from starlette.types import ASGIApp
 
+# Router auth interno
 from app.auth.router import router as auth_router
+
+# Router ACCESSORI 3.0 (import esplicito, niente sorprese)
+from app.api import accessori_listino as accessori_listino_router
 
 
 # --------------------------------------------------
@@ -96,16 +97,10 @@ log = logging.getLogger("tpi.app")
 
 
 # --------------------------------------------------
-# Middleware custom (inline)
+# Middleware custom
 # --------------------------------------------------
 class CorrelationIdMiddleware(BaseHTTPMiddleware):
-    """
-    Genera / propaga un X-Request-ID su ogni richiesta.
-
-    - Legge da header esistenti (x-request-id, x-correlation-id)
-    - Se assente, genera un UUID4
-    - Espone request.state.request_id
-    """
+    """Genera / propaga un X-Request-ID su ogni richiesta."""
 
     def __init__(self, app: ASGIApp, header_name: str = "x-request-id") -> None:
         super().__init__(app)
@@ -125,10 +120,7 @@ class CorrelationIdMiddleware(BaseHTTPMiddleware):
 
 
 class SecurityHeadersMiddleware(BaseHTTPMiddleware):
-    """
-    Aggiunge header di sicurezza base.
-    HSTS abilitato solo se enable_hsts=True (prod).
-    """
+    """Aggiunge header di sicurezza standard (HSTS solo in prod)."""
 
     def __init__(self, app: ASGIApp, enable_hsts: bool = False) -> None:
         super().__init__(app)
@@ -157,16 +149,13 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    """
-    Rate limit grezzo per-IP (in-memory, single-process).
-    Adatto per dev / piccole installazioni on-prem.
-    """
+    """Rate limit semplice per-IP (dev/on-prem)."""
 
     def __init__(self, app: ASGIApp, burst: int, window_sec: int) -> None:
         super().__init__(app)
         self.burst = max(burst, 1)
         self.window = float(max(window_sec, 1))
-        self._hits: dict[str, list[float]] = {}
+        self._hits: dict[str, List[float]] = {}
         self._lock = asyncio.Lock()
 
     async def dispatch(self, request: Request, call_next: RequestResponseEndpoint):
@@ -179,6 +168,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             if len(hits) >= self.burst:
                 log.warning("Rate limit superato per %s", client_ip)
                 raise HTTPException(status_code=429, detail="Too Many Requests")
+
             hits.append(now)
             self._hits[client_ip] = hits
 
@@ -186,7 +176,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
 
 # --------------------------------------------------
-# Lifespan (startup/shutdown moderno)
+# Lifespan
 # --------------------------------------------------
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncIterator[None]:
@@ -208,7 +198,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 # --------------------------------------------------
 app = FastAPI(
     title="TPI_evoluto",
-    description="API TPI — Catalogo DPI, Health, Version, NFC, Auth",
+    description="API TPI — Catalogo DPI, Funi in fibra, Accessori, NFC, Auth",
     version=APP_VERSION,
     contact={"name": "TPI", "email": "sistemianticaduta@gmail.com"},
     lifespan=lifespan,
@@ -216,21 +206,18 @@ app = FastAPI(
 
 
 # --------------------------------------------------
-# Helpers / exception handlers
+# Exception handlers
 # --------------------------------------------------
 def _reqid(request: Request) -> str:
-    for key in ("x-request-id", "x-correlation-id"):
-        v = request.headers.get(key)
-        if v:
-            return v
-    return getattr(request.state, "request_id", "-")
+    return (
+        request.headers.get("x-request-id")
+        or request.headers.get("x-correlation-id")
+        or getattr(request.state, "request_id", "-")
+    )
 
 
 @app.exception_handler(HTTPException)
-async def http_exception_handler(
-    request: Request,
-    exc: HTTPException,
-) -> JSONResponse:
+async def http_exception_handler(request: Request, exc: HTTPException):
     log.warning(
         "HTTP %s %s → %s (req:%s)",
         request.method,
@@ -238,45 +225,31 @@ async def http_exception_handler(
         exc.detail,
         _reqid(request),
     )
-    return JSONResponse(
-        status_code=exc.status_code,
-        content={"detail": exc.detail},
-    )
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
 
 
 @app.exception_handler(Exception)
-async def unhandled_exception_handler(
-    request: Request,
-    exc: Exception,
-) -> JSONResponse:
+async def unhandled_exception_handler(request: Request, exc: Exception):
     log.exception(
         "Unhandled error on %s %s (req:%s)",
         request.method,
         request.url.path,
         _reqid(request),
     )
-    return JSONResponse(
-        status_code=500,
-        content={"detail": "Internal Server Error"},
-    )
+    return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
 
 
 # --------------------------------------------------
-# Registrazione router (tollerante)
+# Registrazione router (modulare, tollerante)
 # --------------------------------------------------
 def _include_optional_router(import_path: str, description: str) -> None:
-    """
-    Import dinamico tollerante per router FastAPI.
-
-    import_path es. "app.dpi_csv:router"
-    """
     try:
         module_path, attr_name = import_path.split(":", 1)
         module = importlib.import_module(module_path)
         router = getattr(module, attr_name)
         app.include_router(router)
         log.info("Router %s registrato (%s)", import_path, description)
-    except Exception as exc:  # pragma: no cover
+    except Exception as exc:
         log.warning(
             "Impossibile registrare router %s (%s): %s",
             import_path,
@@ -285,63 +258,35 @@ def _include_optional_router(import_path: str, description: str) -> None:
         )
 
 
-# Router /auth (JWT dev)
+# Router fondamentali
 app.include_router(auth_router)
-log.info("Router auth registrato (/auth/* — JWT dev)")
+log.info("Router auth registrato (/auth/*)")
 
-# Router storico Catalogo DPI → /api/dpi/csv/*
-_include_optional_router(
-    "app.dpi_csv:router",
-    "Router storico CSV DPI (/api/dpi/csv/*)",
-)
+_include_optional_router("app.dpi_csv:router", "Router storico CSV DPI")
+_include_optional_router("app.routers.csv_import:router", "Import CSV evoluto DPI")
+_include_optional_router("app.routers.csv_export_filtered:router", "Export filtrato DPI")
+_include_optional_router("app.routers.ops:router", "Healthz / Version")
+_include_optional_router("app.routers.nfc_routes:router", "NFC landing")
+_include_optional_router("app.api.funi_fibra:router", "Catalogo funi in fibra")
 
-# Nuovi router CSV (import/export evoluti) se presenti
-_include_optional_router(
-    "app.routers.csv_import:router",
-    "Import CSV avanzato (POST /api/dpi/csv/import-file)",
-)
-_include_optional_router(
-    "app.routers.csv_export_filtered:router",
-    "Export filtrato (GET /api/dpi/csv/export?gruppo=...)",
-)
-
-# Router ops: /api/ops/healthz, /api/ops/version, eventuali metriche
-_include_optional_router(
-    "app.routers.ops:router",
-    "Ops /api/ops/healthz /api/ops/version",
-)
-
-# Router NFC (landing / log accessi / deep link app)
-_include_optional_router(
-    "app.routers.nfc_routes:router",
-    "NFC landing / log / app open",
-)
+# Router ACCESSORI 3.0 — montato in modo esplicito (prefix già nel file)
+app.include_router(accessori_listino_router.router)
+log.info("Router accessori_listino registrato (/api/accessori/* — Listino 3.0 Accessori)")
 
 
 # --------------------------------------------------
-# Middleware (ordine importante)
+# Middleware (ordine corretto)
 # --------------------------------------------------
-# 1) Correlation-ID per audit
 app.add_middleware(CorrelationIdMiddleware)
+app.add_middleware(SecurityHeadersMiddleware, enable_hsts=(ENV == "prod"))
 
-# 2) Security headers (HSTS solo in prod)
-app.add_middleware(
-    SecurityHeadersMiddleware,
-    enable_hsts=(ENV == "prod"),
-)
-
-# 3) HTTPS redirect + Trusted hosts SOLO in prod
 if ENV == "prod":
     app.add_middleware(HTTPSRedirectMiddleware)
     if not ALLOWED_HOSTS:
         ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
-app.add_middleware(
-    TrustedHostMiddleware,
-    allowed_hosts=ALLOWED_HOSTS or ["*"],
-)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS or ["*"])
 
-# 4) CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
@@ -350,7 +295,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 5) Rate limit per-IP
 app.add_middleware(
     RateLimitMiddleware,
     burst=RATE_BURST,
@@ -359,48 +303,30 @@ app.add_middleware(
 
 
 # --------------------------------------------------
-# Helpers per introspezione
+# Helpers introspezione rotte
 # --------------------------------------------------
-def _list_router_names() -> List[str]:
-    """
-    Ritorna una lista *grezza* di nomi di router presenti,
-    basandosi sui prefix registrati.
-    Solo per avere un'idea nello /.
-    """
-    prefixes: set[str] = set()
-    for route in app.routes:
-        prefix = getattr(route, "path", None)
-        if not prefix:
-            continue
-        # Prendiamo solo i prefix di "namespace" principali
-        if prefix.startswith("/auth"):
-            prefixes.add("auth")
-        elif prefix.startswith("/api/dpi/csv"):
-            prefixes.add("dpi_csv")
-        elif prefix.startswith("/api/ops"):
-            prefixes.add("ops")
-        elif prefix.startswith("/api/nfc"):
-            prefixes.add("nfc_routes")
-    return sorted(prefixes)
+def _list_route_paths() -> List[str]:
+    """Ritorna l'elenco dei path registrati (unico, ordinato)."""
+    paths: set[str] = set()
+    for r in app.routes:
+        path = getattr(r, "path", None)
+        if path:
+            paths.add(path)
+    return sorted(paths)
 
 
 # --------------------------------------------------
-# Endpoint base e probes
+# Endpoint base
 # --------------------------------------------------
 @app.get("/")
 def root() -> Dict[str, Any]:
-    """
-    Panoramica rapida stato API.
-
-    Utile per check manuali / browser senza dover aprire la docs.
-    """
     return {
         "app": "TPI_evoluto",
         "env": ENV,
         "version": APP_VERSION,
         "git_sha": GIT_SHA,
         "build_time": BUILD_TIME,
-        "routers": _list_router_names(),
+        "routes": _list_route_paths(),
         "docs": {
             "openapi": "/openapi.json",
             "swagger_ui": "/docs",
@@ -411,13 +337,11 @@ def root() -> Dict[str, Any]:
 
 @app.get("/health")
 def health() -> Dict[str, Any]:
-    """Probe semplice per retro-compatibilità."""
     return {"status": "ok"}
 
 
 @app.get("/healthz")
 def healthz() -> Dict[str, Any]:
-    """Probe preferita con timestamp UTC ISO 8601."""
     return {
         "status": "ok",
         "time": datetime.now(timezone.utc).isoformat(),
@@ -426,7 +350,6 @@ def healthz() -> Dict[str, Any]:
 
 @app.get("/version")
 def version() -> Dict[str, Any]:
-    """Info versione leggibili da automazioni / monitoring."""
     return {
         "app": "TPI_evoluto",
         "version": APP_VERSION,
@@ -437,13 +360,12 @@ def version() -> Dict[str, Any]:
 
 
 # --------------------------------------------------
-# Debug dev-only (non in prod)
+# Debug solo in dev
 # --------------------------------------------------
 if ENV != "prod":
 
     @app.get("/debug/routes")
     def debug_routes() -> List[Dict[str, Any]]:
-        """Lista dei path registrati, utile in dev per capire cosa è attivo."""
         descr: List[Dict[str, Any]] = []
         for r in app.routes:
             descr.append(

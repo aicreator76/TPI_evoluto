@@ -35,32 +35,18 @@ class Azienda(Base):
     note: str | None = Column(Text, nullable=True)
 
     # Relazioni
-    utenti = relationship(
-        "Utente", back_populates="azienda", cascade="all, delete-orphan"
-    )
-    operatori = relationship(
-        "Operatore", back_populates="azienda", cascade="all, delete-orphan"
-    )
-    dpi_items = relationship(
-        "DPI", back_populates="azienda", cascade="all, delete-orphan"
-    )
+    utenti = relationship("Utente", back_populates="azienda", cascade="all, delete-orphan")
+    operatori = relationship("Operatore", back_populates="azienda", cascade="all, delete-orphan")
+    dpi_items = relationship("DPI", back_populates="azienda", cascade="all, delete-orphan")
     impianti = relationship(
         "ImpiantoAnticaduta",
         back_populates="azienda",
         cascade="all, delete-orphan",
     )
-    ispezioni = relationship(
-        "Ispezione", back_populates="azienda", cascade="all, delete-orphan"
-    )
-    corsi = relationship(
-        "Corso", back_populates="azienda", cascade="all, delete-orphan"
-    )
-    attestati = relationship(
-        "Attestato", back_populates="azienda", cascade="all, delete-orphan"
-    )
-    allegati = relationship(
-        "Allegato", back_populates="azienda", cascade="all, delete-orphan"
-    )
+    ispezioni = relationship("Ispezione", back_populates="azienda", cascade="all, delete-orphan")
+    corsi = relationship("Corso", back_populates="azienda", cascade="all, delete-orphan")
+    attestati = relationship("Attestato", back_populates="azienda", cascade="all, delete-orphan")
+    allegati = relationship("Allegato", back_populates="azienda", cascade="all, delete-orphan")
 
 
 Index("ix_azienda_codice", Azienda.codice)
@@ -253,9 +239,7 @@ class Ispezione(Base):
     azienda = relationship("Azienda", back_populates="ispezioni")
     dpi = relationship("DPI", back_populates="ispezioni")
     impianto = relationship("ImpiantoAnticaduta", back_populates="ispezioni")
-    allegati = relationship(
-        "Allegato", back_populates="ispezione", cascade="all, delete-orphan"
-    )
+    allegati = relationship("Allegato", back_populates="ispezione", cascade="all, delete-orphan")
     operatore = relationship("Operatore")
 
 

@@ -100,9 +100,7 @@ def calcola_cruscotto(df: pd.DataFrame) -> Dict[str, Any]:
         else:
             ok += 1
 
-    semaforo = calcola_semaforo(
-        ok=ok, warning=warning, scaduti=scaduti, anomalie=anomalie
-    )
+    semaforo = calcola_semaforo(ok=ok, warning=warning, scaduti=scaduti, anomalie=anomalie)
 
     return {
         "totale_dpi": totale,
@@ -143,16 +141,16 @@ def salva_cruscotto(cruscotto: Dict[str, Any]) -> None:
 <body>
 <h1>Cruscotto DPI</h1>
 
-<p class="semaforo">Semaforo modulo DPI: {cruscotto['semaforo_modulo_dpi']}</p>
-<p><strong>Ultimo aggiornamento:</strong> {cruscotto['updated_at']}</p>
+<p class="semaforo">Semaforo modulo DPI: {cruscotto["semaforo_modulo_dpi"]}</p>
+<p><strong>Ultimo aggiornamento:</strong> {cruscotto["updated_at"]}</p>
 
 <ul>
-  <li>Totale DPI: {cruscotto['totale_dpi']}</li>
-  <li>OK: {cruscotto['ok']}</li>
-  <li>Warning (≤{WARNING_DAYS}gg): {cruscotto['warning']}</li>
-  <li>Scaduti: {cruscotto['scaduti']}</li>
-  <li>Anomalie: {cruscotto['anomalie']}</li>
-  <li>Righe con errore data: {cruscotto['righe_errore_data']}</li>
+  <li>Totale DPI: {cruscotto["totale_dpi"]}</li>
+  <li>OK: {cruscotto["ok"]}</li>
+  <li>Warning (≤{WARNING_DAYS}gg): {cruscotto["warning"]}</li>
+  <li>Scaduti: {cruscotto["scaduti"]}</li>
+  <li>Anomalie: {cruscotto["anomalie"]}</li>
+  <li>Righe con errore data: {cruscotto["righe_errore_data"]}</li>
 </ul>
 </body>
 </html>

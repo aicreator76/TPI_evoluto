@@ -1,0 +1,429 @@
+{
+  "prodotti": [
+    {
+      "codice": "TPI-FOREST-P07-PERFECTION-F30",
+      "nome": "PERFECTION F30 - WOODRUNNER",
+      "descrizione": "Fune forestale in acciaio SUPERFILL ad alta resistenza per uso forestale, con elevata forza di rottura e ridotto allungamento.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "FUNE ACCIAIO",
+      "materiale": "Acciaio, trefoli SUPERFILL",
+      "normative": [
+        "EN 12385-4"
+      ],
+      "pagina_pdf": 7,
+      "immagine": "IMG_TPI-FOREST-P07-PERFECTION-F30.png"
+    },
+    {
+      "codice": "TPI-FOREST-P08-QS-610-V",
+      "nome": "QS 610 V",
+      "descrizione": "Fune speciale in acciaio SUPERFILL con anima plastificata PLASTFILL, elevata resistenza alla rottura e flessibilita per avvolgimento multistrato.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "FUNE ACCIAIO",
+      "materiale": "Acciaio, anima plastificata",
+      "normative": [
+        "EN 12385-4"
+      ],
+      "pagina_pdf": 8,
+      "immagine": "IMG_TPI-FOREST-P08-QS-610-V.png"
+    },
+    {
+      "codice": "TPI-FOREST-P09-EVOLUTION-QS-816-V",
+      "nome": "EVOLUTION QS 816 V - WOODLINER",
+      "descrizione": "Fune di sospensione in acciaio per carrozze Woodliner, molto flessibile con elevata stabilita alla pressione laterale.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "FUNE ACCIAIO",
+      "materiale": "Acciaio, SUPERFILL, PLASTFILL",
+      "normative": [
+        "EN 12385-4"
+      ],
+      "pagina_pdf": 9,
+      "immagine": "IMG_TPI-FOREST-P09-EVOLUTION-QS-816-V.png"
+    },
+    {
+      "codice": "TPI-FOREST-P10-F20-625",
+      "nome": "F20 - 625",
+      "descrizione": "Fune forestale in acciaio compatta, bassa torsione, flessibile e robusta per trazione, recupero e controvento.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "FUNE ACCIAIO",
+      "materiale": "Acciaio",
+      "normative": [
+        "EN 12385-4"
+      ],
+      "pagina_pdf": 10,
+      "immagine": "IMG_TPI-FOREST-P10-F20-625.png"
+    },
+    {
+      "codice": "TPI-FOREST-P11-F10-619",
+      "nome": "F10 - 619",
+      "descrizione": "Fune in acciaio compatta, bassa torsione e resistente all abrasione per trazione, recupero e controvento.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "FUNE ACCIAIO",
+      "materiale": "Acciaio",
+      "normative": [
+        "EN 12385-4"
+      ],
+      "pagina_pdf": 11,
+      "immagine": "IMG_TPI-FOREST-P11-F10-619.png"
+    },
+    {
+      "codice": "TPI-FOREST-P13-STRATOS-ANCHOR",
+      "nome": "STRATOS ANCHOR",
+      "descrizione": "Tirante tessile in fibra UHMWPE con calza resistente ai raggi UV per ancoraggio di gru a cavo e linee aeree.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "FUNI FIBRA / TIRANTI",
+      "materiale": "UHMWPE, polietilene",
+      "normative": [],
+      "pagina_pdf": 13,
+      "immagine": "IMG_TPI-FOREST-P13-STRATOS-ANCHOR.png"
+    },
+    {
+      "codice": "TPI-FOREST-P13-STRATOS-EXTENSION",
+      "nome": "STRATOS EXTENSION",
+      "descrizione": "Prolunga tessile per cavi di sospensione con anima ad alta robustezza per avvolgimento diretto attorno all albero.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "FUNI FIBRA / PROLUNGHE",
+      "materiale": "UHMWPE",
+      "normative": [],
+      "pagina_pdf": 13,
+      "immagine": "IMG_TPI-FOREST-P13-STRATOS-EXTENSION.png"
+    },
+    {
+      "codice": "TPI-FOREST-P14-STRATOS-MOUNTING-LIGHT-NG",
+      "nome": "STRATOS MOUNTING LIGHT NG",
+      "descrizione": "Fune ausiliaria e di montaggio in UHMWPE altamente compresso, estremamente leggera e resistente all abrasione.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "FUNI FIBRA AUSILIARIE",
+      "materiale": "UHMWPE",
+      "normative": [],
+      "pagina_pdf": 14,
+      "immagine": "IMG_TPI-FOREST-P14-STRATOS-MOUNTING-LIGHT-NG.png"
+    },
+    {
+      "codice": "TPI-FOREST-P14-STRATOS-SUPPORT",
+      "nome": "STRATOS SUPPORT",
+      "descrizione": "Sistema tessile per messa in sicurezza di alberi di supporto con corda leggera e anelli di montaggio.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "SISTEMI DI SUPPORTO",
+      "materiale": "Fibre sintetiche",
+      "normative": [],
+      "pagina_pdf": 14,
+      "immagine": "IMG_TPI-FOREST-P14-STRATOS-SUPPORT.png"
+    },
+    {
+      "codice": "TPI-FOREST-P15-STRATOS-WINCH-PRO",
+      "nome": "STRATOS WINCH PRO",
+      "descrizione": "Fune kernmantle in UHMWPE con guaina protettiva per verricelli forestali professionali.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "FUNI FIBRA PER VERRICELLI",
+      "materiale": "UHMWPE",
+      "normative": [],
+      "pagina_pdf": 15,
+      "immagine": "IMG_TPI-FOREST-P15-STRATOS-WINCH-PRO.png"
+    },
+    {
+      "codice": "TPI-FOREST-P16-STRATOS-WINCH-LIGHT-H",
+      "nome": "STRATOS WINCH LIGHT H",
+      "descrizione": "Fune in UHMWPE a 12 capi altamente compressa per verricelli forestali con massima resistenza e durata.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "FUNI FIBRA PER VERRICELLI",
+      "materiale": "UHMWPE",
+      "normative": [],
+      "pagina_pdf": 16,
+      "immagine": "IMG_TPI-FOREST-P16-STRATOS-WINCH-LIGHT-H.png"
+    },
+    {
+      "codice": "TPI-FOREST-P16-STRATOS-WINCH-LIGHT-S",
+      "nome": "STRATOS WINCH LIGHT S",
+      "descrizione": "Fune in UHMWPE a 12 capi non compatta per verricelli, soluzione economica per utenti hobby.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "FUNI FIBRA PER VERRICELLI",
+      "materiale": "UHMWPE",
+      "normative": [],
+      "pagina_pdf": 16,
+      "immagine": "IMG_TPI-FOREST-P16-STRATOS-WINCH-LIGHT-S.png"
+    },
+    {
+      "codice": "TPI-FOREST-P18-STRATOS-VGE-WINCH-PRO",
+      "nome": "STRATOS pezzo finale VGE Winch Pro",
+      "descrizione": "Terminale di invasatura per STRATOS Winch Pro che protegge la guaina e consente collegamento diretto.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "TERMINALI FUNE",
+      "materiale": "Acciaio e componenti sintetici",
+      "normative": [],
+      "pagina_pdf": 18,
+      "immagine": "IMG_TPI-FOREST-P18-STRATOS-VGE-WINCH-PRO.png"
+    },
+    {
+      "codice": "TPI-FOREST-P18-STRATOS-SEILPUCK",
+      "nome": "STRATOS Seilpuck",
+      "descrizione": "Disco di scorrimento leggero con ampio raggio di deflessione per ridurre l usura della fune del verricello.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "GUIDACORDA / PULEGGE",
+      "materiale": "Plastica",
+      "normative": [],
+      "pagina_pdf": 18,
+      "immagine": "IMG_TPI-FOREST-P18-STRATOS-SEILPUCK.png"
+    },
+    {
+      "codice": "TPI-FOREST-P18-STRATOS-SET-GIUNZIONI",
+      "nome": "STRATOS Set di giunzioni",
+      "descrizione": "Kit per giunzione funi STRATOS Winch Light con aghi, forbici, accessori e istruzioni.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "KIT GIUNZIONE",
+      "materiale": "Componenti misti",
+      "normative": [],
+      "pagina_pdf": 18,
+      "immagine": "IMG_TPI-FOREST-P18-STRATOS-SET-GIUNZIONI.png"
+    },
+    {
+      "codice": "TPI-FOREST-P18-STRATOS-SET-INVASATURA",
+      "nome": "STRATOS set di invasatura",
+      "descrizione": "Set bicomponente con resina epossidica e indurente per invasatura terminali funi STRATOS.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "KIT INVASATURA",
+      "materiale": "Resina epossidica",
+      "normative": [],
+      "pagina_pdf": 18,
+      "immagine": "IMG_TPI-FOREST-P18-STRATOS-SET-INVASATURA.png"
+    },
+    {
+      "codice": "TPI-FOREST-P19-STRATOS-CORDA-GIROCOLLO",
+      "nome": "STRATOS Corda girocollo",
+      "descrizione": "Corda girocollo in STRATOS Winch Pro con cuciture ad alta resistenza e speciale nippel di collegamento.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "CORDE GIROCOLLO SINTETICHE",
+      "materiale": "UHMWPE e componenti metallici",
+      "normative": [],
+      "pagina_pdf": 19,
+      "immagine": "IMG_TPI-FOREST-P19-STRATOS-CORDA-GIROCOLLO.png"
+    },
+    {
+      "codice": "TPI-FOREST-P19-CORDE-GIROCOLLO-ACCIAIO",
+      "nome": "Corde girocollo in funi d acciaio",
+      "descrizione": "Corde girocollo con funi d acciaio standard per movimentazione a terra.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "CORDE GIROCOLLO ACCIAIO",
+      "materiale": "Acciaio",
+      "normative": [],
+      "pagina_pdf": 19,
+      "immagine": "IMG_TPI-FOREST-P19-CORDE-GIROCOLLO-ACCIAIO.png"
+    },
+    {
+      "codice": "TPI-FOREST-P20-STRATOS-EASYGLIDE",
+      "nome": "STRATOS Easyglide",
+      "descrizione": "Aliante per funi in fibra con corpo in plastica e anello Dyneema, riduce la spinta sulla fune del verricello.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "SCORRIFUNE",
+      "materiale": "Plastica e Dyneema",
+      "normative": [],
+      "pagina_pdf": 20,
+      "immagine": "IMG_TPI-FOREST-P20-STRATOS-EASYGLIDE.png"
+    },
+    {
+      "codice": "TPI-FOREST-P20-GO-10",
+      "nome": "GO 10",
+      "descrizione": "Scivolante per funi in fibra e acciaio, adatto a funi verricello fino a 17 mm.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "SCORRIFUNE",
+      "materiale": "Acciaio/lega",
+      "normative": [],
+      "pagina_pdf": 20,
+      "immagine": "IMG_TPI-FOREST-P20-GO-10.png"
+    },
+    {
+      "codice": "TPI-FOREST-P20-GBGV",
+      "nome": "GBGV - Aliante per funi d acciaio",
+      "descrizione": "Collegamento a catena per uso con terminale VGE Winch Pro che mantiene la fune del verricello diritta.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "SCORRIFUNE / COLLEGAMENTI",
+      "materiale": "Acciaio",
+      "normative": [],
+      "pagina_pdf": 20,
+      "immagine": "IMG_TPI-FOREST-P20-GBGV.png"
+    },
+    {
+      "codice": "TPI-FOREST-P20-GOS",
+      "nome": "GOS - Occhiello scorrevole",
+      "descrizione": "Occhiello scorrevole per corde choker per guidare e distribuire il carico lungo la fune.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "OCCHIELLI SCORREVOLI",
+      "materiale": "Acciaio",
+      "normative": [],
+      "pagina_pdf": 20,
+      "immagine": "IMG_TPI-FOREST-P20-GOS.png"
+    },
+    {
+      "codice": "TPI-FOREST-P21-STRATOS-ENDTEIL-LT",
+      "nome": "STRATOS Endteil LT",
+      "descrizione": "Parte terminale STRATOS LT per funi verricello STRATOS con attacco per nippel.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "TERMINALI FUNE",
+      "materiale": "Acciaio",
+      "normative": [],
+      "pagina_pdf": 21,
+      "immagine": "IMG_TPI-FOREST-P21-STRATOS-ENDTEIL-LT.png"
+    },
+    {
+      "codice": "TPI-FOREST-P21-GANCIO-SCORREVOLE-WLL",
+      "nome": "Gancio scorrevole fune WLL",
+      "descrizione": "Gancio scorrevole per funi con WLL e sicurezza 5:1 per movimentazione carichi.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "GANCI",
+      "materiale": "Acciaio",
+      "normative": [],
+      "pagina_pdf": 21,
+      "immagine": "IMG_TPI-FOREST-P21-GANCIO-SCORREVOLE-WLL.png"
+    },
+    {
+      "codice": "TPI-FOREST-P21-SERRATURE-A-CUNEO",
+      "nome": "Serrature a cuneo",
+      "descrizione": "Serrature a cuneo con bullone per terminali regolabili su funi metalliche.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "TERMINALI REGOLABILI",
+      "materiale": "Acciaio",
+      "normative": [
+        "EN 13411-6"
+      ],
+      "pagina_pdf": 21,
+      "immagine": "IMG_TPI-FOREST-P21-SERRATURE-A-CUNEO.png"
+    },
+    {
+      "codice": "TPI-FOREST-P21-CLIP-FUNI-METALLICHE",
+      "nome": "Clip per funi metalliche",
+      "descrizione": "Clip per funi metalliche secondo EN 13411-5 per cappi e redance su funi di acciaio.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "MORSETTI FUNE",
+      "materiale": "Acciaio zincato",
+      "normative": [
+        "EN 13411-5"
+      ],
+      "pagina_pdf": 21,
+      "immagine": "IMG_TPI-FOREST-P21-CLIP-FUNI-METALLICHE.png"
+    },
+    {
+      "codice": "TPI-FOREST-P21-GRILLO-ALTA-RESISTENZA",
+      "nome": "Grillo ad alta resistenza",
+      "descrizione": "Grillo curvo in acciaio ad alta resistenza con perno a vite e WLL con sicurezza 5:1.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "GRILLI",
+      "materiale": "Acciaio",
+      "normative": [],
+      "pagina_pdf": 21,
+      "immagine": "IMG_TPI-FOREST-P21-GRILLO-ALTA-RESISTENZA.png"
+    },
+    {
+      "codice": "TPI-FOREST-P22-A120-A180",
+      "nome": "A 120 & A 180 - Pulegge forestali",
+      "descrizione": "Pulegge di rinvio forestali in lega di alluminio con rulli in poliammide su cuscinetti a rulli.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "PULEGGE",
+      "materiale": "Alluminio, poliammide",
+      "normative": [],
+      "pagina_pdf": 22,
+      "immagine": "IMG_TPI-FOREST-P22-A120-A180.png"
+    },
+    {
+      "codice": "TPI-FOREST-P22-RS-TEM",
+      "nome": "RS-TEM - Fascia tonda",
+      "descrizione": "Fascia tonda in poliestere secondo EN 1492-2 con giacca singola e codifica a colori.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "IMBRACATURE DI CARICO",
+      "materiale": "Poliestere",
+      "normative": [
+        "EN 1492-2"
+      ],
+      "pagina_pdf": 22,
+      "immagine": "IMG_TPI-FOREST-P22-RS-TEM.png"
+    },
+    {
+      "codice": "TPI-FOREST-P23-CINGHIE-SOLLEVAMENTO",
+      "nome": "Cinghie di sollevamento",
+      "descrizione": "Cinghie di sollevamento a 2 strati in poliestere con passanti rinforzati.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "IMBRACATURE DI CARICO",
+      "materiale": "Poliestere",
+      "normative": [],
+      "pagina_pdf": 23,
+      "immagine": "IMG_TPI-FOREST-P23-CINGHIE-SOLLEVAMENTO.png"
+    },
+    {
+      "codice": "TPI-FOREST-P23-CINGHIA-ANCORAGGIO-50MM",
+      "nome": "Cinghia di ancoraggio 50 mm",
+      "descrizione": "Cinghia di ancoraggio con banda da 50 mm e cricchetto secondo EN 12195-2.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "SISTEMI DI RIZZAGGIO",
+      "materiale": "Poliestere, acciaio",
+      "normative": [
+        "EN 12195-2"
+      ],
+      "pagina_pdf": 23,
+      "immagine": "IMG_TPI-FOREST-P23-CINGHIA-ANCORAGGIO-50MM.png"
+    },
+    {
+      "codice": "TPI-FOREST-P23-CINGHIA-ANCORAGGIO-75MM",
+      "nome": "Cinghia di ancoraggio 75 mm pesante",
+      "descrizione": "Cinghia di ancoraggio per carichi pesanti, banda da 75 mm con cricchetto secondo EN 12195-2.",
+      "gruppo_dpi": "ALTRO",
+      "categoria_tecnica": "SISTEMI DI RIZZAGGIO",
+      "materiale": "Poliestere, acciaio",
+      "normative": [
+        "EN 12195-2"
+      ],
+      "pagina_pdf": 23,
+      "immagine": "IMG_TPI-FOREST-P23-CINGHIA-ANCORAGGIO-75MM.png"
+    },
+    {
+      "codice": "TPI-FOREST-P24-ERGO-CLICK-PLUS",
+      "nome": "ERGO CLICK PLUS",
+      "descrizione": "Imbracatura di sicurezza con cintura per montaggio, fettucce da 45 mm, imbottiture e fibbie in alluminio.",
+      "gruppo_dpi": "IMBRACATURE",
+      "categoria_tecnica": "IMBRACATURA ANTICADUTA",
+      "materiale": "Poliestere, alluminio",
+      "normative": [
+        "EN 358",
+        "EN 361"
+      ],
+      "pagina_pdf": 24,
+      "immagine": "IMG_TPI-FOREST-P24-ERGO-CLICK-PLUS.png"
+    },
+    {
+      "codice": "TPI-FOREST-P24-FALLSORB-Y-BUNGY",
+      "nome": "FallSorb y bungy",
+      "descrizione": "Cordino doppio elastico con assorbitore di energia certificato EN 355 per utilizzi da 50 a 140 kg.",
+      "gruppo_dpi": "CORDINI",
+      "categoria_tecnica": "CORDINO CON ASSORBITORE",
+      "materiale": "Nastro elastico e componenti metallici",
+      "normative": [
+        "EN 355"
+      ],
+      "pagina_pdf": 24,
+      "immagine": "IMG_TPI-FOREST-P24-FALLSORB-Y-BUNGY.png"
+    },
+    {
+      "codice": "TPI-FOREST-P25-ROCKY",
+      "nome": "ROCKY",
+      "descrizione": "Cordino di posizionamento regolabile con corda kernmantle e tubo di protezione, certificato EN 358.",
+      "gruppo_dpi": "CORDINI",
+      "categoria_tecnica": "CORDINO DI POSIZIONAMENTO",
+      "materiale": "Corda kernmantle e componenti metallici",
+      "normative": [
+        "EN 358"
+      ],
+      "pagina_pdf": 25,
+      "immagine": "IMG_TPI-FOREST-P25-ROCKY.png"
+    },
+    {
+      "codice": "TPI-FOREST-P25-OVAL-TL",
+      "nome": "Moschettone in acciaio Oval TL",
+      "descrizione": "Moschettone ovale in acciaio zincato con chiusura Trilock Catch-Free, certificato EN 362.",
+      "gruppo_dpi": "ACCESSORI",
+      "categoria_tecnica": "MOSCHETTONI",
+      "materiale": "Acciaio zincato",
+      "normative": [
+        "EN 362"
+      ],
+      "pagina_pdf": 25,
+      "immagine": "IMG_TPI-FOREST-P25-OVAL-TL.png"
+    }
+  ]
+}

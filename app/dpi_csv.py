@@ -93,9 +93,7 @@ def _normalize_row(row: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def _merge_items(
-    items: List[dict[str, Any]], rows: List[dict[str, Any]]
-) -> Tuple[int, int]:
+def _merge_items(items: List[dict[str, Any]], rows: List[dict[str, Any]]) -> Tuple[int, int]:
     idx = {(it.get("codice") or "").strip(): i for i, it in enumerate(items)}
     updated = 0
     for r in rows:
@@ -135,9 +133,7 @@ def template_csv() -> PlainTextResponse:
 
 
 @router.post("/save")
-async def import_and_save_csv(
-    raw: bytes = Body(..., media_type="text/csv")
-) -> JSONResponse:
+async def import_and_save_csv(raw: bytes = Body(..., media_type="text/csv")) -> JSONResponse:
     """
     Import CSV da raw text/csv (es. pipeline CI, automazioni).
     - Salva il file in data/cataloghi/imports
@@ -263,9 +259,9 @@ def catalogo_report_html() -> HTMLResponse:
     preview = items[:50]
 
     rows_html = "\n".join(
-        f"<tr><td>{i+1}</td><td>{it.get('codice','')}</td>"
-        f"<td>{it.get('descrizione','')}</td><td>{it.get('prezzo','')}</td>"
-        f"<td>{it.get('gruppo','')}</td></tr>"
+        f"<tr><td>{i + 1}</td><td>{it.get('codice', '')}</td>"
+        f"<td>{it.get('descrizione', '')}</td><td>{it.get('prezzo', '')}</td>"
+        f"<td>{it.get('gruppo', '')}</td></tr>"
         for i, it in enumerate(preview)
     )
 

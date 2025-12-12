@@ -1,0 +1,90 @@
+@startuml
+title ERD ACCESSORI 3.0 – TPI_evoluto (2025-12-08)
+
+/'
+ Assunzioni colonne (adatta ai nomi reali nel DB):
+ - tpi_accessori_famiglie:
+     id              INTEGER PK
+     famiglia        TEXT        -- nome famiglia (es. "Morsetti per funi")
+     categoria       TEXT        -- macro-gruppo (es. "ACCESSORI CATENA G8")
+     sorgente        TEXT        -- es. "MORSETTI", "CATENA_G8", "TYCAN", "ANCORAGGI"
+     note            TEXT
+     origine_catalogo TEXT       -- file/pagina catalogo origine
+ - tpi_accessori_morsetti / catena_g8 / tycan:
+     id              INTEGER PK
+     id_tpi          TEXT        -- codice interno TPI (univoco)
+     codice          TEXT        -- codice di fabbrica / commerciale
+     descrizione     TEXT
+     famiglia        TEXT        -- testo collegabile a tpi_accessori_famiglie.famiglia
+     sorgente        TEXT        -- "MORSETTI" | "CATENA_G8" | "TYCAN"
+     wll             TEXT        -- portata di lavoro (testo o numerico)
+     note            TEXT
+     pagina_catalogo INTEGER
+     origine_catalogo TEXT
+'/
+
+
+entity "tpi_accessori_famiglie" as T_FAM {
+  + id : INTEGER <<PK>>
+  --
+  famiglia        : TEXT
+  categoria       : TEXT
+  sorgente        : TEXT
+  note            : TEXT
+  origine_catalogo : TEXT
+}
+
+entity "tpi_accessori_morsetti" as T_MOR {
+  + id : INTEGER <<PK>>
+  --
+  id_tpi          : TEXT
+  codice          : TEXT
+  descrizione     : TEXT
+  famiglia        : TEXT
+  sorgente        : TEXT
+  wll             : TEXT
+  note            : TEXT
+  pagina_catalogo : INTEGER
+  origine_catalogo : TEXT
+}
+
+entity "tpi_accessori_catena_g8" as T_G8 {
+  + id : INTEGER <<PK>>
+  --
+  id_tpi          : TEXT
+  codice          : TEXT
+  descrizione     : TEXT
+  famiglia        : TEXT
+  sorgente        : TEXT
+  wll             : TEXT
+  note            : TEXT
+  pagina_catalogo : INTEGER
+  origine_catalogo : TEXT
+}
+
+entity "tpi_accessori_tycan" as T_TYC {
+  + id : INTEGER <<PK>>
+  --
+  id_tpi          : TEXT
+  codice          : TEXT
+  descrizione     : TEXT
+  famiglia        : TEXT
+  sorgente        : TEXT
+  wll             : TEXT
+  note            : TEXT
+  pagina_catalogo : INTEGER
+  origine_catalogo : TEXT
+}
+
+/'
+ Relazioni logiche (non per forza con FOREIGN KEY reali):
+ - famiglia (TEXT) nei codici ↔ famiglia (TEXT) in tpi_accessori_famiglie
+ - sorgente (TEXT) distingue il tipo di accessorio
+'/
+
+
+T_FAM ||..o{ T_MOR : "famiglia (TEXT)"
+T_FAM ||..o{ T_G8  : "famiglia (TEXT)"
+T_FAM ||..o{ T_TYC : "famiglia (TEXT)"
+
+@enduml
