@@ -1,0 +1,13 @@
+SCRIPT (60–90 secondi)
+
+1) “Questa è la WOW Dashboard TPI: non è una slide, è una mini webapp.”
+2) “Qui vedete lo stato: DPI attivi, in scadenza, scaduti. E sotto c’è il catalogo.”
+3) “La parte WOW: ogni DPI è cliccabile.”
+   → clic su riga DPI
+4) “Si apre la scheda: dettaglio + timeline movimenti e revisioni.”
+5) “Ora simulo una revisione reale: un click e il sistema registra l’evento.”
+   → click “Segna revisione OK”
+6) “Questa è la base: aggancio API/DB e diventa produzione (log, tracciabilità, audit).”
+7) “Stesso schema vale per Accessori 3.0 e Sottogancio: unificazione cataloghi, movimenti, revisione.”
+CHIUSURA:
+“Lunedì mostro una demo che gira sul portatile, fa WOW, e dimostra il motore.”
