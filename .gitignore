@@ -38,3 +38,6 @@ RELEASE_TPI/
 REPORT_DELTA/
 catalogo_work/
 docs_legacy/
+
+# NO BACKUP FILES
+*.bak_*
