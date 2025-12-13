@@ -1,0 +1,4 @@
+﻿window.TPI_CONFIG = {
+  API_BASE: "INCOLLA_BEST_BASE",
+  REFRESH_MS: 8000
+};
