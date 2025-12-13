@@ -1,179 +1,44 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TPI – WOW Dashboard DPI</title>
+﻿<script>
+// ===============================
+// MOCK API ONLINE â€“ WOW MODE
+// ===============================
+const MOCK_API = {
+  health: {
+    status: "online",
+    version: "demo",
+    env: "github-pages",
+    updated: new Date().toISOString()
+  },
+  stats: () => ({
+    attivi: Math.floor(Math.random()*5)+3,
+    scadenza: Math.floor(Math.random()*3)+1,
+    scaduti: Math.floor(Math.random()*2),
+    revisione: Math.floor(Math.random()*4)+1
+  })
+};
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-body {
-    background: #0b1220;
-    color: #e3e8f1;
-    font-family: 'Segoe UI', sans-serif;
-}
-.card {
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 14px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.25);
-}
-.badge-green { background:#23d160; }
-.badge-yellow { background:#f0c330; }
-.badge-red { background:#e53e3e; }
-#langSwitch, #themeSwitch { cursor:pointer; }
-</style>
-</head>
-
-<body class="p-4">
-
-<!-- HEADER -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h2 class="fw-bold">TPI – WOW Dashboard DPI</h2>
-        <h6 class="text-secondary">Motore reale • API reale • Effetto WOW garantito</h6>
-    </div>
-
-    <div class="d-flex gap-3">
-        <div id="langSwitch" class="btn btn-sm btn-outline-light">IT</div>
-        <div id="themeSwitch" class="btn btn-sm btn-outline-light">Tema</div>
-    </div>
-</div>
-
-<!-- KPI CARDS -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card p-3 text-center">
-            <h5>Prodotti Attivi</h5>
-            <div id="kpi_attivi" class="fs-2 fw-bold">–</div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card p-3 text-center">
-            <h5>In Scadenza</h5>
-            <div id="kpi_scadenza" class="fs-2 fw-bold">–</div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card p-3 text-center">
-            <h5>Scaduti</h5>
-            <div id="kpi_scaduti" class="fs-2 fw-bold">–</div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card p-3 text-center">
-            <h5>Revisione OK</h5>
-            <div id="kpi_ok" class="fs-2 fw-bold">–</div>
-        </div>
-    </div>
-</div>
-
-<!-- TABELLA DPI -->
-<div class="card p-3">
-    <h4 class="mb-3">DPI & Revisioni</h4>
-    <table class="table table-dark table-hover">
-        <thead>
-            <tr>
-                <th>Codice</th>
-                <th>Descrizione</th>
-                <th>Famiglia</th>
-                <th>Stato</th>
-            </tr>
-        </thead>
-        <tbody id="dpiTable"></tbody>
-    </table>
-</div>
-
-<!-- API STATUS -->
-<div class="card mt-4 p-3">
-    <h5>Stato API</h5>
-    <div class="d-flex gap-4 mt-2">
-        <div>Health: <span id="healthStatus" class="fw-bold text-info">–</span></div>
-        <div>Version: <span id="versionStatus" class="fw-bold text-info">–</span></div>
-    </div>
-</div>
-
-<script>
-// ----------------------
-// FALLBACK DEMO DATA
-// ----------------------
-const fallbackDPI = [
-    { codice:"DPI-ELM-001", descr:"Elmetto EN 397", famiglia:"DEMO", stato:"ok" },
-    { codice:"DPI-IMB-002", descr:"Imbracatura 2 punti", famiglia:"DEMO", stato:"medio" },
-    { codice:"DPI-FUN-003", descr:"Cordino EN 355", famiglia:"DEMO", stato:"scaduto" }
-];
-
-// ----------------------
-// FUNZIONE CARICAMENTO DPI
-// ----------------------
-async function loadDPI() {
-    try {
-        const res = await fetch("http://127.0.0.1:8000/api/dpi/listino");
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-
-        renderDPI(data);
-    } catch {
-        renderDPI(fallbackDPI);
-    }
+// PATCH STATO API
+function patchApiStatus(){
+  const el = document.querySelector("#api-status");
+  if(el){
+    el.innerHTML = `
+      <span style="color:#3cff8f;font-weight:bold">Online</span>
+      <span style="opacity:.7"> Â· ${MOCK_API.health.env}</span>
+    `;
+  }
 }
 
-function renderDPI(lista) {
-    let attivi = lista.length;
-    let scaduti = lista.filter(x=>x.stato==="scaduto").length;
-    let medio   = lista.filter(x=>x.stato==="medio").length;
-    let ok      = lista.filter(x=>x.stato==="ok").length;
-
-    document.getElementById("kpi_attivi").innerText = attivi;
-    document.getElementById("kpi_scadenza").innerText = medio;
-    document.getElementById("kpi_scaduti").innerText = scaduti;
-    document.getElementById("kpi_ok").innerText = ok;
-
-    const tbody = document.getElementById("dpiTable");
-    tbody.innerHTML = "";
-
-    lista.forEach(x=>{
-        let badge =
-            x.stato === "ok" ? '<span class="badge badge-green">> 30g</span>' :
-            x.stato === "medio" ? '<span class="badge badge-yellow"><= 30g</span>' :
-            '<span class="badge badge-red">Scaduto</span>';
-
-        tbody.innerHTML += `
-        <tr>
-            <td>${x.codice}</td>
-            <td>${x.descr}</td>
-            <td>${x.famiglia}</td>
-            <td>${badge}</td>
-        </tr>`;
-    });
+// PATCH NUMERI WOW
+function patchStats(){
+  const s = MOCK_API.stats();
+  document.querySelector("#stat-attivi").innerText = s.attivi;
+  document.querySelector("#stat-scadenza").innerText = s.scadenza;
+  document.querySelector("#stat-scaduti").innerText = s.scaduti;
+  document.querySelector("#stat-revisione").innerText = s.revisione;
 }
 
-// ----------------------
-// HEALTH + VERSION
-// ----------------------
-async function checkApi() {
-    try {
-        const r1 = await fetch("http://127.0.0.1:8000/health");
-        document.getElementById("healthStatus").innerText = r1.ok ? "Online" : "Offline";
-
-        const r2 = await fetch("http://127.0.0.1:8000/version");
-        document.getElementById("versionStatus").innerText = r2.ok ? await r2.text() : "—";
-    } catch {
-        document.getElementById("healthStatus").innerText = "Offline";
-        document.getElementById("versionStatus").innerText = "—";
-    }
-}
-
-// ----------------------
-// INIT
-// ----------------------
-loadDPI();
-checkApi();
-setInterval(checkApi, 5000);
+// AVVIO
+patchApiStatus();
+patchStats();
+setInterval(patchStats, 4000); // movimento continuo
 </script>
-
-</body>
-</html>
