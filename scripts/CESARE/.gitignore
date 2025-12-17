@@ -1,0 +1,71 @@
+﻿Set-Location "E:\CLONAZIONE\tpi_evoluto"
+
+$ts=(Get-Date -Format "yyyy-MM-dd_HHmmss")
+$bk="E:\CLONAZIONE\BACKUP_EMERGENZA\COMMIT_DEMO_CLEAN_$ts"
+New-Item -ItemType Directory -Force -Path "$bk\app\routers","$bk\app\data","$bk\scripts\CESARE" | Out-Null
+
+$main="E:\CLONAZIONE\tpi_evoluto\app\main.py"
+$router="E:\CLONAZIONE\tpi_evoluto\app\routers\demo_real.py"
+$data="E:\CLONAZIONE\tpi_evoluto\app\data\demo_products.json"
+
+Copy-Item $main "$bk\app\main.py" -Force -ErrorAction SilentlyContinue
+if(Test-Path $router){ Copy-Item $router "$bk\app\routers\demo_real.py" -Force }
+if(Test-Path $data){ Copy-Item $data "$bk\app\data\demo_products.json" -Force }
+
+if(-not (Test-Path $router)){ Write-Host "FAIL: manca $router"; exit 1 }
+
+# 1) PULIZIA blocchi demo vecchi (E402/import a metà file)
+$raw = Get-Content $main -Raw
+$raw = $raw -replace '(?s)# === TPI DEMO REAL ENDPOINTS.*?# === /TPI DEMO REAL ENDPOINTS ===\s*',''
+$raw = $raw -replace '(?s)# === TPI DEMO REAL ENDPOINTS \(AUTO\) ===.*?# === /TPI DEMO REAL ENDPOINTS ===\s*',''
+$raw = $raw -replace '(?s)# === DEMO_REAL AUTO-MOUNT ===.*?# === /DEMO_REAL AUTO-MOUNT ===\s*',''
+$raw = $raw -replace '(?s)# === DEMO_REAL AUTO-MOUNT v3 ===.*?# === /DEMO_REAL AUTO-MOUNT v3 ===\s*',''
+$raw = $raw -replace 'from app\.routers import demo_real as demo_real','import app.routers.demo_real as demo_real'
+Set-Content -Encoding UTF8 $main $raw
+
+# 2) ASSICURA import demo_real in testa
+$lines = Get-Content $main
+$importLine = "import app.routers.demo_real as demo_real"
+if(-not ($lines -contains $importLine)){
+  $idx=0
+  for($i=0;$i -lt $lines.Count;$i++){ if($lines[$i] -match '^\s*(from|import)\s+'){ $idx=$i } }
+  $new=@(); $new += $lines[0..$idx]; $new += $importLine
+  if($idx+1 -lt $lines.Count){ $new += $lines[($idx+1)..($lines.Count-1)] }
+  $lines=$new
+}
+
+# 3) MOUNT block DOPO la chiusura di FastAPI(...)
+$mountBlock=@(
+"",
+"# === DEMO_REAL AUTO-MOUNT (clean) ===",
+"try:",
+"    demo_real.mount(app)",
+"except Exception:",
+"    import logging",
+"    logging.getLogger('tpi.app').exception('DEMO_REAL mount failed')",
+"# === /DEMO_REAL AUTO-MOUNT (clean) ===",
+""
+)
+
+if(-not (($lines -join "`n") -match "DEMO_REAL AUTO-MOUNT \(clean\)")){
+  $out=@(); $inside=$false
+  for($i=0;$i -lt $lines.Count;$i++){
+    $out += $lines[$i]
+    if($lines[$i] -match '^\s*app\s*=\s*FastAPI\s*\('){ $inside=$true; continue }
+    if($inside -and $lines[$i] -match '^\s*\)\s*$'){ $out += $mountBlock; $inside=$false }
+  }
+  $lines=$out
+}
+Set-Content -Encoding UTF8 $main $lines
+
+# 4) OPS script dentro repo + gitignore locale
+New-Item -ItemType Directory -Force -Path "E:\CLONAZIONE\tpi_evoluto\scripts\CESARE" | Out-Null
+if(Test-Path "E:\CLONAZIONE\scripts\CESARE\ops_api_8010_2025-12-17.ps1"){
+  Copy-Item "E:\CLONAZIONE\scripts\CESARE\ops_api_8010_2025-12-17.ps1" "E:\CLONAZIONE\tpi_evoluto\scripts\CESARE\ops_api_8010_2025-12-17.ps1" -Force
+}
+@'
+FIX_*.ps1
+DUMP_*.txt
+*.log
+
+COMMIT_*.ps1

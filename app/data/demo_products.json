@@ -1,0 +1,78 @@
+﻿Set-Location "E:\CLONAZIONE\tpi_evoluto"
+if(-not (Test-Path "E:\CLONAZIONE\tpi_evoluto\.git")){ throw "NON SEI NEL REPO: manca .git in E:\CLONAZIONE\tpi_evoluto" }
+
+$ts=(Get-Date -Format "yyyy-MM-dd_HHmmss")
+$bk="E:\CLONAZIONE\BACKUP_EMERGENZA\FIX_COMMIT_DEMO_v2_$ts"
+New-Item -ItemType Directory -Force -Path "$bk\app\routers","$bk\app\data" | Out-Null
+
+# STASH WIP (se repo sporco)
+$porc = git status --porcelain
+if($porc){ git stash push -u -m "WIP_before_demo_commit_$ts" | Out-Null }
+
+# BACKUP (assoluti)
+Copy-Item "E:\CLONAZIONE\tpi_evoluto\app\main.py" "$bk\app\main.py" -Force -ErrorAction SilentlyContinue
+if(Test-Path "E:\CLONAZIONE\tpi_evoluto\app\routers\demo_real.py"){ Copy-Item "E:\CLONAZIONE\tpi_evoluto\app\routers\demo_real.py" "$bk\app\routers\demo_real.py" -Force }
+if(Test-Path "E:\CLONAZIONE\tpi_evoluto\app\data\demo_products.json"){ Copy-Item "E:\CLONAZIONE\tpi_evoluto\app\data\demo_products.json" "$bk\app\data\demo_products.json" -Force }
+
+# 0) main.py pulito (undo rotture)
+git restore -- "app/main.py"
+
+# 1) demo_real.py (subapp-safe)
+New-Item -ItemType Directory -Force -Path "E:\CLONAZIONE\tpi_evoluto\app\routers" | Out-Null
+@"
+from fastapi import APIRouter
+from pathlib import Path
+import json
+
+router = APIRouter(prefix="/demo", tags=["demo"])
+
+DATA = Path(__file__).resolve().parents[1] / "data" / "demo_products.json"
+
+def _load():
+    if not DATA.exists():
+        return []
+    return json.loads(DATA.read_text(encoding="utf-8"))
+
+@router.get("/products")
+def demo_products():
+    items = _load()
+    return {"items": items, "count": len(items)}
+
+@router.get("/products/{code}")
+def demo_product(code: str):
+    for it in _load():
+        if it.get("code","").lower() == code.lower():
+            return it
+    return {"error": "not_found", "code": code}
+
+def mount(root_app):
+    try:
+        if getattr(root_app.state, "__demo_real_mounted__", False):
+            return
+        root_app.state.__demo_real_mounted__ = True
+    except Exception:
+        pass
+
+    sub = None
+    for r in getattr(root_app, "routes", []):
+        p = getattr(r, "path", None)
+        if p in ("/api", "/api/") and hasattr(r, "app"):
+            sub = r.app
+            break
+
+    if sub is not None and hasattr(sub, "include_router"):
+        sub.include_router(router)       # /api/demo/*
+        root_app.include_router(router)  # /demo/*
+    else:
+        root_app.include_router(router, prefix="/api")
+        root_app.include_router(router)
+"@ | Set-Content -Encoding UTF8 "E:\CLONAZIONE\tpi_evoluto\app\routers\demo_real.py"
+
+# 2) demo_products.json (se manca)
+New-Item -ItemType Directory -Force -Path "E:\CLONAZIONE\tpi_evoluto\app\data" | Out-Null
+if(-not (Test-Path "E:\CLONAZIONE\tpi_evoluto\app\data\demo_products.json")){
+@'
+[
+  {"code":"TPI-FOREST-P25-ROCKY","name":"Rocky - Forestale P25","descr":"Demo reale API","img":"https://aicreator76.github.io/TPI_evoluto/demo_grafica_tpi_2025-12-10/assets/img/IMG_TPI-FOREST-P25-ROCKY.png","tags":["forestale","demo","wow"]},
+  {"code":"TPI-DEMO-0001","name":"DPI Demo 0001","descr":"Elemento 2","img":"https://aicreator76.github.io/TPI_evoluto/demo_grafica_tpi_2025-12-10/assets/img/IMG_TPI-FOREST-P25-ROCKY.png","tags":["demo"]}
+]
