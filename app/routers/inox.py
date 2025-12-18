@@ -16,7 +16,7 @@ def _load_items() -> list[dict[str, Any]]:
     p = _data_path()
     if not p.exists():
         return []
-    obj = json.loads(p.read_text(encoding="utf-8"))
+    obj = json.loads(p.read_text(encoding="utf-8-sig"))
     if isinstance(obj, dict) and isinstance(obj.get("items"), list):
         return obj["items"]
     if isinstance(obj, list):
