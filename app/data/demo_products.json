@@ -1,6 +1,6 @@
 ﻿{
   "items": [
-    {"code":"DEMO-0001","name":"Demo 0001","price_eur":0.0,"stock":0,"descr":"ok","img":"","tags":["demo"]},
-    {"code":"DEMO-0002","name":"Demo 0002","price_eur":0.0,"stock":0,"descr":"ok","img":"","tags":["demo"]}
+    {"code":"DEMO-0001","name":"Demo 0001","price_eur":0.0,"stock":0,"descr":"Demo JSON valido.","tags":["demo"]},
+    {"code":"DEMO-0002","name":"Demo 0002","price_eur":0.0,"stock":0,"descr":"Demo JSON valido.","tags":["demo"]}
   ]
 }
