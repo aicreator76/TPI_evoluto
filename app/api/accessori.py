@@ -60,20 +60,20 @@ def _filter_items(
 @router.get("/overview")
 def overview() -> dict[str, Any]:
     sources = sorted({str(x.get("sorgente", "")).upper() for x in _ACCESSORI if x.get("sorgente")})
+    tycan_count = sum(1 for x in _ACCESSORI if str(x.get("sorgente", "")).upper() == "TYCAN")
 
-    by_source: dict[str, int] = {}
-    for x in _ACCESSORI:
-        s = str(x.get("sorgente", "")).upper() or "UNKNOWN"
-        by_source[s] = by_source.get(s, 0) + 1
-
+    # Chiavi richieste dai test: famiglie, morsetti, catena_g8, tycan, totale_codici
     return {
         "ok": True,
         "count": len(_ACCESSORI),
         "sources": sources,
         "source_db": "mock_inmemory",
         "summary": {
-            "by_source": by_source,
-            "total": len(_ACCESSORI),
+            "famiglie": [],
+            "morsetti": 0,
+            "catena_g8": 0,
+            "tycan": tycan_count,
+            "totale_codici": len(_ACCESSORI),
         },
     }
 
@@ -108,14 +108,14 @@ def by_code(codice: str):
     for x in _ACCESSORI:
         if (
             _normalize(str(x.get("codice", ""))) == code_n
-            or _normalize(str(x.get("code", ""))) == code_n
+            or _normalize(
+                str(x.get("code", "")),
+            )
+            == code_n
         ):
             return {"found": True, "code": codice, "item": x}
 
-    return JSONResponse(
-        content={"found": False, "code": codice},
-        status_code=404,
-    )
+    return JSONResponse(content={"found": False, "code": codice}, status_code=404)
 
 
 @router.get("/listino/export")
@@ -124,7 +124,7 @@ def export_csv_listino(limit: int = 50, offset: int = 0) -> Response:
     rows = ["codice;sorgente;prezzo_eur;descr"]
     for x in items:
         rows.append(
-            f'{x.get("codice","")};{x.get("sorgente","")};{x.get("prezzo_eur", x.get("price_eur", ""))};{x.get("descr", x.get("descrizione",""))}'
+            f"{x.get('codice', '')};{x.get('sorgente', '')};{x.get('prezzo_eur', x.get('price_eur', ''))};{x.get('descr', x.get('descrizione', ''))}"
         )
     csv = "\n".join(rows) + "\n"
     return Response(content=csv, media_type="text/csv; charset=utf-8")

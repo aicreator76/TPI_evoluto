@@ -15,7 +15,7 @@ branch_labels = None
 depends_on = None
 
 
-def upgrade():
+def upgrade() -> None:
     # Create ENUM types for Postgres (safe to execute only on Postgres)
     bind = op.get_bind()
     if bind.dialect.name == "postgresql":
@@ -52,7 +52,13 @@ def upgrade():
         sa.Column("password_hash", sa.String(length=256), nullable=False),
         sa.Column(
             "ruolo",
-            sa.Enum("admin", "operatore", "superadmin", name="ruolo_enum"),
+            sa.Enum(
+                "admin",
+                "operatore",
+                "superadmin",
+                name="ruolo_enum",
+                create_type=False,  # IMPORTANT: type already created above on Postgres
+            ),
             nullable=False,
         ),
     )
@@ -90,7 +96,14 @@ def upgrade():
         sa.Column("data_scadenza", sa.Date(), nullable=True),
         sa.Column(
             "stato",
-            sa.Enum("disponibile", "assegnato", "ritirato", "scaduto", name="stato_dpi_enum"),
+            sa.Enum(
+                "disponibile",
+                "assegnato",
+                "ritirato",
+                "scaduto",
+                name="stato_dpi_enum",
+                create_type=False,
+            ),
             nullable=False,
         ),
         sa.Column(
@@ -156,13 +169,19 @@ def upgrade():
         sa.Column("data", sa.Date(), nullable=False),
         sa.Column(
             "esito",
-            sa.Enum("positivo", "negativo", "da_rivedere", name="esito_ispezione_enum"),
+            sa.Enum(
+                "positivo",
+                "negativo",
+                "da_rivedere",
+                name="esito_ispezione_enum",
+                create_type=False,
+            ),
             nullable=False,
         ),
         sa.Column("note", sa.Text(), nullable=True),
         sa.Column(
             "tipo_target",
-            sa.Enum("DPI", "IMPIANTO", name="tipo_target_enum"),
+            sa.Enum("DPI", "IMPIANTO", name="tipo_target_enum", create_type=False),
             nullable=False,
         ),
     )
@@ -257,8 +276,9 @@ def upgrade():
     op.create_index("ix_attestato_data_rilascio", "attestato", ["data_rilascio"])
 
 
-def downgrade():
+def downgrade() -> None:
     bind = op.get_bind()
+
     # Drop tables in reverse order to avoid FK conflicts
     op.drop_index("ix_attestato_data_rilascio", table_name="attestato")
     op.drop_index("ix_attestato_azienda_id", table_name="attestato")
