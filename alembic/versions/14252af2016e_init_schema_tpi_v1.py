@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 """init schema TPI v1
 
 Revision: 14252af2016e
@@ -5,7 +6,7 @@ This migration creates the initial schema for TPI_evoluto (azienda, utenti, oper
 dpi, impianti_anticaduta, ispezioni, allegati, corsi, attestati).
 """
 
-from alembic import op  # type: ignore[attr-defined]
+from alembic import op
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.

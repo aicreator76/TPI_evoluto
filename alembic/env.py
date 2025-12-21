@@ -1,8 +1,9 @@
+# mypy: ignore-errors
 import os
 import sys
 from logging.config import fileConfig
 
-from alembic import context  # type: ignore[attr-defined]
+from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 # ---------------------------------------------------------
@@ -38,7 +39,7 @@ def _get_database_url() -> str:
 
 
 def run_migrations_offline() -> None:
-    """Esegui le migrazioni in modalitÃ  'offline'."""
+    """Esegui le migrazioni in modalitÃƒÂ  'offline'."""
     url = _get_database_url()
     context.configure(
         url=url,
@@ -52,7 +53,7 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    """Esegui le migrazioni in modalitÃ  'online'."""
+    """Esegui le migrazioni in modalitÃƒÂ  'online'."""
     configuration = config.get_section(config.config_ini_section) or {}
     configuration["sqlalchemy.url"] = _get_database_url()
 
