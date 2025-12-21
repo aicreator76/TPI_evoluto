@@ -4,7 +4,9 @@ from datetime import datetime, timezone
 
 from fastapi import FastAPI
 
-from app.routers import demo_real, inox, linee_vita
+from app.api.inox import router as inox_router
+from app.api.linee_vita import router as linee_vita_router
+from app.routers import demo_real
 
 
 def create_app() -> FastAPI:
@@ -14,10 +16,12 @@ def create_app() -> FastAPI:
     def healthz() -> dict:
         return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
 
-    # demo + 2 cataloghi
+    # DEMO (deve restare in OpenAPI)
     demo_real.mount(app)
-    linee_vita.mount(app)
-    inox.mount(app)
+
+    # CATALOGHI (in OpenAPI)
+    app.include_router(linee_vita_router, prefix="/api/linee-vita")
+    app.include_router(inox_router, prefix="/api/inox")
 
     return app
 

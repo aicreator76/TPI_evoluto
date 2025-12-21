@@ -1,23 +1,70 @@
-name: Maggiordomo - Keep Render Awake
+name: Maggiordomo (Render keep-awake)
 
 on:
   schedule:
+    # GitHub Actions usa UTC
     - cron: "*/5 * * * *"
-  workflow_dispatch:
+  workflow_dispatch: {}
+
+concurrency:
+  group: maggiordomo-render-keepawake
+  cancel-in-progress: true
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    env:
+      # Consiglio: mettila come Repository Variable (Settings -> Secrets and variables -> Actions -> Variables)
+      # oppure come Secret se vuoi tenerla privata.
+      RENDER_PING_URL: ${{ vars.RENDER_PING_URL }}
+
     steps:
-      - name: Ping 4 rotte (keep-alive + smoke)
+      - name: Guardrail - URL must exist
         run: |
-          set -e
-          BASE="https://tpi-evoluto-staging.onrender.com"
-          for path in /healthz /api/demo/products /api/linee-vita/products /api/inox/products; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" "$BASE$path")
-            echo "$path -> $code"
-            if [ "$code" != "200" ]; then
-              echo "FAIL: $path returned $code"
-              exit 1
-            fi
-          done
+          if [ -z "${RENDER_PING_URL}" ]; then
+            echo "ERRORE: vars.RENDER_PING_URL non impostata."
+            exit 1
+          fi
+
+      - name: GET ping with timeout + retry (Render cold start)
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          URL="${RENDER_PING_URL}"
+          TS="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          echo "[$TS] PING GET -> $URL"
+
+          # curl: GET esplicito + timeout + retry robusto
+          # - connect-timeout: tempo per connettersi
+          # - max-time: tempo massimo totale request
+          # - retry-all-errors: ritenta su errori di rete e 5xx
+          # - retry-max-time: tetto complessivo per i retry
+          HTTP_AND_TIME="$(curl -sS -L -X GET \
+            --connect-timeout 10 \
+            --max-time 45 \
+            --retry 8 \
+            --retry-delay 5 \
+            --retry-all-errors \
+            --retry-max-time 240 \
+            -o /tmp/render_body.txt \
+            -w '%{http_code} %{time_total}\n' \
+            "$URL" || true)"
+
+          CODE="$(echo "$HTTP_AND_TIME" | awk '{print $1}')"
+          TIME_TOTAL="$(echo "$HTTP_AND_TIME" | awk '{print $2}')"
+
+          echo "HTTP=$CODE time_total=${TIME_TOTAL}s"
+          echo "BODY_PREVIEW:"
+          head -c 300 /tmp/render_body.txt || true
+          echo ""
+
+          # Se vuoi che il workflow fallisca quando non è 2xx/3xx:
+          if [ -z "${CODE}" ] || [ "${CODE}" -lt 200 ] || [ "${CODE}" -ge 400 ]; then
+            echo "PING KO (HTTP=$CODE)."
+            exit 2
+          fi
+
+          echo "PING OK."
