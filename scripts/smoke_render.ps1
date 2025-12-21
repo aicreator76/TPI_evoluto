@@ -1,67 +1,96 @@
-param(
-  [Parameter(Mandatory=$true)]
-  [string]$Url,
-
-  [int]$Attempts = 10,
+﻿param(
+  [Parameter(Mandatory=$true)][string]$Url,
+  [int]$Attempts = 12,
   [int]$TimeoutSec = 45,
   [int]$RetryDelaySec = 6
 )
 
-Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
-# Date e path report (SEMPE in E:\CLONAZIONE\REPORT_DELTA\...)
 $today = Get-Date -Format "yyyy-MM-dd"
 $reportDir = "E:\CLONAZIONE\REPORT_DELTA"
+New-Item -ItemType Directory -Force -Path $reportDir | Out-Null
 $reportPath = Join-Path $reportDir ("RENDER_PROVE_{0}.txt" -f $today)
 
-if (!(Test-Path $reportDir)) {
-  New-Item -ItemType Directory -Path $reportDir -Force | Out-Null
-}
+# UTF-8 senza BOM (compatibile anche con PowerShell vecchio)
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
 function Add-Line([string]$line) {
-  $line | Out-File -FilePath $reportPath -Encoding UTF8 -Append
+  [System.IO.File]::AppendAllText($reportPath, $line + "`r`n", $utf8NoBom)
 }
 
-Add-Line ("=" * 90)
-Add-Line ("RENDER SMOKE TEST  |  {0}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"))
-Add-Line ("URL={0}" -f $Url)
-Add-Line ("Attempts={0} TimeoutSec={1} RetryDelaySec={2}" -f $Attempts, $TimeoutSec, $RetryDelaySec)
-Add-Line ("ReportPath={0}" -f $reportPath)
-Add-Line ("=" * 90)
-
-for ($i = 1; $i -le $Attempts; $i++) {
-  $ts = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
-  $sw = [System.Diagnostics.Stopwatch]::StartNew()
-
-  try {
-    # GET (NON HEAD) + timeout
-    $resp = Invoke-WebRequest -Uri $Url -Method GET -TimeoutSec $TimeoutSec -UseBasicParsing
-    $sw.Stop()
-
-    $code = [int]$resp.StatusCode
-    $len  = 0
-    if ($null -ne $resp.Content) { $len = $resp.Content.Length }
-
-    $preview = ""
-    if ($null -ne $resp.Content -and $resp.Content.Length -gt 0) {
-      $preview = $resp.Content.Substring(0, [Math]::Min(180, $resp.Content.Length)).Replace("`r"," ").Replace("`n"," ")
+function Get-Code([string]$u) {
+  for($i=1; $i -le $Attempts; $i++){
+    try{
+      $sw = [System.Diagnostics.Stopwatch]::StartNew()
+      $r  = Invoke-WebRequest -Uri $u -Method GET -TimeoutSec $TimeoutSec -UseBasicParsing
+      $sw.Stop()
+      return @{ ok=$true; code=[int]$r.StatusCode; ms=$sw.ElapsedMilliseconds }
+    } catch {
+      $msg = $_.Exception.Message.Split("`n")[0]
+      Add-Line ("TRY {0}/{1} KO | {2} | {3}" -f $i,$Attempts,$u,$msg)
+      if($i -lt $Attempts){ Start-Sleep -Seconds $RetryDelaySec } else { return @{ ok=$false; code=0; ms=0 } }
     }
-
-    Add-Line ("[{0}] TRY {1}/{2}  OK  HTTP={3}  ms={4}  bytes={5}  preview='{6}'" -f $ts, $i, $Attempts, $code, $sw.ElapsedMilliseconds, $len, $preview)
-    Start-Sleep -Seconds 1
-  }
-  catch {
-    $sw.Stop()
-    $msg = $_.Exception.Message.Replace("`r"," ").Replace("`n"," ")
-    Add-Line ("[{0}] TRY {1}/{2}  KO  ms={3}  err='{4}'" -f $ts, $i, $Attempts, $sw.ElapsedMilliseconds, $msg)
-
-    # Retry delay (cold start Render) — backoff leggero
-    Start-Sleep -Seconds ($RetryDelaySec + [Math]::Min(12, $i))
   }
 }
 
-Add-Line ("DONE | {0}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"))
-Add-Line ("=" * 90)
+# calcola base (host) a partire da Url
+$uObj = [Uri]$Url
+$base = "{0}://{1}" -f $uObj.Scheme, $uObj.Host
+if($uObj.Port -and ($uObj.Port -ne 80) -and ($uObj.Port -ne 443)) { $base = "{0}:{1}" -f $base, $uObj.Port }
 
-Write-Host "OK: report scritto in $reportPath"
+# ricrea report del giorno in modo PULITO (no append di roba vecchia)
+[System.IO.File]::WriteAllText($reportPath, "", $utf8NoBom)
+
+Add-Line ("=== TS {0} ===" -f (Get-Date -Format "yyyy-MM-ddTHH:mm:ss"))
+Add-Line ("base={0}" -f $base)
+
+$checks = @(
+  @{ key="healthz";    url="$base/healthz" },
+  @{ key="demo";       url="$base/api/demo/products" },
+  @{ key="linee_vita"; url="$base/api/linee-vita/products" },
+  @{ key="inox";       url="$base/api/inox/products" },
+  @{ key="openapi";    url="$base/openapi.json" }
+)
+
+foreach($c in $checks){
+  $res = Get-Code $c.url
+  if($res.ok){ Add-Line ("{0}={1} ms={2}" -f $c.key,$res.code,$res.ms) }
+  else { Add-Line ("{0}=KO" -f $c.key) }
+}
+
+# lv_code
+try {
+  $lv = Invoke-RestMethod -Uri "$base/api/linee-vita/products" -Method GET -TimeoutSec $TimeoutSec
+  $lvCode = $null
+  if($lv -and $lv.items -and $lv.items.Count -gt 0){ $lvCode = $lv.items[0].code }
+  if($lvCode){
+    $res = Get-Code "$base/api/linee-vita/products/$lvCode"
+    if($res.ok){ Add-Line ("lv_code={0} code={1} ms={2}" -f $res.code,$lvCode,$res.ms) } else { Add-Line ("lv_code=KO code={0}" -f $lvCode) }
+  } else { Add-Line "lv_code=SKIP (no items)" }
+} catch { Add-Line ("lv_code=ERR {0}" -f $_.Exception.Message.Split("`n")[0]) }
+
+# inox_code
+try {
+  $ix = Invoke-RestMethod -Uri "$base/api/inox/products" -Method GET -TimeoutSec $TimeoutSec
+  $ixCode = $null
+  if($ix -and $ix.items -and $ix.items.Count -gt 0){ $ixCode = $ix.items[0].code }
+  if($ixCode){
+    $res = Get-Code "$base/api/inox/products/$ixCode"
+    if($res.ok){ Add-Line ("inox_code={0} code={1} ms={2}" -f $res.code,$ixCode,$res.ms) } else { Add-Line ("inox_code=KO code={0}" -f $ixCode) }
+  } else { Add-Line "inox_code=SKIP (no items)" }
+} catch { Add-Line ("inox_code=ERR {0}" -f $_.Exception.Message.Split("`n")[0]) }
+
+# openapi summary (NO mega-json in report)
+try {
+  $spec = Invoke-RestMethod -Uri "$base/openapi.json" -Method GET -TimeoutSec $TimeoutSec
+  $pathsCount = 0
+  if($spec -and $spec.paths){ $pathsCount = $spec.paths.PSObject.Properties.Name.Count }
+  Add-Line ("openapi_title={0}" -f $spec.info.title)
+  Add-Line ("openapi_version={0}" -f $spec.info.version)
+  Add-Line ("openapi_paths_count={0}" -f $pathsCount)
+} catch { Add-Line ("openapi_parse=ERR {0}" -f $_.Exception.Message.Split("`n")[0]) }
+
+Add-Line ("DONE {0}" -f (Get-Date -Format "yyyy-MM-ddTHH:mm:ss"))
+
+Write-Host ("OK: report scritto in {0}" -f $reportPath)
