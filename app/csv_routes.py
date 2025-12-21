@@ -50,7 +50,7 @@ def export_percorsi():
 
 @router.post("/cataloghi/import")
 async def import_cataloghi(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith(".csv"):
+    if not (file.filename or "").lower().endswith(".csv"):
         raise HTTPException(400, "Carica un CSV")
     text = (await file.read()).decode("utf-8-sig")
     rdr = csv.DictReader(io.StringIO(text))

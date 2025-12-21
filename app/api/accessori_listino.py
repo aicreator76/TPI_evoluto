@@ -35,7 +35,7 @@ from app.db.accessori_db import (
     search_by_code,
 )
 
-# 🔑 Prefix UNICO: /api/accessori
+# ðŸ”‘ Prefix UNICO: /api/accessori
 router = APIRouter(
     prefix="/api/accessori",
     tags=["Accessori 3.0"],
@@ -217,7 +217,7 @@ def export_listino_csv(
     """
     Esporta il listino (eventualmente filtrato) in CSV.
 
-    In dev NON c'è auth; in prod si potrà agganciare un dependency JWT.
+    In dev NON c'Ã¨ auth; in prod si potrÃ  agganciare un dependency JWT.
     """
     total, items = filter_listino(
         famiglia=famiglia,
