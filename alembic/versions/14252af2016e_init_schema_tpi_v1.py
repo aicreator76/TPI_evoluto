@@ -5,7 +5,7 @@ This migration creates the initial schema for TPI_evoluto (azienda, utenti, oper
 dpi, impianti_anticaduta, ispezioni, allegati, corsi, attestati).
 """
 
-from alembic import op
+from alembic import op  # type: ignore[attr-defined]
 import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
