@@ -1,0 +1,175 @@
+﻿{
+    "items":  [
+                  {
+                      "code":  "LV-ANCH-001",
+                      "name":  "Ancoraggio strutturale A1",
+                      "descr":  "Piastra ancoraggio per calcestruzzo/acciaio, predisposizione M12.",
+                      "img":  "",
+                      "tags":  [
+                                   "linee-vita",
+                                   "ancoraggio"
+                               ],
+                      "family":  "LINEE_VITA",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  49.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "LV-ANCH-002",
+                      "name":  "Ancoraggio strutturale A2",
+                      "descr":  "Ancoraggio per lamiera grecata con fissaggi multipli.",
+                      "img":  "",
+                      "tags":  [
+                                   "linee-vita",
+                                   "ancoraggio"
+                               ],
+                      "family":  "LINEE_VITA",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  59.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "LV-END-001",
+                      "name":  "Terminale linea vita T1",
+                      "descr":  "Terminale con tenditore integrato e indicatore tensione.",
+                      "img":  "",
+                      "tags":  [
+                                   "linee-vita",
+                                   "terminale"
+                               ],
+                      "family":  "LINEE_VITA",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  129.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "LV-END-002",
+                      "name":  "Terminale linea vita T2",
+                      "descr":  "Terminale compatto con assorbitore energia integrato.",
+                      "img":  "",
+                      "tags":  [
+                                   "linee-vita",
+                                   "terminale"
+                               ],
+                      "family":  "LINEE_VITA",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  149.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "LV-MID-001",
+                      "name":  "Intermedio passante I1",
+                      "descr":  "Supporto intermedio con passaggio fluido del carrello/cordino.",
+                      "img":  "",
+                      "tags":  [
+                                   "linee-vita",
+                                   "intermedio"
+                               ],
+                      "family":  "LINEE_VITA",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  89.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "LV-MID-002",
+                      "name":  "Intermedio angolare I2",
+                      "descr":  "Intermedio per cambio direzione fino a 90°.",
+                      "img":  "",
+                      "tags":  [
+                                   "linee-vita",
+                                   "intermedio"
+                               ],
+                      "family":  "LINEE_VITA",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  99.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "LV-CAR-001",
+                      "name":  "Carrello scorrevole C1",
+                      "descr":  "Carrello per cavo inox, apertura rapida, anti-inversione.",
+                      "img":  "",
+                      "tags":  [
+                                   "linee-vita",
+                                   "carrello"
+                               ],
+                      "family":  "LINEE_VITA",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  79.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "LV-CAB-001",
+                      "name":  "Cavo inox 8mm (10m)",
+                      "descr":  "Cavo AISI 316 8mm, pretagliato 10m.",
+                      "img":  "",
+                      "tags":  [
+                                   "linee-vita",
+                                   "cavo",
+                                   "inox"
+                               ],
+                      "family":  "LINEE_VITA",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  110.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "LV-KIT-001",
+                      "name":  "Kit fissaggi F1",
+                      "descr":  "Kit tasselli/viti per ancoraggi su supporti standard.",
+                      "img":  "",
+                      "tags":  [
+                                   "linee-vita",
+                                   "fissaggi"
+                               ],
+                      "family":  "LINEE_VITA",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  25.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "LV-ABS-001",
+                      "name":  "Assorbitore energia E1",
+                      "descr":  "Modulo assorbitore energia per linee vita orizzontali.",
+                      "img":  "",
+                      "tags":  [
+                                   "linee-vita",
+                                   "assorbitore"
+                               ],
+                      "family":  "LINEE_VITA",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  95.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  }
+              ]
+}

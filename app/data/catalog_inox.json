@@ -1,0 +1,177 @@
+﻿{
+    "items":  [
+                  {
+                      "code":  "INX-KIT-001",
+                      "name":  "Tenditore M10 AISI316",
+                      "descr":  "Tenditore inox per regolazione tensione, filetto M10.",
+                      "img":  "",
+                      "tags":  [
+                                   "inox",
+                                   "tenditore"
+                               ],
+                      "family":  "INOX",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  18.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "INX-KIT-002",
+                      "name":  "Tenditore M12 AISI316",
+                      "descr":  "Tenditore inox per regolazione tensione, filetto M12.",
+                      "img":  "",
+                      "tags":  [
+                                   "inox",
+                                   "tenditore"
+                               ],
+                      "family":  "INOX",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  22.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "INX-MOR-001",
+                      "name":  "Morsetto cavo 8mm AISI316",
+                      "descr":  "Morsetto inox per cavo 8mm, serraggio a U.",
+                      "img":  "",
+                      "tags":  [
+                                   "inox",
+                                   "morsetto",
+                                   "cavo"
+                               ],
+                      "family":  "INOX",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  6.5,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "INX-MOR-002",
+                      "name":  "Morsetto cavo 10mm AISI316",
+                      "descr":  "Morsetto inox per cavo 10mm, serraggio a U.",
+                      "img":  "",
+                      "tags":  [
+                                   "inox",
+                                   "morsetto",
+                                   "cavo"
+                               ],
+                      "family":  "INOX",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  7.5,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "INX-MAG-001",
+                      "name":  "Maglia rapida 6mm AISI316",
+                      "descr":  "Maglia rapida inox 6mm, chiusura a vite.",
+                      "img":  "",
+                      "tags":  [
+                                   "inox",
+                                   "maglia"
+                               ],
+                      "family":  "INOX",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  4.2,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "INX-MAG-002",
+                      "name":  "Maglia rapida 8mm AISI316",
+                      "descr":  "Maglia rapida inox 8mm, chiusura a vite.",
+                      "img":  "",
+                      "tags":  [
+                                   "inox",
+                                   "maglia"
+                               ],
+                      "family":  "INOX",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  5.4,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "INX-GRI-001",
+                      "name":  "Grillo D 8mm AISI316",
+                      "descr":  "Grillo dritto inox 8mm, per collegamenti rapidi.",
+                      "img":  "",
+                      "tags":  [
+                                   "inox",
+                                   "grillo"
+                               ],
+                      "family":  "INOX",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  8.9,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "INX-GRI-002",
+                      "name":  "Grillo D 10mm AISI316",
+                      "descr":  "Grillo dritto inox 10mm, per carichi maggiori.",
+                      "img":  "",
+                      "tags":  [
+                                   "inox",
+                                   "grillo"
+                               ],
+                      "family":  "INOX",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  11.9,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "INX-RED-001",
+                      "name":  "Redancia 8mm AISI316",
+                      "descr":  "Redancia inox per occhiello cavo 8mm.",
+                      "img":  "",
+                      "tags":  [
+                                   "inox",
+                                   "redancia",
+                                   "cavo"
+                               ],
+                      "family":  "INOX",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  3.9,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  },
+                  {
+                      "code":  "INX-CAB-001",
+                      "name":  "Cavo inox 8mm (10m)",
+                      "descr":  "Cavo AISI 316 8mm, pretagliato 10m.",
+                      "img":  "",
+                      "tags":  [
+                                   "inox",
+                                   "cavo"
+                               ],
+                      "family":  "INOX",
+                      "page":  null,
+                      "source":  null,
+                      "price_eur":  110.0,
+                      "norme":  null,
+                      "variants":  null,
+                      "source_page":  null
+                  }
+              ]
+}
