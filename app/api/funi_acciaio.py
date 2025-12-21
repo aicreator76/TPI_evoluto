@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException
 
 
 def _data_path() -> Path:
-    app_dir = Path(__file__).resolve().parents[1]
+    app_dir = Path(__file__).resolve().parents[1]  # .../app
     return app_dir / "data" / "catalog_funi_acciaio.json"
 
 
@@ -16,6 +16,7 @@ def _load_items() -> list[dict[str, Any]]:
     p = _data_path()
     if not p.exists():
         return []
+
     obj = json.loads(p.read_text(encoding="utf-8-sig"))
     if isinstance(obj, dict) and isinstance(obj.get("items"), list):
         return obj["items"]
