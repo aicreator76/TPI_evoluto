@@ -35,7 +35,7 @@ from app.db.accessori_db import (
     search_by_code,
 )
 
-# 🔑 Prefix UNICO: /api/accessori
+# Ã°Å¸â€â€˜ Prefix UNICO: /api/accessori
 router = APIRouter(
     prefix="/api/accessori",
     tags=["Accessori 3.0"],
@@ -217,7 +217,7 @@ def export_listino_csv(
     """
     Esporta il listino (eventualmente filtrato) in CSV.
 
-    In dev NON c'è auth; in prod si potrà agganciare un dependency JWT.
+    In dev NON c'ÃƒÂ¨ auth; in prod si potrÃƒÂ  agganciare un dependency JWT.
     """
     total, items = filter_listino(
         famiglia=famiglia,
@@ -236,15 +236,15 @@ def export_listino_csv(
         content = csv_buf.getvalue()
     else:
         fieldnames: List[str] = list(items[0].keys())
-        writer = csv.DictWriter(
+        dict_writer = csv.DictWriter(
             csv_buf,
             fieldnames=fieldnames,
             delimiter=";",
             extrasaction="ignore",
         )
-        writer.writeheader()
+        dict_writer.writeheader()
         for row in items:
-            writer.writerow(row)
+            dict_writer.writerow(row)
         content = csv_buf.getvalue()
 
     filename = "TPI_ACCESSORI_LISTINO_3_0_2025-12-08.csv"

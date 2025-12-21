@@ -1,41 +1,15 @@
-# .pre-commit-config.yaml
-# Ganci pre-commit per qualità codice e sicurezza del repo TPI_evoluto.
-# Ordine dei repo: utility base → lint/format → sicurezza (detect-secrets).
-
-minimum_pre_commit_version: "3.5.0"   # richiede pre-commit ≥ 3.5
-default_language_version:              # usa il Python di sistema
-  python: python3
-
-repos:
-  # 1) Utility di base (sempre utili, veloci)
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
-    hooks:
-      - id: check-yaml            # valida YAML (evita errori di indentazione)
-        name: Check YAML syntax
-      - id: end-of-file-fixer     # garantisce newline finale
-      - id: trailing-whitespace   # rimuove spazi in coda di riga
-
-  # 2) Ruff: linter + autofix e formattatore (formatter unico)
+﻿repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.1
+    rev: v0.14.10
     hooks:
       - id: ruff
-        name: Ruff (lint + fix)
         args: [--fix]
       - id: ruff-format
-        name: Ruff Format
-
-  # 3) Sicurezza: detect-secrets con baseline del repository
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
       - id: detect-secrets
-        name: Detect secrets (baseline)
-        args:
-          - --baseline
-          - .secrets.baseline
-          - --exclude-files
-          - '(^site/|^TPI_site_skeleton_.*|^\.ruff_cache/|^\.secrets\.baseline$)'
-        pass_filenames: false
-        stages: [commit, push]
+        args: ['--baseline', '.secrets.baseline']
+default_language_version:
+  python: python3.11
+

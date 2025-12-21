@@ -1,0 +1,204 @@
+﻿{
+    "items":  [
+                  {
+                      "variants":  [
+
+                                   ],
+                      "source_page":  null,
+                      "tags":  [
+                                   "funi-acciaio",
+                                   "fune",
+                                   "zincata"
+                               ],
+                      "descr":  "Fune 6mm zincata, uso generico.",
+                      "name":  "Fune acciaio zincata 6mm (50m)",
+                      "img":  "",
+                      "price_eur":  89,
+                      "code":  "FA-CAB-001",
+                      "norme":  [
+                                    "EN 12385-4"
+                                ],
+                      "family":  "FUNI_ACCIAIO"
+                  },
+                  {
+                      "variants":  [
+
+                                   ],
+                      "source_page":  null,
+                      "tags":  [
+                                   "funi-acciaio",
+                                   "fune",
+                                   "zincata"
+                               ],
+                      "descr":  "Fune 8mm zincata, uso generico.",
+                      "name":  "Fune acciaio zincata 8mm (50m)",
+                      "img":  "",
+                      "price_eur":  119,
+                      "code":  "FA-CAB-002",
+                      "norme":  [
+                                    "EN 12385-4"
+                                ],
+                      "family":  "FUNI_ACCIAIO"
+                  },
+                  {
+                      "variants":  [
+
+                                   ],
+                      "source_page":  null,
+                      "tags":  [
+                                   "funi-acciaio",
+                                   "fune",
+                                   "inox",
+                                   "aisi316"
+                               ],
+                      "descr":  "Fune inox 6mm, alta resistenza corrosione.",
+                      "name":  "Fune acciaio inox AISI316 6mm (30m)",
+                      "img":  "",
+                      "price_eur":  149,
+                      "code":  "FA-CAB-003",
+                      "norme":  [
+                                    "EN 12385-4"
+                                ],
+                      "family":  "FUNI_ACCIAIO"
+                  },
+                  {
+                      "variants":  [
+
+                                   ],
+                      "source_page":  null,
+                      "tags":  [
+                                   "funi-acciaio",
+                                   "fune",
+                                   "inox",
+                                   "aisi316"
+                               ],
+                      "descr":  "Fune inox 8mm, alta resistenza corrosione.",
+                      "name":  "Fune acciaio inox AISI316 8mm (30m)",
+                      "img":  "",
+                      "price_eur":  199,
+                      "code":  "FA-CAB-004",
+                      "norme":  [
+                                    "EN 12385-4"
+                                ],
+                      "family":  "FUNI_ACCIAIO"
+                  },
+                  {
+                      "variants":  [
+
+                                   ],
+                      "source_page":  null,
+                      "tags":  [
+                                   "funi-acciaio",
+                                   "redancia"
+                               ],
+                      "descr":  "Redancia per occhiello fune 6mm.",
+                      "name":  "Redancia 6mm",
+                      "img":  "",
+                      "price_eur":  2.9,
+                      "code":  "FA-RED-001",
+                      "norme":  [
+
+                                ],
+                      "family":  "FUNI_ACCIAIO"
+                  },
+                  {
+                      "variants":  [
+
+                                   ],
+                      "source_page":  null,
+                      "tags":  [
+                                   "funi-acciaio",
+                                   "redancia"
+                               ],
+                      "descr":  "Redancia per occhiello fune 8mm.",
+                      "name":  "Redancia 8mm",
+                      "img":  "",
+                      "price_eur":  3.5,
+                      "code":  "FA-RED-002",
+                      "norme":  [
+
+                                ],
+                      "family":  "FUNI_ACCIAIO"
+                  },
+                  {
+                      "variants":  [
+
+                                   ],
+                      "source_page":  null,
+                      "tags":  [
+                                   "funi-acciaio",
+                                   "morsetto",
+                                   "zincato"
+                               ],
+                      "descr":  "Morsetto per fune 6mm, zincato.",
+                      "name":  "Morsetto a U 6mm",
+                      "img":  "",
+                      "price_eur":  1.2,
+                      "code":  "FA-MOR-001",
+                      "norme":  [
+
+                                ],
+                      "family":  "FUNI_ACCIAIO"
+                  },
+                  {
+                      "variants":  [
+
+                                   ],
+                      "source_page":  null,
+                      "tags":  [
+                                   "funi-acciaio",
+                                   "morsetto",
+                                   "zincato"
+                               ],
+                      "descr":  "Morsetto per fune 8mm, zincato.",
+                      "name":  "Morsetto a U 8mm",
+                      "img":  "",
+                      "price_eur":  1.6,
+                      "code":  "FA-MOR-002",
+                      "norme":  [
+
+                                ],
+                      "family":  "FUNI_ACCIAIO"
+                  },
+                  {
+                      "variants":  [
+                                       "M10"
+                                   ],
+                      "source_page":  null,
+                      "tags":  [
+                                   "funi-acciaio",
+                                   "tenditore",
+                                   "zincato"
+                               ],
+                      "descr":  "Tenditore zincato per collegamenti e tensionamento.",
+                      "name":  "Tenditore M10",
+                      "img":  "",
+                      "price_eur":  9.9,
+                      "code":  "FA-TEN-001",
+                      "norme":  [
+
+                                ],
+                      "family":  "FUNI_ACCIAIO"
+                  },
+                  {
+                      "variants":  [
+                                       "M12"
+                                   ],
+                      "source_page":  null,
+                      "tags":  [
+                                   "funi-acciaio",
+                                   "tenditore",
+                                   "zincato"
+                               ],
+                      "descr":  "Tenditore zincato per collegamenti e tensionamento.",
+                      "name":  "Tenditore M12",
+                      "img":  "",
+                      "price_eur":  12.9,
+                      "code":  "FA-TEN-002",
+                      "norme":  [
+
+                                ],
+                      "family":  "FUNI_ACCIAIO"
+                  }
+              ]
+}

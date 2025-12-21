@@ -1,0 +1,14 @@
+=== TS 2025-12-21T13:31:16 ===
+base=https://tpi-evoluto-staging.onrender.com
+TRY 1/12 KO | https://tpi-evoluto-staging.onrender.com/healthz | The request was canceled due to the configured HttpClient.Timeout of 45 seconds elapsing.
+healthz=200 ms=501
+demo=200 ms=269
+linee_vita=200 ms=711
+inox=200 ms=254
+openapi=200 ms=674
+lv_code=200 code=LV-ANCH-001 ms=250
+inox_code=200 code=INX-KIT-001 ms=267
+openapi_title=TPI_evoluto
+openapi_version=0.1.0
+openapi_paths_count=9
+DONE 2025-12-21T13:32:11
