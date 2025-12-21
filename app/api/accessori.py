@@ -3,12 +3,11 @@ from __future__ import annotations
 from typing import Any, Optional
 
 from fastapi import APIRouter
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 
 router = APIRouter(tags=["accessori"])
 
 # Dataset minimo per far passare i test (include sorgente TYCAN).
-# Nota: metto sia "codice" che "code" per robustezza con test che provano chiavi diverse.
 _ACCESSORI: list[dict[str, Any]] = [
     {
         "codice": "ACC-TYC-001",
@@ -61,11 +60,21 @@ def _filter_items(
 @router.get("/overview")
 def overview() -> dict[str, Any]:
     sources = sorted({str(x.get("sorgente", "")).upper() for x in _ACCESSORI if x.get("sorgente")})
+
+    by_source: dict[str, int] = {}
+    for x in _ACCESSORI:
+        s = str(x.get("sorgente", "")).upper() or "UNKNOWN"
+        by_source[s] = by_source.get(s, 0) + 1
+
     return {
         "ok": True,
         "count": len(_ACCESSORI),
         "sources": sources,
         "source_db": "mock_inmemory",
+        "summary": {
+            "by_source": by_source,
+            "total": len(_ACCESSORI),
+        },
     }
 
 
@@ -102,10 +111,9 @@ def by_code(codice: str):
             or _normalize(str(x.get("code", ""))) == code_n
         ):
             return {"found": True, "code": codice, "item": x}
-    # 404 â€œcustomâ€ come vogliono i test (found=False)
-    return Response(
-        content=f'{{"found": false, "code": "{codice}"}}',
-        media_type="application/json",
+
+    return JSONResponse(
+        content={"found": False, "code": codice},
         status_code=404,
     )
 
