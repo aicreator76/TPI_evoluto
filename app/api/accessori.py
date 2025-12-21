@@ -69,7 +69,7 @@ def overview() -> dict[str, Any]:
         "sources": sources,
         "source_db": "mock_inmemory",
         "summary": {
-            "famiglie": [],
+            "famiglie": 0,
             "morsetti": 0,
             "catena_g8": 0,
             "tycan": tycan_count,
