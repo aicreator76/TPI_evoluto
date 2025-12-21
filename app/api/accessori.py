@@ -65,6 +65,7 @@ def overview() -> dict[str, Any]:
         "ok": True,
         "count": len(_ACCESSORI),
         "sources": sources,
+        "source_db": "mock_inmemory",
     }
 
 
@@ -101,7 +102,7 @@ def by_code(codice: str):
             or _normalize(str(x.get("code", ""))) == code_n
         ):
             return {"found": True, "code": codice, "item": x}
-    # 404 “custom” come vogliono i test (found=False)
+    # 404 â€œcustomâ€ come vogliono i test (found=False)
     return Response(
         content=f'{{"found": false, "code": "{codice}"}}',
         media_type="application/json",
