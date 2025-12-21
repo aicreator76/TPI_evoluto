@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from fastapi import FastAPI
 
 from app.api.inox import router as inox_router
+from app.api.accessori import router as accessori_router
 from app.api.funi_acciaio import router as funi_acciaio_router
 from app.api.linee_vita import router as linee_vita_router
 from app.routers import demo_real
@@ -23,6 +24,7 @@ def create_app() -> FastAPI:
     # CATALOGHI (in OpenAPI)
     app.include_router(linee_vita_router, prefix="/api/linee-vita")
     app.include_router(inox_router, prefix="/api/inox")
+    app.include_router(accessori_router, prefix="/api/accessori")
     app.include_router(funi_acciaio_router, prefix="/api/funi-acciaio")
     return app
 
