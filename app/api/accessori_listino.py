@@ -1,4 +1,4 @@
-""" "
+"""
 Router FastAPI per Listino 3.0 Accessori.
 
 Path base: /api/accessori
@@ -22,7 +22,7 @@ import io
 from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, Query
-from fastapi.responses import JSONResponse, PlainTextResponse
+from fastapi.responses import JSONResponse, Response
 
 from app.db.accessori_db import (
     DB_PATH,
@@ -35,14 +35,14 @@ from app.db.accessori_db import (
     search_by_code,
 )
 
-# 🔑 Prefix UNICO: /api/accessori
+# Prefix UNICO: /api/accessori
 router = APIRouter(
     prefix="/api/accessori",
     tags=["Accessori 3.0"],
 )
 
 
-def _json_not_found(codice: str):
+def _json_not_found(codice: str) -> JSONResponse:
     """Contratto 404 auditabile: found=false."""
     return JSONResponse(
         status_code=404,
@@ -55,7 +55,7 @@ def _json_not_found(codice: str):
     )
 
 
-def _json_bad_request(codice: str):
+def _json_bad_request(codice: str) -> JSONResponse:
     """Contratto 400 coerente: found=false + detail."""
     return JSONResponse(
         status_code=400,
@@ -147,7 +147,7 @@ def listino_accessori(
     """
     Listino 3.0 Accessori (alias di /listino/filtrato).
 
-    Se non passi filtri, ritorna TUTTI i codici (paginati).
+    Se non passi filtri, ritorna tutti i codici (paginati).
     """
     total, items = filter_listino(
         famiglia=famiglia,
@@ -206,7 +206,7 @@ def listino_accessori_filtrato(
             "content": {
                 "application/json": {
                     "example": {
-                        "source_db": "…",
+                        "source_db": "...",
                         "found": True,
                         "item": {},
                         "source_table": "MORSETTI",
@@ -229,7 +229,7 @@ def listino_accessori_filtrato(
         },
     },
 )
-def listino_by_code(codice: str):
+def listino_by_code(codice: str) -> Any:
     """
     Ricerca un singolo codice nel listino unificato.
 
@@ -258,7 +258,6 @@ def listino_by_code(codice: str):
 @router.get(
     "/listino/export",
     name="accessori_listino_export",
-    response_class=PlainTextResponse,
 )
 def export_listino_csv(
     famiglia: Optional[str] = Query(None),
@@ -266,13 +265,15 @@ def export_listino_csv(
     cerca: Optional[str] = Query(None),
     limit: int = Query(5000, ge=0, le=20000),
     offset: int = Query(0, ge=0),
-) -> PlainTextResponse:
+) -> Response:
     """
     Esporta il listino (eventualmente filtrato) in CSV.
 
-    In dev NON c'è auth; in prod si potrà agganciare un dependency JWT.
+    - Separatore: ;
+    - UTF-8
+    - Allegato scaricabile (Content-Disposition)
     """
-    total, items = filter_listino(
+    _total, items = filter_listino(
         famiglia=famiglia,
         sorgente=sorgente,
         cerca=cerca,
@@ -280,33 +281,31 @@ def export_listino_csv(
         offset=offset,
     )
 
-    csv_buf = io.StringIO()
+    csv_buf = io.StringIO(newline="")  # evita righe vuote su Windows
 
     if not items:
-        writer = csv.writer(csv_buf, delimiter=";")
-        writer.writerow(["message"])
-        writer.writerow(["Nessun dato nel listino (filtri troppo restrittivi?)"])
-        content = csv_buf.getvalue()
+        w = csv.writer(csv_buf, delimiter=";")
+        w.writerow(["message"])
+        w.writerow(["Nessun dato nel listino (filtri troppo restrittivi?)"])
     else:
         fieldnames: List[str] = list(items[0].keys())
-        writer = csv.DictWriter(
+        dw = csv.DictWriter(
             csv_buf,
             fieldnames=fieldnames,
             delimiter=";",
             extrasaction="ignore",
         )
-        writer.writeheader()
+        dw.writeheader()
         for row in items:
-            writer.writerow(row)
-        content = csv_buf.getvalue()
+            dw.writerow(row)
+
+    content = csv_buf.getvalue()
 
     filename = "TPI_ACCESSORI_LISTINO_3_0_2025-12-08.csv"
-    headers = {
-        "Content-Disposition": f'attachment; filename="{filename}"',
-    }
+    headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
 
-    return PlainTextResponse(
-        content=content,
+    return Response(
+        content,
         media_type="text/csv; charset=utf-8",
         headers=headers,
     )

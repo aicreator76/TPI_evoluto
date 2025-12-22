@@ -1,83 +1,76 @@
+from __future__ import annotations
+
 import csv
 import io
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import PlainTextResponse
 
-router = APIRouter(prefix="/api", tags=["csv"])
+router = APIRouter(tags=["CSV - Percorsi"])
 
-# --- MOCK DATA (sostituirai con storage reale)
-CATALOGHI = [
-    {"id": "CAT-001", "nome": "Imbracature"},
-    {"id": "CAT-002", "nome": "Cordini"},
-]
-SCHEDE = [{"id": "SCH-001", "catalogo_id": "CAT-001", "titolo": "Imbracatura X"}]
-PERCORSI = [{"id": "PER-001", "nome": "Linea vita tetto A", "stato": "attivo"}]
+# In-memory store (mock). In futuro: DB.
+PERCORSI: List[Dict[str, Any]] = []
 
 
-def _csv_response(rows, filename):
-    buf = io.StringIO(newline="")
-    w = (
-        csv.DictWriter(buf, fieldnames=rows[0].keys())
-        if rows
-        else csv.DictWriter(buf, fieldnames=["vuoto"])
+def _csv_response(rows: List[Dict[str, Any]], filename: str) -> PlainTextResponse:
+    """
+    Ritorna un CSV (delimiter ;) come PlainTextResponse con header download.
+    - Se rows è vuoto: CSV con messaggio.
+    """
+    csv_buf = io.StringIO()
+
+    if not rows:
+        w = csv.writer(csv_buf, delimiter=";")
+        w.writerow(["message"])
+        w.writerow(["Nessun dato nei percorsi"])
+    else:
+        fieldnames = list(rows[0].keys())
+        dw = csv.DictWriter(
+            csv_buf,
+            fieldnames=fieldnames,
+            delimiter=";",
+            extrasaction="ignore",
+        )
+        dw.writeheader()
+        for row in rows:
+            dw.writerow(row)
+
+    headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
+    return PlainTextResponse(
+        content=csv_buf.getvalue(),
+        media_type="text/csv; charset=utf-8",
+        headers=headers,
     )
-    w.writeheader()
-    for r in rows:
-        w.writerow(r)
-    data = buf.getvalue().encode("utf-8-sig")  # BOM
-    return StreamingResponse(
-        io.BytesIO(data),
-        media_type="text/csv",
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
 
 
-@router.get("/cataloghi/export")
-def export_cataloghi():
-    return _csv_response(CATALOGHI, "cataloghi.csv")
+@router.get("/percorsi", name="percorsi_list")
+def list_percorsi() -> Dict[str, Any]:
+    return {
+        "total": len(PERCORSI),
+        "items": PERCORSI,
+    }
 
 
-@router.get("/schede/export")
-def export_schede():
-    return _csv_response(SCHEDE, "schede.csv")
-
-
-@router.get("/percorsi/export")
-def export_percorsi():
+@router.get("/percorsi/export", name="percorsi_export")
+def export_percorsi() -> PlainTextResponse:
     return _csv_response(PERCORSI, "percorsi.csv")
 
 
-@router.post("/cataloghi/import")
-async def import_cataloghi(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith(".csv"):
+@router.post("/percorsi/import", name="percorsi_import")
+async def import_percorsi(file: UploadFile = File(...)) -> Dict[str, Any]:
+    filename = (file.filename or "").strip()
+    if not filename:
+        raise HTTPException(400, "Nome file mancante")
+    if not filename.lower().endswith(".csv"):
         raise HTTPException(400, "Carica un CSV")
-    text = (await file.read()).decode("utf-8-sig")
-    rdr = csv.DictReader(io.StringIO(text))
-    rows = list(rdr)
-    if rows:  # replace mock for now
-        global CATALOGHI
-        CATALOGHI = rows
-    return {"imported": len(rows)}
 
+    raw = await file.read()
+    text = raw.decode("utf-8-sig")  # gestisce BOM
+    rdr = csv.DictReader(io.StringIO(text), delimiter=";")
+    rows: List[Dict[str, Any]] = list(rdr)
 
-@router.post("/schede/import")
-async def import_schede(file: UploadFile = File(...)):
-    text = (await file.read()).decode("utf-8-sig")
-    rdr = csv.DictReader(io.StringIO(text))
-    rows = list(rdr)
-    if rows:
-        global SCHEDE
-        SCHEDE = rows
-    return {"imported": len(rows)}
+    global PERCORSI
+    PERCORSI = rows
 
-
-@router.post("/percorsi/import")
-async def import_percorsi(file: UploadFile = File(...)):
-    text = (await file.read()).decode("utf-8-sig")
-    rdr = csv.DictReader(io.StringIO(text))
-    rows = list(rdr)
-    if rows:
-        global PERCORSI
-        PERCORSI = rows
     return {"imported": len(rows)}
