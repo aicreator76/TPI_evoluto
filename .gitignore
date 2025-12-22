@@ -41,3 +41,6 @@ docs_legacy/
 
 # NO BACKUP FILES
 *.bak_*
+
+# Local CESARE fix scripts
+scripts/CESARE/FIX-ALL_CI_FREEZE_*.ps1
