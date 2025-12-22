@@ -1,12 +1,13 @@
 import os
 import json
+import re
 from datetime import datetime, date
 from typing import Dict, Any
 
 import pandas as pd
 
-# Root del progetto (adatta se serve)
-ROOT = r"E:\CLONAZIONE\tpi_evoluto"
+# Root del progetto (override possibile con env var TPI_ROOT)
+ROOT = os.environ.get("TPI_ROOT", r"E:\CLONAZIONE\tpi_evoluto")
 
 LOG_DIR = os.path.join(ROOT, "logs")
 CRUSCOTTO_JSON = os.path.join(LOG_DIR, "agente0_dashboard.json")
@@ -18,16 +19,22 @@ DPI_CSV = os.path.join(ROOT, "data", "dpi.csv")
 WARNING_DAYS = 30  # soglia warning in giorni
 MIN_VALID_YEAR = 1910  # sotto questo anno la data è considerata anomala
 
+# Regex per formati frequenti
+_RE_ISO_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")  # 2025-12-22
+_RE_ISO_DATE_SLASH = re.compile(r"^\d{4}/\d{2}/\d{2}$")  # 2025/12/22
+_RE_IT_DATE_SLASH = re.compile(r"^\d{1,2}/\d{1,2}/\d{4}$")  # 22/12/2025
+_RE_IT_DATE_DASH = re.compile(r"^\d{1,2}-\d{1,2}-\d{4}$")  # 22-12-2025
+_RE_STARTS_WITH_YEAR = re.compile(r"^\d{4}[-/]")
+
 
 def carica_dpi_da_csv() -> pd.DataFrame:
     """Carica il file DPI; genera errore chiaro se manca."""
     if not os.path.exists(DPI_CSV):
         raise FileNotFoundError(f"File DPI non trovato: {DPI_CSV}")
 
-    df = pd.read_csv(DPI_CSV)
+    # dtype=str evita letture strane (es. scadenze numeriche) e conserva zeri iniziali
+    df = pd.read_csv(DPI_CSV, dtype=str)
 
-    # Normalizza nome colonna scadenza (se serve)
-    # Qui assumiamo che la colonna si chiami esattamente "scadenza"
     if "scadenza" not in df.columns:
         raise KeyError(
             f"Colonna 'scadenza' non trovata in {DPI_CSV}. Colonne presenti: {list(df.columns)}"
@@ -50,6 +57,37 @@ def calcola_semaforo(ok: int, warning: int, scaduti: int, anomalie: int) -> str:
     return "VERDE"
 
 
+def _parse_scadenza(raw_val: Any) -> date:
+    """
+    Parsing deterministico:
+    - ISO: YYYY-MM-DD / YYYY/MM/DD  -> dayfirst False
+    - IT:  DD/MM/YYYY / DD-MM-YYYY  -> dayfirst True
+    - Fallback: dayfirst dipende da "inizia con anno?"
+    """
+    if raw_val is None or pd.isna(raw_val):
+        raise ValueError("scadenza vuota")
+
+    s = str(raw_val).strip()
+    if not s:
+        raise ValueError("scadenza vuota")
+
+    # ISO secco (niente warning, formato esplicito)
+    if _RE_ISO_DATE.match(s):
+        return pd.to_datetime(s, format="%Y-%m-%d", errors="raise").date()
+    if _RE_ISO_DATE_SLASH.match(s):
+        return pd.to_datetime(s, format="%Y/%m/%d", errors="raise").date()
+
+    # IT secco (formato esplicito)
+    if _RE_IT_DATE_SLASH.match(s):
+        return pd.to_datetime(s, format="%d/%m/%Y", errors="raise").date()
+    if _RE_IT_DATE_DASH.match(s):
+        return pd.to_datetime(s, format="%d-%m-%Y", errors="raise").date()
+
+    # Fallback controllato (evita warning: se parte con anno -> dayfirst False)
+    dayfirst = not bool(_RE_STARTS_WITH_YEAR.match(s))
+    return pd.to_datetime(s, dayfirst=dayfirst, errors="raise").date()
+
+
 def calcola_cruscotto(df: pd.DataFrame) -> Dict[str, Any]:
     """Calcola numeri DPI + contatore errori data + semaforo modulo."""
     totale = int(len(df))
@@ -65,21 +103,8 @@ def calcola_cruscotto(df: pd.DataFrame) -> Dict[str, Any]:
     for _, riga in df.iterrows():
         raw_val = riga.get("scadenza", "")
 
-        # Valore mancante o vuoto → anomalia
-        if pd.isna(raw_val):
-            anomalie += 1
-            righe_errore_data += 1
-            continue
-
-        valore = str(raw_val).strip()
-        if not valore:
-            anomalie += 1
-            righe_errore_data += 1
-            continue
-
-        # Parsing data in formato "italiano" (dayfirst=True)
         try:
-            data_scad = pd.to_datetime(valore, dayfirst=True, errors="raise").date()
+            data_scad = _parse_scadenza(raw_val)
         except Exception:
             anomalie += 1
             righe_errore_data += 1
@@ -155,7 +180,6 @@ def salva_cruscotto(cruscotto: Dict[str, Any]) -> None:
 </body>
 </html>
 """
-
     with open(CRUSCOTTO_HTML, "w", encoding="utf-8") as f:
         f.write(html)
 
