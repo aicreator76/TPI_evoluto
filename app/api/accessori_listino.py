@@ -1,4 +1,4 @@
-"""
+""" "
 Router FastAPI per Listino 3.0 Accessori.
 
 Path base: /api/accessori
@@ -21,8 +21,8 @@ import csv
 import io
 from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Query
-from fastapi.responses import PlainTextResponse
+from fastapi import APIRouter, Query
+from fastapi.responses import JSONResponse, PlainTextResponse
 
 from app.db.accessori_db import (
     DB_PATH,
@@ -40,6 +40,32 @@ router = APIRouter(
     prefix="/api/accessori",
     tags=["Accessori 3.0"],
 )
+
+
+def _json_not_found(codice: str):
+    """Contratto 404 auditabile: found=false."""
+    return JSONResponse(
+        status_code=404,
+        content={
+            "found": False,
+            "code": codice,
+            "item": None,
+            "detail": f"Codice non trovato nel listino accessori: {codice}",
+        },
+    )
+
+
+def _json_bad_request(codice: str):
+    """Contratto 400 coerente: found=false + detail."""
+    return JSONResponse(
+        status_code=400,
+        content={
+            "found": False,
+            "code": codice,
+            "item": None,
+            "detail": "Codice non valido",
+        },
+    )
 
 
 # ------------------------------------------------------------
@@ -171,25 +197,52 @@ def listino_accessori_filtrato(
 # ------------------------------------------------------------
 # Ricerca per codice
 # ------------------------------------------------------------
-@router.get("/listino/by-code/{codice}", name="accessori_listino_by_code")
-def listino_by_code(codice: str) -> Dict[str, Any]:
+@router.get(
+    "/listino/by-code/{codice}",
+    name="accessori_listino_by_code",
+    responses={
+        200: {
+            "description": "Codice trovato",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "source_db": "…",
+                        "found": True,
+                        "item": {},
+                        "source_table": "MORSETTI",
+                    }
+                }
+            },
+        },
+        404: {
+            "description": "Codice non trovato (audit)",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "found": False,
+                        "code": "ABC123",
+                        "item": None,
+                        "detail": "Codice non trovato nel listino accessori: ABC123",
+                    }
+                }
+            },
+        },
+    },
+)
+def listino_by_code(codice: str):
     """
     Ricerca un singolo codice nel listino unificato.
 
-    Ritorna:
-    - found: bool
-    - item: dict (se trovato)
-    - source_table: MORSETTI / CATENA_G8 / TYCAN / UNKNOWN
+    Contratto:
+    - 200 -> {found:true, item:...}
+    - 404 -> {found:false, code:"...", item:null, detail:"..."}
     """
     if not codice or not codice.strip():
-        raise HTTPException(status_code=400, detail="Codice non valido")
+        return _json_bad_request(codice)
 
     item = search_by_code(codice)
     if not item:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Codice non trovato nel listino accessori: {codice}",
-        )
+        return _json_not_found(codice)
 
     return {
         "source_db": str(DB_PATH),

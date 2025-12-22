@@ -1,32 +1,38 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from typing import Iterable
 
-from fastapi import FastAPI
-from fastapi.routing import APIRouter
+from fastapi import APIRouter, FastAPI
 
+from app.api.accessori import router as accessori_router
+from app.api.formazione import router as formazione_router
+from app.api.funi_acciaio import router as funi_acciaio_router
 from app.api.inox import router as inox_router
 from app.api.linee_vita import router as linee_vita_router
-
-# nuovi
-from app.api.accessori import router as accessori_router
-from app.api.funi_acciaio import router as funi_acciaio_router
-from app.api.formazione import router as formazione_router
-
 from app.routers import demo_real
 
 
+def _norm_prefix(p: str) -> str:
+    p = (p or "").strip()
+    if not p:
+        return ""
+    return "/" + p.strip("/")
+
+
 def _include_api(app: FastAPI, router: APIRouter, prefix_if_missing: str) -> None:
-    """
-    Se il router ha già un prefix (es. '/api/accessori'), lo includo senza prefix.
-    Se non ce l’ha, applico prefix_if_missing.
-    Così evitiamo doppioni tipo /api/accessori/api/accessori.
-    """
-    rp = (getattr(router, "prefix", "") or "").strip()
-    if rp:
+    router_prefix = _norm_prefix(getattr(router, "prefix", "") or "")
+    fallback_prefix = _norm_prefix(prefix_if_missing)
+
+    if router_prefix:
         app.include_router(router)
     else:
-        app.include_router(router, prefix=prefix_if_missing)
+        app.include_router(router, prefix=fallback_prefix)
+
+
+def _include_many(app: FastAPI, specs: Iterable[tuple[APIRouter, str]]) -> None:
+    for r, p in specs:
+        _include_api(app, r, p)
 
 
 def create_app() -> FastAPI:
@@ -36,17 +42,28 @@ def create_app() -> FastAPI:
     def healthz() -> dict:
         return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
 
-    # DEMO (deve restare in OpenAPI)
     demo_real.mount(app)
 
-    # CATALOGHI (in OpenAPI)
-    _include_api(app, linee_vita_router, "/api/linee-vita")
-    _include_api(app, inox_router, "/api/inox")
+    _include_many(
+        app,
+        [
+            (linee_vita_router, "/api/linee-vita"),
+            (inox_router, "/api/inox"),
+            (funi_acciaio_router, "/api/funi-acciaio"),
+            (accessori_router, "/api/accessori"),
+            (formazione_router, "/api/formazione"),
+        ],
+    )
 
-    # EXTRA (in OpenAPI)
-    _include_api(app, funi_acciaio_router, "/api/funi-acciaio")
-    _include_api(app, accessori_router, "/api/accessori")
-    _include_api(app, formazione_router, "/api/formazione")
+    @app.on_event("startup")
+    def _startup_log() -> None:
+        wanted = ("/api/accessori/overview", "/api/formazione/overview")
+        present = {getattr(r, "path", "") for r in app.routes}
+        missing = [p for p in wanted if p not in present]
+        if missing:
+            print(f"[STARTUP][WARN] Missing routes: {missing}")
+        else:
+            print("[STARTUP][OK] accessori + formazione presenti in routes")
 
     return app
 
