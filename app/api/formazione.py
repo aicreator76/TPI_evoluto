@@ -7,7 +7,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
-router = APIRouter(prefix="/api/formazione", tags=["formazione"])
+router = APIRouter(tags=["formazione"])
 
 DATA_FILE = Path(__file__).resolve().parents[1] / "data" / "catalog_formazione.json"
 
