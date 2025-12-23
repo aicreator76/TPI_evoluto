@@ -69,3 +69,13 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+@app.get("/health", include_in_schema=False)
+def health() -> dict:
+    return {"status": "ok"}
+
+
+@app.get("/version", include_in_schema=False)
+def version() -> dict:
+    return {"app": "tpi_evoluto", "version": app.version}
