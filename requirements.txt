@@ -11,3 +11,5 @@ email-validator
 
 # Security (pip-audit)
 ecdsa>=0.19.1,<0.20.0
+uvicorn
+uvicorn
