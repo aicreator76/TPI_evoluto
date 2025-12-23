@@ -1,0 +1,4 @@
+﻿# Ignora scratch locale dentro tools/
+*_local*
+*.tmp
+*.log
