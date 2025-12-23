@@ -1,175 +1,179 @@
+# E:\CLONAZIONE\tpi_evoluto\app\db\accessori.py
 from __future__ import annotations
 
+import os
 import sqlite3
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
-
-from fastapi import HTTPException
-
-# --------------------------------------------------
-# Config DB (WIN / tua macchina)
-# --------------------------------------------------
-# DB reale TPI_evoluto
-DB_PATH = Path(r"E:\CLONAZIONE\tpi_evoluto\tpi.db")
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 
-def _get_conn() -> sqlite3.Connection:
-    """
-    Ritorna una connessione SQLite con row_factory a dict-like.
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DB_PATH = Path(os.getenv("TPI_DB_PATH", str(PROJECT_ROOT / "tpi.db")))
 
-    NB: conn in-memory, no pooling (perfetto per on-prem + FastAPI leggera).
-    """
+ACCESSORI_TABLES: Tuple[Tuple[str, str], ...] = (
+    ("tpi_accessori_famiglie", "famiglie"),
+    ("tpi_accessori_morsetti", "morsetti"),
+    ("tpi_accessori_catena_g8", "catena_g8"),
+    ("tpi_accessori_tycan", "tycan"),
+)
+
+ACCESSORI_LISTINO_TABLES: Tuple[Tuple[str, str], ...] = (
+    ("tpi_accessori_morsetti", "morsetti"),
+    ("tpi_accessori_catena_g8", "catena_g8"),
+    ("tpi_accessori_tycan", "tycan"),
+)
+
+# Query STATICHE (niente SQL costruito a runtime -> Bandit B608 muto)
+_COUNT_SQL: Dict[str, str] = {
+    "tpi_accessori_famiglie": "SELECT COUNT(*) AS c FROM tpi_accessori_famiglie",
+    "tpi_accessori_morsetti": "SELECT COUNT(*) AS c FROM tpi_accessori_morsetti",
+    "tpi_accessori_catena_g8": "SELECT COUNT(*) AS c FROM tpi_accessori_catena_g8",
+    "tpi_accessori_tycan": "SELECT COUNT(*) AS c FROM tpi_accessori_tycan",
+}
+
+_SELECT_ALL_SQL: Dict[str, str] = {
+    "tpi_accessori_famiglie": "SELECT * FROM tpi_accessori_famiglie",
+    "tpi_accessori_morsetti": "SELECT * FROM tpi_accessori_morsetti",
+    "tpi_accessori_catena_g8": "SELECT * FROM tpi_accessori_catena_g8",
+    "tpi_accessori_tycan": "SELECT * FROM tpi_accessori_tycan",
+}
+
+_FIND_BY_CODE_SQL: Dict[str, str] = {
+    "tpi_accessori_morsetti": "SELECT * FROM tpi_accessori_morsetti WHERE LOWER(codice) = LOWER(?)",
+    "tpi_accessori_catena_g8": "SELECT * FROM tpi_accessori_catena_g8 WHERE LOWER(codice) = LOWER(?)",
+    "tpi_accessori_tycan": "SELECT * FROM tpi_accessori_tycan WHERE LOWER(codice) = LOWER(?)",
+}
+
+
+def _connect() -> sqlite3.Connection:
     if not DB_PATH.exists():
-        raise HTTPException(
-            status_code=500,
-            detail=f"DB TPI non trovato ({DB_PATH})",
-        )
-
+        raise RuntimeError(f"DB TPI non trovato in {DB_PATH}")
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
 
-# --------------------------------------------------
-# Helpers interni
-# --------------------------------------------------
-def _rows_to_dicts(rows: List[sqlite3.Row]) -> List[Dict[str, Any]]:
+def _table_exists(conn: sqlite3.Connection, table: str) -> bool:
+    cur = conn.execute(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name = ?",
+        (table,),
+    )
+    return cur.fetchone() is not None
+
+
+def _rows_to_dicts(rows: Iterable[sqlite3.Row]) -> List[Dict[str, Any]]:
     return [dict(r) for r in rows]
 
 
-def _count_table(conn: sqlite3.Connection, table: str) -> int:
-    cur = conn.execute(f"SELECT COUNT(*) AS c FROM {table}")
-    row = cur.fetchone()
-    return int(row["c"]) if row else 0
+def _detect_code_column_from_row(row_dict: Dict[str, Any]) -> Optional[str]:
+    # fallback: cerca colonna che contiene "codice"
+    for k in row_dict.keys():
+        if "codice" in str(k).lower():
+            return str(k)
+    return None
 
 
-# --------------------------------------------------
-# API – Overview
-# --------------------------------------------------
-def get_accessori_overview() -> Dict[str, int]:
+def get_accessori_overview() -> Dict[str, Any]:
     """
-    Ritorna i conteggi base per le tabelle accessori.
-
-    Usato da /api/accessori/overview.
+    Output compatibile col test:
+    {'famiglie':30,'morsetti':..,'catena_g8':..,'tycan':..,'total_codici':..}
     """
-    with _get_conn() as conn:
-        return {
-            "famiglie": _count_table(conn, "tpi_accessori_famiglie"),
-            "morsetti": _count_table(conn, "tpi_accessori_morsetti"),
-            "catena_g8": _count_table(conn, "tpi_accessori_catena_g8"),
-            "tycan": _count_table(conn, "tpi_accessori_tycan"),
-        }
+    out: Dict[str, Any] = {}
+
+    with _connect() as conn:
+        for table, key in ACCESSORI_TABLES:
+            if not _table_exists(conn, table):
+                out[key] = None
+                continue
+
+            sql = _COUNT_SQL.get(table)
+            if not sql:
+                out[key] = None
+                continue
+
+            row = conn.execute(sql).fetchone()
+            out[key] = int(row["c"]) if row is not None else 0
+
+    out["total_codici"] = sum(v for v in out.values() if isinstance(v, int))
+    return out
 
 
-# --------------------------------------------------
-# API – Famiglie
-# --------------------------------------------------
-def get_famiglie_accessori() -> List[Dict[str, Any]]:
-    """
-    Ritorna tutte le famiglie accessori (tpi_accessori_famiglie).
-    """
-    with _get_conn() as conn:
-        cur = conn.execute("SELECT * FROM tpi_accessori_famiglie ORDER BY id_tpi ASC")
-        rows = cur.fetchall()
-    return _rows_to_dicts(rows)
+def get_famiglie() -> List[Dict[str, Any]]:
+    with _connect() as conn:
+        if not _table_exists(conn, "tpi_accessori_famiglie"):
+            return []
+        cur = conn.execute(_SELECT_ALL_SQL["tpi_accessori_famiglie"] + " ORDER BY 1")
+        return _rows_to_dicts(cur.fetchall())
 
 
-# --------------------------------------------------
-# API – Codici per tipologia
-# --------------------------------------------------
-def get_morsetti_codici() -> List[Dict[str, Any]]:
-    with _get_conn() as conn:
-        cur = conn.execute("SELECT * FROM tpi_accessori_morsetti ORDER BY codice ASC")
-        rows = cur.fetchall()
-    return _rows_to_dicts(rows)
+def get_listino_all() -> List[Dict[str, Any]]:
+    all_rows: List[Dict[str, Any]] = []
+
+    with _connect() as conn:
+        for table, kind in ACCESSORI_LISTINO_TABLES:
+            if not _table_exists(conn, table):
+                continue
+
+            sql = _SELECT_ALL_SQL.get(table)
+            if not sql:
+                continue
+
+            cur = conn.execute(sql)
+            for r in cur.fetchall():
+                row = dict(r)
+                row["source_table"] = table
+                row["source_kind"] = kind
+                all_rows.append(row)
+
+    return all_rows
 
 
-def get_catena_g8_codici() -> List[Dict[str, Any]]:
-    with _get_conn() as conn:
-        cur = conn.execute("SELECT * FROM tpi_accessori_catena_g8 ORDER BY codice ASC")
-        rows = cur.fetchall()
-    return _rows_to_dicts(rows)
+def find_by_code(codice: str) -> Dict[str, Any]:
+    code_norm = (codice or "").strip()
+    if not code_norm:
+        raise ValueError("Codice vuoto")
 
+    with _connect() as conn:
+        for table, kind in ACCESSORI_LISTINO_TABLES:
+            if not _table_exists(conn, table):
+                continue
 
-def get_tycan_codici() -> List[Dict[str, Any]]:
-    with _get_conn() as conn:
-        cur = conn.execute("SELECT * FROM tpi_accessori_tycan ORDER BY codice ASC")
-        rows = cur.fetchall()
-    return _rows_to_dicts(rows)
+            # 1) tentativo “standard” su colonna codice
+            sql = _FIND_BY_CODE_SQL.get(table)
+            if sql:
+                try:
+                    row = conn.execute(sql, (code_norm,)).fetchone()
+                    if row is not None:
+                        data = dict(row)
+                        data["source_table"] = table
+                        data["source_kind"] = kind
+                        data["code_column"] = "codice"
+                        return data
+                except sqlite3.OperationalError:
+                    pass
 
+            # 2) fallback: leggi righe e cerca colonna tipo "codice*"
+            sql_all = _SELECT_ALL_SQL.get(table)
+            if not sql_all:
+                continue
 
-# --------------------------------------------------
-# API – Listino 3.0 (full)
-# --------------------------------------------------
-def get_listino_full() -> List[Dict[str, Any]]:
-    """
-    Listino 3.0 ACCESSORI "full":
+            cur = conn.execute(sql_all)
+            rows = cur.fetchall()
+            if not rows:
+                continue
 
-    Unisce tutti i codici in un'unica lista,
-    aggiungendo il campo 'sorgente' per distinguere la tabella.
-    """
-    items: List[Dict[str, Any]] = []
+            first = dict(rows[0])
+            code_col = _detect_code_column_from_row(first)
+            if not code_col:
+                continue
 
-    with _get_conn() as conn:
-        # morsetti
-        cur = conn.execute("SELECT * FROM tpi_accessori_morsetti")
-        for row in cur.fetchall():
-            d = dict(row)
-            d["sorgente"] = "morsetti"
-            items.append(d)
+            for r in rows:
+                d = dict(r)
+                v = str(d.get(code_col, "")).strip()
+                if v.lower() == code_norm.lower():
+                    d["source_table"] = table
+                    d["source_kind"] = kind
+                    d["code_column"] = code_col
+                    return d
 
-        # catena G8
-        cur = conn.execute("SELECT * FROM tpi_accessori_catena_g8")
-        for row in cur.fetchall():
-            d = dict(row)
-            d["sorgente"] = "catena_g8"
-            items.append(d)
-
-        # TYCAN
-        cur = conn.execute("SELECT * FROM tpi_accessori_tycan")
-        for row in cur.fetchall():
-            d = dict(row)
-            d["sorgente"] = "tycan"
-            items.append(d)
-
-    return items
-
-
-# --------------------------------------------------
-# API – Lookup per codice (codice articolo)
-# --------------------------------------------------
-def find_accessorio_by_codice(codice: str) -> Dict[str, Any]:
-    """
-    Cerca un codice accessorio in tutte le tabelle codici.
-
-    Ritorna il primo match (case-insensitive) con la sorgente.
-    """
-    codice_norm = codice.strip().lower()
-    if not codice_norm:
-        raise HTTPException(status_code=400, detail="Codice vuoto o non valido")
-
-    queries: List[Tuple[str, str]] = [
-        ("tpi_accessori_morsetti", "morsetti"),
-        ("tpi_accessori_catena_g8", "catena_g8"),
-        ("tpi_accessori_tycan", "tycan"),
-    ]
-
-    with _get_conn() as conn:
-        for table, label in queries:
-            cur = conn.execute(
-                f"""
-                SELECT * FROM {table}
-                WHERE LOWER(codice) = ?
-                """,
-                (codice_norm,),
-            )
-            row = cur.fetchone()
-            if row is not None:
-                d = dict(row)
-                d["sorgente"] = label
-                return d
-
-    raise HTTPException(
-        status_code=404,
-        detail=f"Nessun accessorio trovato per codice '{codice}'",
-    )
+    return {}

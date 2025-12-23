@@ -9,3 +9,6 @@ pip-audit==2.7.3
 mkdocs==1.6.1
 mkdocs-material==9.5.40
 pre-commit==3.8.0
+types-requests
+types-PyYAML
+httpx

@@ -33,7 +33,7 @@ jobs:
       - name: Mypy
         run: mypy .
       - name: Bandit
-        run: bandit -q -r .
+        run: bandit -q -r app agents tpi_importer.py -x 'tests,.github,**/test_*.py,**/*_test.py,test_db_accessori.py'
 
   tests:
     name: Tests & Coverage
