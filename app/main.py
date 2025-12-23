@@ -11,6 +11,7 @@ from app.api.funi_acciaio import router as funi_acciaio_router
 from app.api.inox import router as inox_router
 from app.api.linee_vita import router as linee_vita_router
 from app.routers import demo_real
+from app.routers.dpi_csv import router as dpi_csv_router
 
 
 def _norm_prefix(p: str) -> str:
@@ -42,8 +43,10 @@ def create_app() -> FastAPI:
     def healthz() -> dict:
         return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
 
+    # Mount demo (se presente)
     demo_real.mount(app)
 
+    # API principali
     _include_many(
         app,
         [
@@ -55,15 +58,22 @@ def create_app() -> FastAPI:
         ],
     )
 
+    # ✅ CSV DPI (smoke-api aspetta /api/dpi/csv/template)
+    app.include_router(dpi_csv_router)
+
     @app.on_event("startup")
     def _startup_log() -> None:
-        wanted = ("/api/accessori/overview", "/api/formazione/overview")
+        wanted = (
+            "/api/accessori/overview",
+            "/api/formazione/overview",
+            "/api/dpi/csv/template",
+        )
         present = {getattr(r, "path", "") for r in app.routes}
         missing = [p for p in wanted if p not in present]
         if missing:
             print(f"[STARTUP][WARN] Missing routes: {missing}")
         else:
-            print("[STARTUP][OK] accessori + formazione presenti in routes")
+            print("[STARTUP][OK] routes base presenti (accessori/formazione/dpi_csv)")
 
     return app
 

@@ -3,8 +3,9 @@ Router /auth per ottenere un JWT di sviluppo.
 
 IMPORTANTE:
 - Questa versione NON verifica la password su DB.
-- Usa il solo username (email) e assegna ruolo OPERATORE e azienda_id=1.
-- Serve come base tecnica per issue #50, in attesa di aggancio al DB utenti.
+- Accetta qualsiasi username/password (DEV).
+- Usa username come email nel claim `sub`.
+- Ruolo default OPERATORE e azienda_id=1.
 """
 
 from __future__ import annotations
@@ -29,8 +30,6 @@ async def login_for_access_token(
     - Usa username come email nel claim `sub`.
     - Imposta ruolo di default OPERATORE e azienda_id=1.
     """
-
-    # In futuro: qui andrà la verifica contro tabella `utente` (email + password_hash)
     access_token = create_access_token(
         {
             "sub": form_data.username,
@@ -39,4 +38,5 @@ async def login_for_access_token(
         },
     )
 
-    return Token(access_token=access_token, token_type="bearer")
+    # token_type="bearer" è standard OAuth2 (Bandit lo segnala ma qui è corretto)
+    return Token(access_token=access_token, token_type="bearer")  # nosec B106
