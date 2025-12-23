@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from typing import Iterable
 
 from fastapi import APIRouter, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.accessori import router as accessori_router
 from app.api.formazione import router as formazione_router
@@ -39,9 +41,32 @@ def _include_many(app: FastAPI, specs: Iterable[tuple[APIRouter, str]]) -> None:
 def create_app() -> FastAPI:
     app = FastAPI(title="TPI_evoluto", version="0.1.0")
 
+    # === CORS (Render + GitHub Pages) ===
+    # Render env: CORS_ALLOW_ORIGINS=https://aicreator76.github.io
+    origins_env = os.getenv("CORS_ALLOW_ORIGINS", "https://aicreator76.github.io")
+    cors_origins = [o.strip() for o in origins_env.split(",") if o.strip()]
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+        max_age=86400,
+    )
+    # === /CORS ===
+
+    @app.get("/", tags=["system"])
+    def root() -> dict:
+        return {"service": "tpi_evoluto", "status": "ok"}
+
     @app.get("/healthz", tags=["system"])
     def healthz() -> dict:
         return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
+
+    @app.get("/version", tags=["system"])
+    def version() -> dict:
+        return {"version": app.version}
 
     # Mount demo (se presente)
     demo_real.mount(app)
@@ -58,34 +83,11 @@ def create_app() -> FastAPI:
         ],
     )
 
-    # ✅ CSV DPI (smoke-api aspetta /api/dpi/csv/template)
-    app.include_router(dpi_csv_router)
-
-    @app.on_event("startup")
-    def _startup_log() -> None:
-        wanted = (
-            "/api/accessori/overview",
-            "/api/formazione/overview",
-            "/api/dpi/csv/template",
-        )
-        present = {getattr(r, "path", "") for r in app.routes}
-        missing = [p for p in wanted if p not in present]
-        if missing:
-            print(f"[STARTUP][WARN] Missing routes: {missing}")
-        else:
-            print("[STARTUP][OK] routes base presenti (accessori/formazione/dpi_csv)")
+    # Router DPI CSV (se non ha prefix proprio)
+    _include_api(app, dpi_csv_router, "/api/dpi_csv")
 
     return app
 
 
+# <<< QUESTO È IL PUNTO CHIAVE: Render serve QUESTA istanza >>>
 app = create_app()
-
-
-@app.get("/health", include_in_schema=False)
-def health() -> dict:
-    return {"status": "ok"}
-
-
-@app.get("/version", include_in_schema=False)
-def version() -> dict:
-    return {"app": "tpi_evoluto", "version": app.version}
