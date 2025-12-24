@@ -230,7 +230,7 @@
 
   async function apiPing(){
     try{
-      const h = await fetchJson(API_BASE + "/health", 2800);
+      const h = await fetchJson(API_BASE + "/healthz", 2800);
       el("hVal").textContent = (h && (h.status || h.health || "online")) ? "online" : "online";
       const v = await fetchJson(API_BASE + "/version", 2800);
       el("vVal").textContent = JSON.stringify(v);
