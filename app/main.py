@@ -46,11 +46,55 @@ def _route_exists(app: FastAPI, path: str, method: str) -> bool:
     return False
 
 
+# --- DEMO DATA per WOW (così la dashboard NON resta a zero) ---
+WOW_DPI_DEMO: list[dict[str, Any]] = [
+    {
+        "codice": "DPI-ELM-001",
+        "descrizione": "Elmetto dielettrico EN 397 con jugulare",
+        "famiglia": "TESTA",
+        "giorni": 120,
+        "revisione_ok": True,
+        "ultima_rev": "2025-12-12",
+    },
+    {
+        "codice": "DPI-IMB-002",
+        "descrizione": "Imbracatura anticaduta 2 punti con anello dorsale",
+        "famiglia": "ANTICADUTA",
+        "giorni": 45,
+        "revisione_ok": True,
+        "ultima_rev": "2025-11-20",
+    },
+    {
+        "codice": "DPI-CON-003",
+        "descrizione": "Cordino doppio con assorbitore",
+        "famiglia": "ANTICADUTA",
+        "giorni": -5,
+        "revisione_ok": False,
+        "ultima_rev": "2025-09-10",
+    },
+]
+
+WOW_ACCESSORI_DEMO: list[dict[str, Any]] = [
+    {
+        "codice": "ACC-MOS-010",
+        "descrizione": "Moschettone tripla sicurezza",
+        "famiglia": "CONNETTORI",
+        "disponibilita": "Disponibile",
+    },
+    {
+        "codice": "ACC-ANC-020",
+        "descrizione": "Ancoraggio provvisorio fettuccia",
+        "famiglia": "ANCORAGGI",
+        "disponibilita": "Stock limitato",
+    },
+]
+
+
 def create_app() -> FastAPI:
     app = FastAPI(title="TPI_evoluto", version="0.1.0")
 
-    # === CORS (GH Pages -> Render) ===
-    origins_env = os.getenv("CORS_ALLOW_ORIGINS", "https://aicreator76.github.io")
+    # === CORS (GH Pages -> Render + file:// origin "null") ===
+    origins_env = os.getenv("CORS_ALLOW_ORIGINS", "https://aicreator76.github.io,null")
     cors_origins = [o.strip() for o in origins_env.split(",") if o.strip()]
     app.add_middleware(
         CORSMiddleware,
@@ -60,7 +104,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # === SYSTEM ROUTES (compat + sanity) ===
+    # === SYSTEM ROUTES ===
     if not _route_exists(app, "/", "GET"):
 
         @app.get("/", tags=["system"])
@@ -79,26 +123,27 @@ def create_app() -> FastAPI:
         def healthz() -> dict[str, str]:
             return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
 
-    # WOW dashboard chiama /health (non /healthz) -> alias
+    # WOW chiama /health (alias)
     if not _route_exists(app, "/health", "GET"):
 
         @app.get("/health", tags=["system"])
         def health() -> dict[str, str]:
             return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
 
-    # === WOW COMPAT: endpoints attesi dal frontend (evita 404) ===
-    # Nota: ora tornano [] così NON rompe niente. Poi li colleghiamo a CSV/DB.
+    # === WOW COMPAT endpoints (DEVONO tornare 200 + LISTA NON VUOTA) ===
+    wow_empty = os.getenv("WOW_EMPTY", "").strip() in {"1", "true", "TRUE", "yes", "YES"}
+
     if not _route_exists(app, "/api/dpi/listino", "GET"):
 
         @app.get("/api/dpi/listino", tags=["wow_compat"])
         def wow_dpi_listino() -> list[dict[str, Any]]:
-            return []
+            return [] if wow_empty else WOW_DPI_DEMO
 
     if not _route_exists(app, "/api/accessori/listino", "GET"):
 
         @app.get("/api/accessori/listino", tags=["wow_compat"])
         def wow_accessori_listino() -> list[dict[str, Any]]:
-            return []
+            return [] if wow_empty else WOW_ACCESSORI_DEMO
 
     # Mount demo (se presente)
     demo_real.mount(app)
