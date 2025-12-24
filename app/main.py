@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os
 from datetime import datetime, timezone
-from typing import Iterable
+from typing import Any, Iterable
 
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,35 +38,67 @@ def _include_many(app: FastAPI, specs: Iterable[tuple[APIRouter, str]]) -> None:
         _include_api(app, r, p)
 
 
+def _route_exists(app: FastAPI, path: str, method: str) -> bool:
+    m = method.upper()
+    for r in app.routes:
+        if getattr(r, "path", None) == path and m in getattr(r, "methods", set()):
+            return True
+    return False
+
+
 def create_app() -> FastAPI:
     app = FastAPI(title="TPI_evoluto", version="0.1.0")
 
-    # === CORS (Render + GitHub Pages) ===
-    # Render env: CORS_ALLOW_ORIGINS=https://aicreator76.github.io
+    # === CORS (GH Pages -> Render) ===
     origins_env = os.getenv("CORS_ALLOW_ORIGINS", "https://aicreator76.github.io")
     cors_origins = [o.strip() for o in origins_env.split(",") if o.strip()]
-
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins,
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
-        max_age=86400,
     )
-    # === /CORS ===
 
-    @app.get("/", tags=["system"])
-    def root() -> dict:
-        return {"service": "tpi_evoluto", "status": "ok"}
+    # === SYSTEM ROUTES (compat + sanity) ===
+    if not _route_exists(app, "/", "GET"):
 
-    @app.get("/healthz", tags=["system"])
-    def healthz() -> dict:
-        return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
+        @app.get("/", tags=["system"])
+        def root() -> dict[str, str]:
+            return {"service": "tpi_evoluto", "status": "ok"}
 
-    @app.get("/version", tags=["system"])
-    def version() -> dict:
-        return {"version": app.version}
+    if not _route_exists(app, "/version", "GET"):
+
+        @app.get("/version", tags=["system"])
+        def version() -> dict[str, str]:
+            return {"version": app.version}
+
+    if not _route_exists(app, "/healthz", "GET"):
+
+        @app.get("/healthz", tags=["system"])
+        def healthz() -> dict[str, str]:
+            return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
+
+    # WOW dashboard chiama /health (non /healthz) -> alias
+    if not _route_exists(app, "/health", "GET"):
+
+        @app.get("/health", tags=["system"])
+        def health() -> dict[str, str]:
+            return {"status": "ok", "time": datetime.now(timezone.utc).isoformat()}
+
+    # === WOW COMPAT: endpoints attesi dal frontend (evita 404) ===
+    # Nota: ora tornano [] così NON rompe niente. Poi li colleghiamo a CSV/DB.
+    if not _route_exists(app, "/api/dpi/listino", "GET"):
+
+        @app.get("/api/dpi/listino", tags=["wow_compat"])
+        def wow_dpi_listino() -> list[dict[str, Any]]:
+            return []
+
+    if not _route_exists(app, "/api/accessori/listino", "GET"):
+
+        @app.get("/api/accessori/listino", tags=["wow_compat"])
+        def wow_accessori_listino() -> list[dict[str, Any]]:
+            return []
 
     # Mount demo (se presente)
     demo_real.mount(app)
@@ -80,14 +112,11 @@ def create_app() -> FastAPI:
             (funi_acciaio_router, "/api/funi-acciaio"),
             (accessori_router, "/api/accessori"),
             (formazione_router, "/api/formazione"),
+            (dpi_csv_router, "/api/dpi_csv"),
         ],
     )
-
-    # Router DPI CSV (se non ha prefix proprio)
-    _include_api(app, dpi_csv_router, "/api/dpi_csv")
 
     return app
 
 
-# <<< QUESTO È IL PUNTO CHIAVE: Render serve QUESTA istanza >>>
 app = create_app()
