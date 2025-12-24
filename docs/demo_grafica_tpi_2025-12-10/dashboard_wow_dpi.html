@@ -1,9 +1,9 @@
-Ôªø<!doctype html>
+<!doctype html>
 <html lang="it">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TPI ‚Äì WOW Dashboard DPI</title>
+  <title>TPI ñ WOW Dashboard DPI</title>
 
   <link rel="stylesheet" href="./wow_anim.css" />
   <script src="./config.js"></script>
@@ -15,12 +15,12 @@
   <div class="wrap">
     <div class="top">
       <div>
-        <h1 class="h1">TPI ‚Äì WOW Dashboard DPI</h1>
-        <div class="sub">Cataloghi + Movimenti + Click dettaglio + Revisione ‚Ä¢ Effetto WOW reale</div>
+        <h1 class="h1">TPI ñ WOW Dashboard DPI</h1>
+        <div class="sub">Cataloghi + Movimenti + Click dettaglio + Revisione ï Effetto WOW reale</div>
         <div class="badges">
           <div class="badge"><span class="dot"></span><span>Motore reale</span></div>
           <div class="badge"><span class="dot"></span><span>Cataloghi live</span></div>
-          <div class="badge" id="apiBadge"><span class="dot warn" id="apiDot"></span><span id="apiTxt">API: verifica‚Ä¶</span></div>
+          <div class="badge" id="apiBadge"><span class="dot warn" id="apiDot"></span><span id="apiTxt">API: verificaÖ</span></div>
         </div>
       </div>
 
@@ -38,22 +38,22 @@
     <div class="grid4">
       <div class="card" id="kpi1">
         <div class="kpiTitle">Prodotti attivi</div>
-        <div class="kpiVal" id="kpiAttivi">‚Äî</div>
+        <div class="kpiVal" id="kpiAttivi">ó</div>
         <div class="kpiHint">DPI disponibili a catalogo</div>
       </div>
       <div class="card" id="kpi2">
         <div class="kpiTitle">In scadenza</div>
-        <div class="kpiVal" id="kpiScad">‚Äî</div>
+        <div class="kpiVal" id="kpiScad">ó</div>
         <div class="kpiHint">&le; 60 giorni</div>
       </div>
       <div class="card" id="kpi3">
         <div class="kpiTitle">Scaduti</div>
-        <div class="kpiVal" id="kpiScaduti">‚Äî</div>
+        <div class="kpiVal" id="kpiScaduti">ó</div>
         <div class="kpiHint">Blocco utilizzo</div>
       </div>
       <div class="card" id="kpi4">
         <div class="kpiTitle">Revisione OK</div>
-        <div class="kpiVal" id="kpiRevOk">‚Äî</div>
+        <div class="kpiVal" id="kpiRevOk">ó</div>
         <div class="kpiHint">Ultima revisione valida</div>
       </div>
     </div>
@@ -82,7 +82,7 @@
             <tbody id="mainTbody"></tbody>
           </table>
           <div style="height:10px"></div>
-          <div class="kpiHint" id="originHint">Origine dati: ‚Äî</div>
+          <div class="kpiHint" id="originHint">Origine dati: ó</div>
         </div>
 
         <div class="card">
@@ -91,9 +91,9 @@
           <div class="box">
             <h3>Health / Version</h3>
             <div class="kv">
-              <div class="k">/health</div><div class="v" id="hVal">‚Äî</div>
-              <div class="k">/version</div><div class="v" id="vVal">‚Äî</div>
-              <div class="k">API_BASE</div><div class="v" id="bVal">‚Äî</div>
+              <div class="k">/health</div><div class="v" id="hVal">ó</div>
+              <div class="k">/version</div><div class="v" id="vVal">ó</div>
+              <div class="k">API_BASE</div><div class="v" id="bVal">ó</div>
             </div>
           </div>
 
@@ -101,12 +101,12 @@
           <div class="box">
             <h3>Maggiordomo TPI</h3>
             <div style="font-weight:900; color:var(--mut); line-height:1.35">
-              Clicca un elemento ‚Üí dettaglio ‚Üí timeline revisioni. <br/>
+              Clicca un elemento ? dettaglio ? timeline revisioni. <br/>
               La pagina resta WOW anche senza API (fallback locale). <br/>
               Con API online: dati reali in diretta.
             </div>
             <div style="height:12px"></div>
-            <div class="pill cyan" id="quickHint">Tip: premi Aggiorna per ‚Äúeffetto movimento‚Äù</div>
+            <div class="pill cyan" id="quickHint">Tip: premi Aggiorna per ìeffetto movimentoî</div>
           </div>
         </div>
       </div>
@@ -119,7 +119,7 @@
       <div class="mTop">
         <div>
           <h2 class="mTitle" id="mTitle">Dettaglio</h2>
-          <div class="mSub" id="mSub">‚Äî</div>
+          <div class="mSub" id="mSub">ó</div>
         </div>
         <button class="btn" id="closeBtn">Chiudi</button>
       </div>
@@ -167,7 +167,7 @@
     sottogancio: [],
     movimenti: [],
     apiOnline: false,
-    origin: "‚Äî",
+    origin: "ó",
     revisioni: {} // per codice
   };
 
@@ -243,7 +243,7 @@
     } catch(e){
       STATE.apiOnline = false;
       el("hVal").textContent = "offline / CORS";
-      el("vVal").textContent = "‚Äî";
+      el("vVal").textContent = "ó";
       el("apiDot").className = "dot warn";
       el("apiTxt").textContent = "API: offline / fallback";
       el("apiBadge").classList.remove("pulse");
@@ -258,7 +258,7 @@
     // 2) dati
     if(ok){
       try{
-        // endpoints ‚Äúprobabili‚Äù (se cambiano: fallback immediato)
+        // endpoints ìprobabiliî (se cambiano: fallback immediato)
         const dpi = await fetchJson(API_BASE + "/api/dpi/listino", 3200);
         const acc = await fetchJson(API_BASE + "/api/accessori/listino", 3200);
 
@@ -327,7 +327,7 @@
     tb.innerHTML = "";
 
     if(STATE.tab==="movimenti"){
-      // tabella come timeline ‚Äúcliccabile‚Äù
+      // tabella come timeline ìcliccabileî
       (STATE.movimenti||[]).slice().reverse().forEach(m=>{
         const tr=document.createElement("tr");
         tr.innerHTML = `
@@ -336,7 +336,7 @@
           <td>${m.ref}</td>
           <td><span class="pill cyan">Apri</span></td>
         `;
-        tr.addEventListener("click", ()=>openDetail({codice:m.ref, descrizione:m.note, famiglia:"MOVIMENTO", giorni:0, revisione_ok:true, ultima_rev:"‚Äî"}));
+        tr.addEventListener("click", ()=>openDetail({codice:m.ref, descrizione:m.note, famiglia:"MOVIMENTO", giorni:0, revisione_ok:true, ultima_rev:"ó"}));
         tb.appendChild(tr);
       });
       return;
@@ -348,9 +348,9 @@
         const ok = !!(x.revisione_ok ?? x.rev_ok ?? true);
         const tr=document.createElement("tr");
         tr.innerHTML = `
-          <td>${x.codice ?? x.code ?? "‚Äî"}</td>
-          <td>${x.descrizione ?? x.desc ?? "‚Äî"}</td>
-          <td>${x.famiglia ?? x.family ?? "‚Äî"}</td>
+          <td>${x.codice ?? x.code ?? "ó"}</td>
+          <td>${x.descrizione ?? x.desc ?? "ó"}</td>
+          <td>${x.famiglia ?? x.family ?? "ó"}</td>
           <td>${pillForDpi(g)} &nbsp; ${pillForRev(ok)}</td>
         `;
         tr.addEventListener("click", ()=>openDetail({
@@ -359,7 +359,7 @@
           famiglia: x.famiglia ?? x.family,
           giorni: g,
           revisione_ok: ok,
-          ultima_rev: x.ultima_rev ?? x.last_review ?? "‚Äî"
+          ultima_rev: x.ultima_rev ?? x.last_review ?? "ó"
         }));
         tb.appendChild(tr);
       });
@@ -370,9 +370,9 @@
       (STATE.accessori||[]).forEach(a=>{
         const tr=document.createElement("tr");
         tr.innerHTML = `
-          <td>${a.codice ?? a.code ?? "‚Äî"}</td>
-          <td>${a.descrizione ?? a.desc ?? "‚Äî"}</td>
-          <td>${a.famiglia ?? a.family ?? "‚Äî"}</td>
+          <td>${a.codice ?? a.code ?? "ó"}</td>
+          <td>${a.descrizione ?? a.desc ?? "ó"}</td>
+          <td>${a.famiglia ?? a.family ?? "ó"}</td>
           <td>${pillForDisp(a.disponibilita ?? a.stock ?? "Disponibile")}</td>
         `;
         tr.addEventListener("click", ()=>openDetail({
@@ -381,7 +381,7 @@
           famiglia: a.famiglia ?? a.family,
           giorni: 999,
           revisione_ok: true,
-          ultima_rev: "‚Äî"
+          ultima_rev: "ó"
         }));
         tb.appendChild(tr);
       });
@@ -403,7 +403,7 @@
         famiglia: s.famiglia,
         giorni: (s.stato||"").toLowerCase().includes("scad") ? -1 : 120,
         revisione_ok: !(s.stato||"").toLowerCase().includes("scad"),
-        ultima_rev: (s.stato||"").toLowerCase().includes("revis") ? "in corso" : "‚Äî"
+        ultima_rev: (s.stato||"").toLowerCase().includes("revis") ? "in corso" : "ó"
       }));
       tb.appendChild(tr);
     });
@@ -411,27 +411,27 @@
 
   // --- MODAL / REVISIONI ---
   function openDetail(item){
-    const code = item.codice || "‚Äî";
+    const code = item.codice || "ó";
     el("mTitle").textContent = code;
-    el("mSub").textContent = item.descrizione || "‚Äî";
+    el("mSub").textContent = item.descrizione || "ó";
 
     const kv = el("mKv");
     kv.innerHTML = `
-      <div class="k">Famiglia</div><div class="v">${item.famiglia||"‚Äî"}</div>
-      <div class="k">Scadenza</div><div class="v">${(item.giorni<0)?"SCADUTO":(item.giorni===999?"‚Äî":(item.giorni+" giorni"))}</div>
+      <div class="k">Famiglia</div><div class="v">${item.famiglia||"ó"}</div>
+      <div class="k">Scadenza</div><div class="v">${(item.giorni<0)?"SCADUTO":(item.giorni===999?"ó":(item.giorni+" giorni"))}</div>
       <div class="k">Revisione</div><div class="v">${item.revisione_ok ? "OK" : "KO"}</div>
-      <div class="k">Ultima rev</div><div class="v">${item.ultima_rev||"‚Äî"}</div>
+      <div class="k">Ultima rev</div><div class="v">${item.ultima_rev||"ó"}</div>
       <div class="k">Origine</div><div class="v">${STATE.origin}</div>
     `;
 
     // timeline base
     if(!STATE.revisioni[code]){
       STATE.revisioni[code] = [
-        {ts:"2025-11-20 09:10", tipo:"REVISIONE", note:"Controllo generale ‚Äî OK"},
-        {ts:"2025-12-12 09:16", tipo:"CHECK PRE-USO", note:"Foto ok ‚Ä¢ AI OK ‚Ä¢ Autorizzato"},
+        {ts:"2025-11-20 09:10", tipo:"REVISIONE", note:"Controllo generale ó OK"},
+        {ts:"2025-12-12 09:16", tipo:"CHECK PRE-USO", note:"Foto ok ï AI OK ï Autorizzato"},
       ];
       // se scaduto: evento rosso
-      if(item.giorni < 0) STATE.revisioni[code].push({ts:"2025-12-13 08:10", tipo:"SCADENZA", note:"Blocco utilizzo ‚Äî richiede intervento"});
+      if(item.giorni < 0) STATE.revisioni[code].push({ts:"2025-12-13 08:10", tipo:"SCADENZA", note:"Blocco utilizzo ó richiede intervento"});
     }
 
     renderRevTimeline(code);
@@ -440,7 +440,7 @@
     el("simRevBtn").onclick = ()=> {
       const now = new Date();
       const ts = now.toISOString().slice(0,16).replace("T"," ");
-      STATE.revisioni[code].push({ts, tipo:"REVISIONE", note:"Revisione registrata (demo) ‚Ä¢ certificato pronto"});
+      STATE.revisioni[code].push({ts, tipo:"REVISIONE", note:"Revisione registrata (demo) ï certificato pronto"});
       // aggiungo movimento globale
       STATE.movimenti.push({ts, tipo:"REVISIONE", ref:code, note:"Revisione registrata (demo)"});
       renderRevTimeline(code);
@@ -457,7 +457,7 @@
       div.innerHTML = `
         <div class="tleft">
           <div class="tt">${e.tipo}</div>
-          <div class="ts">${e.ts} ‚Ä¢ ${e.note}</div>
+          <div class="ts">${e.ts} ï ${e.note}</div>
         </div>
         <div>${e.tipo==="SCADENZA" ? `<span class="pill bad">ALERT</span>` : e.tipo==="REVISIONE" ? `<span class="pill good">OK</span>` : `<span class="pill cyan">LOG</span>`}</div>
       `;
@@ -474,7 +474,7 @@
   });
 
   el("refreshBtn").addEventListener("click", async ()=>{
-    toast("Aggiorno‚Ä¶","warn");
+    toast("AggiornoÖ","warn");
     await boot(true);
     toast("WOW aggiornato","good");
   });
@@ -490,7 +490,7 @@
     renderKpi();
     renderTable();
 
-    // movimento automatico ‚ÄúWOW‚Äù
+    // movimento automatico ìWOWî
     if(force){
       const cards=[el("kpi1"),el("kpi2"),el("kpi3"),el("kpi4")];
       cards.forEach((c,i)=>{
