@@ -1,0 +1,63 @@
+﻿name: Camelot Quality Gate
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+jobs:
+  gate:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Guardrail - no conflict markers
+        shell: pwsh
+        run: |
+          $bad = Select-String -Path "${{ github.workspace }}\**\*" -Pattern '<<<<<<<|=======|>>>>>>>' -SimpleMatch -ErrorAction SilentlyContinue |
+                 Select-Object -First 20
+          if ($bad) {
+            Write-Host "TROVATI CONFLICT MARKERS (prime righe):"
+            $bad | ForEach-Object { Write-Host $_.Path ":" $_.LineNumber ":" $_.Line }
+            throw "FAIL: conflict markers presenti"
+          }
+
+      - name: Guardrail - tiny artefacts trap (exe/apk)
+        shell: pwsh
+        run: |
+          $root = "${{ github.workspace }}"
+          $tinyWin = Get-ChildItem $root -Recurse -File -Filter "TPI_demo_WIN_*.exe" -ErrorAction SilentlyContinue |
+                     Where-Object { $_.Length -lt 51200 }
+          $tinyApk = Get-ChildItem $root -Recurse -File -Filter "TPI_demo_APK_*.apk" -ErrorAction SilentlyContinue |
+                     Where-Object { $_.Length -lt 5000000 }
+
+          if ($tinyWin) { Write-Host "TINY WIN:"; $tinyWin | Select FullName,Length | Format-Table -AutoSize }
+          if ($tinyApk) { Write-Host "TINY APK:"; $tinyApk | Select FullName,Length | Format-Table -AutoSize }
+
+          if ($tinyWin -or $tinyApk) { throw "FAIL: tiny artefacts trovati" }
+
+          Write-Host ("OK: tiny trap win={0} apk={1}" -f @($tinyWin).Count, @($tinyApk).Count)
+
+      - name: Render ping (keep-awake)
+        shell: pwsh
+        run: |
+          $u = "https://tpi-evoluto-staging.onrender.com/openapi.json"
+          try {
+            $r = Invoke-WebRequest -UseBasicParsing -Uri $u -TimeoutSec 25
+            "OK Render ping code=" + $r.StatusCode
+          } catch {
+            throw ("FAIL Render ping -> " + $_.Exception.Message)
+          }
+
+      - name: Upload logs (if present)
+        uses: actions/upload-artifact@v4
+        with:
+          name: camelot-logs
+          path: |
+            ${{ github.workspace }}\LOG\**
+            ${{ github.workspace }}\RELEASE_TPI\**
+            ${{ github.workspace }}\Cronache_Regina\**
+          if-no-files-found: ignore
