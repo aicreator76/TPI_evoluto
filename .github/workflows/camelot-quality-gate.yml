@@ -26,7 +26,7 @@ jobs:
 
           if ($bad) {
             Write-Host "TROVATI MERGE MARKERS (prime righe):"
-            $bad | ForEach-Object { Write-Host $_.Path ":" $_.LineNumber ":" $_.Line }
+            $bad | ForEach-Object { Write-Host $\_.Path ":" $\_.LineNumber ":" $\_.Line }
             throw "FAIL: merge conflict markers presenti"
           }
 
@@ -39,10 +39,10 @@ jobs:
           if (-not $root) { $root = "." }
 
           $tinyWin = Get-ChildItem $root -Recurse -File -Filter "TPI_demo_WIN_*.exe" -ErrorAction SilentlyContinue |
-                     Where-Object { $_.Length -lt 51200 }
+                     Where-Object { $\_.Length -lt 51200 }
 
           $tinyApk = Get-ChildItem $root -Recurse -File -Filter "TPI_demo_APK_*.apk" -ErrorAction SilentlyContinue |
-                     Where-Object { $_.Length -lt 5000000 }
+                     Where-Object { $\_.Length -lt 5000000 }
 
           if ($tinyWin) { Write-Host "TINY WIN:"; $tinyWin | Select FullName,Length | Format-Table -AutoSize }
           if ($tinyApk) { Write-Host "TINY APK:"; $tinyApk | Select FullName,Length | Format-Table -AutoSize }
@@ -51,15 +51,18 @@ jobs:
 
           Write-Host ("OK: tiny trap win={0} apk={1}" -f @($tinyWin).Count, @($tinyApk).Count)
 
-      - name: Render ping (keep-awake)
+      - name: Render ping (keep-awake) [non-blocking]
         shell: pwsh
+        continue-on-error: true
         run: |
           $u = "https://tpi-evoluto-staging.onrender.com/openapi.json"
+
+          # Best-effort: se Render è lento/non raggiungibile NON deve bloccare la PR
           try {
-            $r = Invoke-WebRequest -UseBasicParsing -Uri $u -TimeoutSec 25
+            $r = Invoke-WebRequest -UseBasicParsing -Uri $u -TimeoutSec 45
             "OK Render ping code=" + $r.StatusCode
           } catch {
-            throw ("FAIL Render ping -> " + $_.Exception.Message)
+            Write-Host "::warning::Render ping failed (non-blocking): $($\_.Exception.Message)"
           }
 
       - name: Upload logs (if present)
