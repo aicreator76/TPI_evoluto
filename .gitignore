@@ -1,3 +1,16 @@
-﻿
-# backups
+﻿.# --- Python ---
+__pycache__/
+*.py[cod]
+
+# --- Virtualenv ---
+.venv/
+
+# --- Local outputs / artifacts (non versionare) ---
+logs/
+REPORT_DELTA/
+RELEASE_TPI/
+site/
+tmp_*.csv
+
+# --- Backups ---
 *.bak.*
