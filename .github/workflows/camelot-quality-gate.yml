@@ -14,23 +14,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Guardrail - no conflict markers
+      - name: Guardrail - no merge conflict markers
         shell: pwsh
         run: |
-          $bad = Select-String -Path "${{ github.workspace }}\**\*" -Pattern '<<<<<<<|=======|>>>>>>>' -SimpleMatch -ErrorAction SilentlyContinue |
-                 Select-Object -First 20
+          $root = $env:GITHUB_WORKSPACE
+          if (-not $root) { $root = "." }
+
+          # SOLO marker reali (evita falsi positivi da =======)
+          $bad = Select-String -Path "$root\**\*" -Pattern '<<<<<<<|>>>>>>>' -SimpleMatch -ErrorAction SilentlyContinue |
+                 Select-Object -First 50
+
           if ($bad) {
-            Write-Host "TROVATI CONFLICT MARKERS (prime righe):"
+            Write-Host "TROVATI MERGE MARKERS (prime righe):"
             $bad | ForEach-Object { Write-Host $_.Path ":" $_.LineNumber ":" $_.Line }
-            throw "FAIL: conflict markers presenti"
+            throw "FAIL: merge conflict markers presenti"
           }
+
+          Write-Host "OK: nessun merge conflict marker trovato"
 
       - name: Guardrail - tiny artefacts trap (exe/apk)
         shell: pwsh
         run: |
-          $root = "${{ github.workspace }}"
+          $root = $env:GITHUB_WORKSPACE
+          if (-not $root) { $root = "." }
+
           $tinyWin = Get-ChildItem $root -Recurse -File -Filter "TPI_demo_WIN_*.exe" -ErrorAction SilentlyContinue |
                      Where-Object { $_.Length -lt 51200 }
+
           $tinyApk = Get-ChildItem $root -Recurse -File -Filter "TPI_demo_APK_*.apk" -ErrorAction SilentlyContinue |
                      Where-Object { $_.Length -lt 5000000 }
 
@@ -57,7 +67,7 @@ jobs:
         with:
           name: camelot-logs
           path: |
-            ${{ github.workspace }}\LOG\**
-            ${{ github.workspace }}\RELEASE_TPI\**
-            ${{ github.workspace }}\Cronache_Regina\**
+            LOG\**
+            RELEASE_TPI\**
+            Cronache_Regina\**
           if-no-files-found: ignore
