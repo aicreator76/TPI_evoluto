@@ -151,7 +151,7 @@ def create_app() -> FastAPI:
             }
 
         @app.get("/api/accessori/listino/by-code/{codice}", tags=["wow_compat"])
-        def wow_accessori_listino_by_code(codice: str) -> dict[str, Any]:
+        def wow_accessori_listino_by_code(codice: str) -> Any:
             for it in WOW_ACCESSORI_DEMO:
                 c = it.get("codice") or it.get("code") or it.get("sku")
                 if c == codice:
