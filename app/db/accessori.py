@@ -177,3 +177,96 @@ def find_by_code(codice: str) -> Dict[str, Any]:
                     return d
 
     return {}
+
+
+# ---------------------------------------------------------------------------
+# Compatibility layer for API expectations (mypy attr-defined fix)
+# ---------------------------------------------------------------------------
+
+
+def get_famiglie_accessori() -> List[Dict[str, Any]]:
+    """Alias compatibilità: l'API si aspetta questo nome."""
+    return get_famiglie()
+
+
+def get_listino_full() -> List[Dict[str, Any]]:
+    """Alias compatibilità: l'API si aspetta questo nome."""
+    return get_listino_all()
+
+
+def find_accessorio_by_codice(codice: str) -> Dict[str, Any]:
+    """Alias compatibilità: l'API si aspetta questo nome."""
+    return find_by_code(codice)
+
+
+def get_catena_g8_codici() -> List[str]:
+    """Restituisce la lista dei codici presenti in catena_g8."""
+    rows = get_listino_all()
+    out: List[str] = []
+    for r in rows:
+        if r.get("source_kind") != "catena_g8":
+            continue
+        code_col = str(r.get("code_column") or "codice")
+        v = r.get(code_col)
+        if v is not None:
+            s = str(v).strip()
+            if s:
+                out.append(s)
+    # dedup preservando ordine
+    seen: set[str] = set()
+    uniq: List[str] = []
+    for x in out:
+        lx = x.lower()
+        if lx in seen:
+            continue
+        seen.add(lx)
+        uniq.append(x)
+    return uniq
+
+
+def get_morsetti_codici() -> List[str]:
+    """Restituisce la lista dei codici presenti in morsetti."""
+    rows = get_listino_all()
+    out: List[str] = []
+    for r in rows:
+        if r.get("source_kind") != "morsetti":
+            continue
+        code_col = str(r.get("code_column") or "codice")
+        v = r.get(code_col)
+        if v is not None:
+            s = str(v).strip()
+            if s:
+                out.append(s)
+    seen: set[str] = set()
+    uniq: List[str] = []
+    for x in out:
+        lx = x.lower()
+        if lx in seen:
+            continue
+        seen.add(lx)
+        uniq.append(x)
+    return uniq
+
+
+def get_tycan_codici() -> List[str]:
+    """Restituisce la lista dei codici presenti in tycan."""
+    rows = get_listino_all()
+    out: List[str] = []
+    for r in rows:
+        if r.get("source_kind") != "tycan":
+            continue
+        code_col = str(r.get("code_column") or "codice")
+        v = r.get(code_col)
+        if v is not None:
+            s = str(v).strip()
+            if s:
+                out.append(s)
+    seen: set[str] = set()
+    uniq: List[str] = []
+    for x in out:
+        lx = x.lower()
+        if lx in seen:
+            continue
+        seen.add(lx)
+        uniq.append(x)
+    return uniq

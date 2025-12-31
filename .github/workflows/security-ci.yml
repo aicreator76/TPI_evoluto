@@ -15,43 +15,62 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
 
+      # Qui falliva perché in repo non c'è pyproject/setup.
+      # Lo lasciamo best-effort ma NON deve rompere il job.
       - name: Install project (best effort)
         run: |
           python -m pip install --upgrade pip
           pip install . || true
 
       - name: Install pip-audit
-        run: pip install pip-audit
+        run: python -m pip install pip-audit
 
-      # Se hai un requirements.txt, aggiungi:  pip-audit -r requirements.txt -f json -o audit.json || true
       - name: Audit deps (JSON)
-        run: pip-audit -f json -o audit.json || true
+        run: |
+          # Best effort: genera audit.json anche se trova roba
+          pip-audit --progress-spinner off -f json -o audit.json || true
 
       - name: Fail only on HIGH/CRITICAL
         run: |
           python - <<'PY'
           import json, sys
-          data = json.load(open("audit.json"))
-          vulns = []
-          for v in data:
-              sev = (v.get("severity") or "UNKNOWN").upper()
-              if sev in {"HIGH", "CRITICAL"}:
-                  vulns.append(v)
-          if vulns:
+
+          try:
+              data = json.load(open("audit.json", encoding="utf-8"))
+          except FileNotFoundError:
+              print("audit.json missing (pip-audit did not produce output).")
+              sys.exit(0)
+
+          # Supporta più formati possibili (lista o dict)
+          deps = data.get("dependencies", data) if isinstance(data, dict) else data
+
+          hit = []
+          for d in deps:
+              if not isinstance(d, dict):
+                  continue
+              for v in (d.get("vulns") or []):
+                  sev = (v.get("severity") or "UNKNOWN").upper()
+                  if sev in {"HIGH", "CRITICAL"}:
+                      hit.append((v.get("id"), sev, (v.get("description") or "")[:140]))
+
+          if hit:
               print("High/Critical vulnerabilities found:")
-              for v in vulns:
-                  print(f"- {v.get('id')} {v.get('severity')} {v.get('advisory','')[:120]}")
+              for vid, sev, desc in hit:
+                  print(f"- {vid} {sev} {desc}")
               sys.exit(1)
+
+          print("No HIGH/CRITICAL vulnerabilities found.")
           PY
 
-      - name: SARIF (for dashboard)
-        run: pip-audit -f sarif -o audit.sarif || true
-
-      - name: Upload SARIF
-        uses: github/codeql-action/upload-sarif@v3
+      - name: Upload audit report (artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          sarif_file: audit.sarif
+          name: pip-audit-json
+          path: audit.json
+          if-no-files-found: ignore

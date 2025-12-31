@@ -6,7 +6,7 @@ from typing import Any, Iterable
 
 from fastapi import APIRouter, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.responses import JSONResponse
 from app.api.accessori import router as accessori_router
 from app.api.formazione import router as formazione_router
 from app.api.funi_acciaio import router as funi_acciaio_router
@@ -141,10 +141,23 @@ def create_app() -> FastAPI:
     if not _route_exists(app, "/api/accessori/listino", "GET"):
 
         @app.get("/api/accessori/listino", tags=["wow_compat"])
-        def wow_accessori_listino() -> list[dict[str, Any]]:
-            return WOW_ACCESSORI_DEMO
+        def wow_accessori_listino(limit: int = 50, offset: int = 0) -> dict[str, Any]:
+            items = WOW_ACCESSORI_DEMO[offset : offset + limit]
+            return {
+                "limit": limit,
+                "offset": offset,
+                "total": len(WOW_ACCESSORI_DEMO),
+                "items": items,
+            }
 
-    demo_real.mount(app)
+        @app.get("/api/accessori/listino/by-code/{codice}", tags=["wow_compat"])
+        def wow_accessori_listino_by_code(codice: str) -> Any:
+            for it in WOW_ACCESSORI_DEMO:
+                c = it.get("codice") or it.get("code") or it.get("sku")
+                if c == codice:
+                    return {"found": True, "item": it}
+            return JSONResponse(status_code=404, content={"found": False, "item": None})
+            demo_real.mount(app)
 
     _include_many(
         app,
