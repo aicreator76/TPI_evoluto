@@ -35,7 +35,7 @@ jobs:
           echo "Stub APK build for ${{ steps.version.outputs.version }}" > artifacts/TPI_APK_STUB.txt
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: tpi-stub-${{ steps.version.outputs.version }}
           path: artifacts
