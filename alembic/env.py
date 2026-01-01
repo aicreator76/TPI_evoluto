@@ -1,7 +1,8 @@
 import os
 import sys
 from logging.config import fileConfig
-from alembic import context  # type: ignore[attr-defined]
+
+from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 # ---------------------------------------------------------
@@ -16,24 +17,24 @@ if BASE_DIR not in sys.path:
 from app.db.base import Base  # noqa: E402
 
 
-# This is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
 config = context.config
 
-# Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Metadata target per autogenerate
 target_metadata = Base.metadata
 
 
 def _get_database_url() -> str:
-    """Prende la DATABASE_URL da env o da alembic.ini."""
+    """Prende la DATABASE_URL da env o da alembic.ini. Se manca, fallisce esplicito."""
     env_url = os.getenv("DATABASE_URL")
     if env_url:
         return env_url
-    return config.get_main_option("sqlalchemy.url")
+
+    ini_url = config.get_main_option("sqlalchemy.url")
+    if not ini_url:
+        raise RuntimeError("DATABASE_URL not set and 'sqlalchemy.url' is missing in alembic.ini")
+    return ini_url
 
 
 def run_migrations_offline() -> None:

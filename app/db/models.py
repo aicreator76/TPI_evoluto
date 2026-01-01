@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import datetime
 
 from sqlalchemy import (
     Boolean,
@@ -26,13 +26,13 @@ from app.db.base import Base
 class Azienda(Base):
     __tablename__ = "azienda"
 
-    id: int = Column(Integer, primary_key=True, index=True)
-    nome: str = Column(String(255), nullable=False)
-    partita_iva: str | None = Column(String(32), nullable=True)
-    slug: str | None = Column(String(64), nullable=True, unique=True)
-    codice: str | None = Column(String(64), nullable=True, unique=True)
-    indirizzo: str | None = Column(Text, nullable=True)
-    note: str | None = Column(Text, nullable=True)
+    id = Column(Integer, primary_key=True, index=True)
+    nome = Column(String(255), nullable=False)
+    partita_iva = Column(String(32), nullable=True)
+    slug = Column(String(64), nullable=True, unique=True)
+    codice = Column(String(64), nullable=True, unique=True)
+    indirizzo = Column(Text, nullable=True)
+    note = Column(Text, nullable=True)
 
     # Relazioni
     utenti = relationship("Utente", back_populates="azienda", cascade="all, delete-orphan")
@@ -61,25 +61,25 @@ Index("ix_azienda_slug", Azienda.slug)
 class Utente(Base):
     __tablename__ = "utente"
 
-    id: int = Column(Integer, primary_key=True, index=True)
-    azienda_id: int = Column(
+    id = Column(Integer, primary_key=True, index=True)
+    azienda_id = Column(
         Integer,
         ForeignKey("azienda.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    email: str = Column(String(255), nullable=False, unique=True, index=True)
-    password_hash: str = Column(String(255), nullable=False)
-    ruolo: str = Column(String(50), nullable=False)  # es. ADMIN, HSE, DATORE, OPERATORE
-    attivo: bool = Column(Boolean, nullable=False, default=True)
+    email = Column(String(255), nullable=False, unique=True, index=True)
+    password_hash = Column(String(255), nullable=False)
+    ruolo = Column(String(50), nullable=False)  # es. ADMIN, HSE, DATORE, OPERATORE
+    attivo = Column(Boolean, nullable=False, default=True)
 
-    created_at: datetime = Column(
+    created_at = Column(
         DateTime(timezone=True),
         nullable=False,
         default=datetime.utcnow,
     )
-    updated_at: datetime = Column(
+    updated_at = Column(
         DateTime(timezone=True),
         nullable=False,
         default=datetime.utcnow,
@@ -100,22 +100,22 @@ Index("ix_utente_azienda_id", Utente.azienda_id)
 class Operatore(Base):
     __tablename__ = "operatore"
 
-    id: int = Column(Integer, primary_key=True, index=True)
-    azienda_id: int = Column(
+    id = Column(Integer, primary_key=True, index=True)
+    azienda_id = Column(
         Integer,
         ForeignKey("azienda.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    nome: str = Column(String(100), nullable=False)
-    cognome: str = Column(String(100), nullable=False)
-    utente_id: int | None = Column(
+    nome = Column(String(100), nullable=False)
+    cognome = Column(String(100), nullable=False)
+    utente_id = Column(
         Integer,
         ForeignKey("utente.id", ondelete="SET NULL"),
         nullable=True,
     )
-    attivo: bool = Column(Boolean, nullable=False, default=True)
+    attivo = Column(Boolean, nullable=False, default=True)
 
     azienda = relationship("Azienda", back_populates="operatori")
     utente = relationship("Utente")
@@ -135,23 +135,23 @@ Index("ix_operatore_azienda_id", Operatore.azienda_id)
 class DPI(Base):
     __tablename__ = "dpi"
 
-    id: int = Column(Integer, primary_key=True, index=True)
-    azienda_id: int = Column(
+    id = Column(Integer, primary_key=True, index=True)
+    azienda_id = Column(
         Integer,
         ForeignKey("azienda.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    codice: str = Column(String(100), nullable=False, index=True)
-    descrizione: str = Column(String(255), nullable=False)
-    categoria: str | None = Column(String(100), nullable=True)
-    stato: str = Column(
+    codice = Column(String(100), nullable=False, index=True)
+    descrizione = Column(String(255), nullable=False)
+    categoria = Column(String(100), nullable=True)
+    stato = Column(
         String(30), nullable=False, default="OK"
     )  # OK / WARNING / SCADUTO / FUORI_SERVIZIO
-    data_scadenza: date | None = Column(Date, nullable=True)
+    data_scadenza = Column(Date, nullable=True)
 
-    operatore_id: int | None = Column(
+    operatore_id = Column(
         Integer,
         ForeignKey("operatore.id", ondelete="SET NULL"),
         nullable=True,
@@ -175,19 +175,19 @@ Index("ix_dpi_data_scadenza", DPI.data_scadenza)
 class ImpiantoAnticaduta(Base):
     __tablename__ = "impianto_anticaduta"
 
-    id: int = Column(Integer, primary_key=True, index=True)
-    azienda_id: int = Column(
+    id = Column(Integer, primary_key=True, index=True)
+    azienda_id = Column(
         Integer,
         ForeignKey("azienda.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    codice: str = Column(String(100), nullable=False, index=True)
-    descrizione: str = Column(String(255), nullable=False)
-    ubicazione: str | None = Column(String(255), nullable=True)
-    stato: str = Column(String(30), nullable=False, default="OK")
-    data_scadenza: date | None = Column(Date, nullable=True)
+    codice = Column(String(100), nullable=False, index=True)
+    descrizione = Column(String(255), nullable=False)
+    ubicazione = Column(String(255), nullable=True)
+    stato = Column(String(30), nullable=False, default="OK")
+    data_scadenza = Column(Date, nullable=True)
 
     azienda = relationship("Azienda", back_populates="impianti")
     ispezioni = relationship("Ispezione", back_populates="impianto")
@@ -206,31 +206,31 @@ Index("ix_impianto_data_scadenza", ImpiantoAnticaduta.data_scadenza)
 class Ispezione(Base):
     __tablename__ = "ispezione"
 
-    id: int = Column(Integer, primary_key=True, index=True)
-    azienda_id: int = Column(
+    id = Column(Integer, primary_key=True, index=True)
+    azienda_id = Column(
         Integer,
         ForeignKey("azienda.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    tipo_target: str = Column(String(20), nullable=False)  # 'DPI' | 'IMPIANTO'
-    dpi_id: int | None = Column(
+    tipo_target = Column(String(20), nullable=False)  # 'DPI' | 'IMPIANTO'
+    dpi_id = Column(
         Integer,
         ForeignKey("dpi.id", ondelete="CASCADE"),
         nullable=True,
     )
-    impianto_id: int | None = Column(
+    impianto_id = Column(
         Integer,
         ForeignKey("impianto_anticaduta.id", ondelete="CASCADE"),
         nullable=True,
     )
 
-    data_ispezione: date = Column(Date, nullable=False)
-    esito: str = Column(String(30), nullable=False, default="OK")
-    note: str | None = Column(Text, nullable=True)
+    data_ispezione = Column(Date, nullable=False)
+    esito = Column(String(30), nullable=False, default="OK")
+    note = Column(Text, nullable=True)
 
-    operatore_id: int | None = Column(
+    operatore_id = Column(
         Integer,
         ForeignKey("operatore.id", ondelete="SET NULL"),
         nullable=True,
@@ -255,24 +255,24 @@ Index("ix_ispezione_data", Ispezione.data_ispezione)
 class Allegato(Base):
     __tablename__ = "allegato"
 
-    id: int = Column(Integer, primary_key=True, index=True)
-    azienda_id: int = Column(
+    id = Column(Integer, primary_key=True, index=True)
+    azienda_id = Column(
         Integer,
         ForeignKey("azienda.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    ispezione_id: int = Column(
+    ispezione_id = Column(
         Integer,
         ForeignKey("ispezione.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    tipo: str = Column(String(30), nullable=False)  # FOTO / PDF / VIDEO / ALTRO
-    file_path: str = Column(String(512), nullable=False)
-    created_at: datetime = Column(
+    tipo = Column(String(30), nullable=False)  # FOTO / PDF / VIDEO / ALTRO
+    file_path = Column(String(512), nullable=False)
+    created_at = Column(
         DateTime(timezone=True),
         nullable=False,
         default=datetime.utcnow,
@@ -293,17 +293,17 @@ Index("ix_allegato_azienda_id", Allegato.azienda_id)
 class Corso(Base):
     __tablename__ = "corso"
 
-    id: int = Column(Integer, primary_key=True, index=True)
-    azienda_id: int = Column(
+    id = Column(Integer, primary_key=True, index=True)
+    azienda_id = Column(
         Integer,
         ForeignKey("azienda.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    titolo: str = Column(String(255), nullable=False)
-    descrizione: str | None = Column(Text, nullable=True)
-    durata_ore: int | None = Column(Integer, nullable=True)
+    titolo = Column(String(255), nullable=False)
+    descrizione = Column(Text, nullable=True)
+    durata_ore = Column(Integer, nullable=True)
 
     azienda = relationship("Azienda", back_populates="corsi")
     attestati = relationship("Attestato", back_populates="corso")
@@ -320,30 +320,30 @@ Index("ix_corso_azienda_id", Corso.azienda_id)
 class Attestato(Base):
     __tablename__ = "attestato"
 
-    id: int = Column(Integer, primary_key=True, index=True)
-    azienda_id: int = Column(
+    id = Column(Integer, primary_key=True, index=True)
+    azienda_id = Column(
         Integer,
         ForeignKey("azienda.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    corso_id: int = Column(
+    corso_id = Column(
         Integer,
         ForeignKey("corso.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
-    operatore_id: int = Column(
+    operatore_id = Column(
         Integer,
         ForeignKey("operatore.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
     )
 
-    data_rilascio: date = Column(Date, nullable=False)
-    data_scadenza: date | None = Column(Date, nullable=True)
-    file_path: str | None = Column(String(512), nullable=True)
+    data_rilascio = Column(Date, nullable=False)
+    data_scadenza = Column(Date, nullable=True)
+    file_path = Column(String(512), nullable=True)
 
     azienda = relationship("Azienda", back_populates="attestati")
     corso = relationship("Corso", back_populates="attestati")
