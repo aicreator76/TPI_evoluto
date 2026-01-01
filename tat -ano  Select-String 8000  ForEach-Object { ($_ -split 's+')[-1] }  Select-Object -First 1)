@@ -1,0 +1,88 @@
+warning: in the working copy of 'app/routers/dpi_csv.py', CRLF will be replaced by LF the next time Git touches it
+[1mdiff --git a/app/routers/dpi_csv.py b/app/routers/dpi_csv.py[m
+[1mindex d8dd7d7..f3ad0c8 100644[m
+[1m--- a/app/routers/dpi_csv.py[m
+[1m+++ b/app/routers/dpi_csv.py[m
+[36m@@ -1,11 +1,77 @@[m
+[31m-from __future__ import annotations[m
+[32m+[m[32m﻿from __future__ import annotations[m
+ [m
+[31m-from fastapi import APIRouter[m
+[31m-from fastapi.responses import PlainTextResponse[m
+[32m+[m[32mimport csv[m
+[32m+[m[32mimport io[m
+[32m+[m[32mfrom typing import Any[m
+[32m+[m
+[32m+[m[32mfrom fastapi import APIRouter, HTTPException, Request[m
+[32m+[m[32mfrom fastapi.responses import PlainTextResponse, Response[m
+ [m
+ router = APIRouter(prefix="/api/dpi/csv", tags=["dpi-csv"])[m
+ [m
+[32m+[m[32mTEMPLATE_VERSION = "v1"[m
+[32m+[m[32mTEMPLATE_HEADER = ["codice", "nome", "scadenza"][m
+[32m+[m[32mMAX_BYTES = 5 * 1024 * 1024  # 5MB[m
+[32m+[m
+ [m
+ @router.get("/template", response_class=PlainTextResponse)[m
+[31m-def csv_template() -> str:[m
+[31m-    return "codice,nome,scadenza\n"[m
+[32m+[m[32mdef csv_template() -> Response:[m
+[32m+[m[32m    # BOM + CRLF (Excel-friendly)[m
+[32m+[m[32m    content = "\ufeff" + ",".join(TEMPLATE_HEADER) + "\r\n"[m
+[32m+[m[32m    return Response([m
+[32m+[m[32m        content=content,[m
+[32m+[m[32m        media_type="text/csv; charset=utf-8",[m
+[32m+[m[32m        headers={"X-Template-Version": TEMPLATE_VERSION},[m
+[32m+[m[32m    )[m
+[32m+[m
+[32m+[m
+[32m+[m[32m@router.post("/import")[m
+[32m+[m[32masync def import_csv(request: Request) -> dict[str, Any]:[m
+[32m+[m[32m    raw = await request.body()[m
+[32m+[m
+[32m+[m[32m    if not raw:[m
+[32m+[m[32m        raise HTTPException(status_code=400, detail="Empty CSV body")[m
+[32m+[m
+[32m+[m[32m    if len(raw) > MAX_BYTES:[m
+[32m+[m[32m        raise HTTPException(status_code=413, detail=f"CSV too large (max {MAX_BYTES} bytes)")[m
+[32m+[m
+[32m+[m[32m    try:[m
+[32m+[m[32m        text = raw.decode("utf-8-sig")  # removes BOM if present[m
+[32m+[m[32m    except UnicodeDecodeError:[m
+[32m+[m[32m        raise HTTPException(status_code=400, detail="CSV must be UTF-8 encoded")[m
+[32m+[m
+[32m+[m[32m    sample = text[:4096][m
+[32m+[m[32m    delimiter = ","[m
+[32m+[m[32m    try:[m
+[32m+[m[32m        dialect = csv.Sniffer().sniff(sample, delimiters=[",", ";", "\t", "|"])[m
+[32m+[m[32m        delimiter = dialect.delimiter[m
+[32m+[m[32m    except Exception:[m
+[32m+[m[32m        pass[m
+[32m+[m
+[32m+[m[32m    f = io.StringIO(text)[m
+[32m+[m[32m    reader = csv.DictReader(f, delimiter=delimiter)[m
+[32m+[m
+[32m+[m[32m    if not reader.fieldnames:[m
+[32m+[m[32m        raise HTTPException(status_code=400, detail="Missing CSV header row")[m
+[32m+[m
+[32m+[m[32m    fieldnames = [h.strip() for h in reader.fieldnames if h is not None][m
+[32m+[m[32m    if not fieldnames:[m
+[32m+[m[32m        raise HTTPException(status_code=400, detail="Empty CSV header")[m
+[32m+[m
+[32m+[m[32m    rows = [][m
+[32m+[m[32m    for row in reader:[m
+[32m+[m[32m        clean = {str(k).strip(): (v.strip() if isinstance(v, str) else v) for k, v in row.items() if k is not None}[m
+[32m+[m[32m        if any(v not in (None, "", " ") for v in clean.values()):[m
+[32m+[m[32m            rows.append(clean)[m
+[32m+[m
+[32m+[m[32m    if len(rows) == 0:[m
+[32m+[m[32m        raise HTTPException(status_code=400, detail="No data rows found")[m
+[32m+[m
+[32m+[m[32m    return {[m
+[32m+[m[32m        "ok": True,[m
+[32m+[m[32m        "template_version": TEMPLATE_VERSION,[m
+[32m+[m[32m        "detected_delimiter": delimiter,[m
+[32m+[m[32m        "header": fieldnames,[m
+[32m+[m[32m        "rows_received": len(rows),[m
+[32m+[m[32m        "preview": rows[:3],[m
+[32m+[m[32m    }[m
