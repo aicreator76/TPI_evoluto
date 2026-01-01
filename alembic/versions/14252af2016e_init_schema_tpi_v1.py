@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 """init schema TPI v1
 
 Revision: 14252af2016e
