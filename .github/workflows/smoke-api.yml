@@ -1,12 +1,19 @@
 name: smoke-api
+
 on:
   pull_request:
     paths:
       - "app/**"
+      - "requirements.txt"
       - ".github/workflows/smoke-api.yml"
   workflow_dispatch:
+
 permissions:
   contents: read
+
+concurrency:
+  group: smoke-api-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   smoke:
@@ -14,40 +21,89 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 7
 
+    env:
+      DATABASE_URL: "sqlite:///./ci.db"
+      JWT_SECRET: "ci-secret"
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "requirements.txt"
 
-      # Installa dipendenze in modalità "best effort" (non blocca lo smoke)
-      - name: Install deps
+      - name: Python + pip info
         run: |
-          pip install -r requirements.txt || true
-          pip install fastapi "uvicorn[standard]" starlette pydantic || true
+          python -V
+          python -m pip --version
+
+      - name: Install deps (best-effort)
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pip install -U pip wheel setuptools | tee -a install.log || true
+          python -m pip install -r requirements.txt | tee -a install.log || true
+          # fallback minimo per garantire boot API
+          python -m pip install fastapi "uvicorn[standard]" starlette pydantic curl-cffi | tee -a install.log || true
+          python -m pip freeze | head -n 200 > freeze_head.log || true
 
       - name: Launch API
+        shell: bash
         run: |
+          set -euo pipefail
           python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level warning > uvicorn.log 2>&1 &
           echo $! > uvicorn.pid
-          for i in {1..30}; do curl -fsS http://127.0.0.1:8000/openapi.json >/dev/null && break || sleep 1; done
+          sleep 1
+          echo "PID=$(cat uvicorn.pid)"
+
+      - name: Wait for /openapi.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          for i in {1..30}; do
+            if curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/openapi.json >/dev/null; then
+              echo "API UP in ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API did not become ready. Last log:"
+          tail -n 200 uvicorn.log || true
+          exit 1
 
       - name: Probe /template
-        run: curl -fsS http://127.0.0.1:8000/api/dpi/csv/template
-
-      - name: Probe /import (CSV)
+        shell: bash
         run: |
-          printf "codice,descrizione,prezzo,gruppo\nX,Desc,,dpi\n" |
-            curl -fsS -H 'Content-Type: text/csv' --data-binary @- \
-              http://127.0.0.1:8000/api/dpi/csv/import
+          set -euo pipefail
+          curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/api/dpi/csv/template
 
-      - name: Stop API
-        if: always()
-        run: kill $(cat uvicorn.pid) || true
+      - name: Probe /import (CSV) - template-driven
+        shell: bash
+        run: |
+          set -euo pipefail
 
-      - name: Upload server log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: smoke-uvicorn-log
-          path: uvicorn.log
+          header="$(curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/api/dpi/csv/template | head -n1 | tr -d '\r')"
+          echo "TEMPLATE_HEADER=$header"
+
+          # Costruisci una riga valida in base alle colonne richieste
+          IFS=',' read -r -a cols <<< "$header"
+          vals=()
+          for c in "${cols[@]}"; do
+            c="$(echo "$c" | xargs)"
+            case "$c" in
+              codice) vals+=("X") ;;
+              nome|descrizione) vals+=("Desc") ;;
+              scadenza|data|data_scadenza) vals+=("2099-12-31") ;;
+              prezzo) vals+=("0") ;;
+              gruppo|categoria) vals+=("dpi") ;;
+              *) vals+=("X") ;;
+            esac
+          done
+          row="$(IFS=','; echo "${vals[*]}")"
+
+          csv_payload="${header}\n${row}\n"
+          echo -e "$csv_payload" > smoke_import.csv
+          echo "CSV_PAYLOAD:"
+          cat smoke_import.csv

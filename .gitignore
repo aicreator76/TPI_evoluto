@@ -14,3 +14,7 @@ tmp_*.csv
 
 # --- Backups ---
 *.bak.*
+tat -ano*
+
+requirements.txt.bak-*
+*.bak-*
