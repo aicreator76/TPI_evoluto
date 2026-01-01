@@ -1,12 +1,19 @@
 name: smoke-api
+
 on:
   pull_request:
     paths:
       - "app/**"
+      - "requirements.txt"
       - ".github/workflows/smoke-api.yml"
   workflow_dispatch:
+
 permissions:
   contents: read
+
+concurrency:
+  group: smoke-api-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   smoke:
@@ -16,38 +23,89 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          cache: "pip"
+          cache-dependency-path: "requirements.txt"
 
-      # Installa dipendenze in modalità "best effort" (non blocca lo smoke)
-      - name: Install deps
+      - name: Python + pip info
         run: |
-          pip install -r requirements.txt || true
-          pip install fastapi "uvicorn[standard]" starlette pydantic || true
+          python -V
+          python -m pip --version
+
+      # Install deps: best-effort ma con LOG completo
+      - name: Install deps (best-effort)
+        shell: bash
+        run: |
+          set -o pipefail
+          python -m pip install -U pip wheel setuptools | tee -a install.log || true
+          python -m pip install -r requirements.txt | tee -a install.log || true
+          # fallback minimo per garantire boot API
+          python -m pip install fastapi "uvicorn[standard]" starlette pydantic curl-cffi | tee -a install.log || true
+          python -m pip freeze | head -n 200 > freeze_head.log || true
 
       - name: Launch API
+        shell: bash
         run: |
+          set -euo pipefail
+          # avvio in background
           python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level warning > uvicorn.log 2>&1 &
           echo $! > uvicorn.pid
-          for i in {1..30}; do curl -fsS http://127.0.0.1:8000/openapi.json >/dev/null && break || sleep 1; done
+          sleep 1
+          echo "PID=$(cat uvicorn.pid)"
+
+      - name: Wait for /openapi.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          # 30s max
+          for i in {1..30}; do
+            if curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/openapi.json >/dev/null; then
+              echo "API UP in ${i}s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API did not become ready. Last log:"
+          tail -n 200 uvicorn.log || true
+          exit 1
 
       - name: Probe /template
-        run: curl -fsS http://127.0.0.1:8000/api/dpi/csv/template
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/api/dpi/csv/template
 
       - name: Probe /import (CSV)
+        shell: bash
         run: |
+          set -euo pipefail
           printf "codice,descrizione,prezzo,gruppo\nX,Desc,,dpi\n" |
-            curl -fsS -H 'Content-Type: text/csv' --data-binary @- \
+            curl -fsS --retry 2 --retry-delay 1 \
+              -H 'Content-Type: text/csv' --data-binary @- \
               http://127.0.0.1:8000/api/dpi/csv/import
 
       - name: Stop API
         if: always()
-        run: kill $(cat uvicorn.pid) || true
+        shell: bash
+        run: |
+          set +e
+          if [ -f uvicorn.pid ]; then
+            kill "$(cat uvicorn.pid)" 2>/dev/null || true
+          fi
+          # prova anche pkill come rete di sicurezza
+          pkill -f "uvicorn app.main:app" 2>/dev/null || true
+          sleep 1
+          echo "Stopped."
 
-      - name: Upload server log
+      - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: smoke-uvicorn-log
-          path: uvicorn.log
+          name: smoke-logs
+          path: |
+            uvicorn.log
+            install.log
+            freeze_head.log
