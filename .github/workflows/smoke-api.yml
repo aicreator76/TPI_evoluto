@@ -21,6 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 7
 
+    env:
+      DATABASE_URL: "sqlite:///./ci.db"
+      JWT_SECRET: "ci-secret"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -35,7 +39,6 @@ jobs:
           python -V
           python -m pip --version
 
-      # Install deps: best-effort ma con LOG completo
       - name: Install deps (best-effort)
         shell: bash
         run: |
@@ -45,13 +48,6 @@ jobs:
           # fallback minimo per garantire boot API
           python -m pip install fastapi "uvicorn[standard]" starlette pydantic curl-cffi | tee -a install.log || true
           python -m pip freeze | head -n 200 > freeze_head.log || true
-
-      - name: CI env (safe defaults)
-        shell: bash
-        run: |
-          echo "DATABASE_URL=sqlite:///./ci.db" >> "$GITHUB_ENV"
-          echo "JWT_SECRET=ci-secret" >> "$GITHUB_ENV"
-          echo "ENV=ci" >> "$GITHUB_ENV"
 
       - name: Launch API
         shell: bash
@@ -83,25 +79,31 @@ jobs:
           set -euo pipefail
           curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/api/dpi/csv/template
 
-      - name: Probe /import (CSV) (template-driven)
+      - name: Probe /import (CSV) - template-driven
         shell: bash
         run: |
           set -euo pipefail
 
-          tmpl="$(curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/api/dpi/csv/template)"
-          echo "TEMPLATE=$tmpl"
+          header="$(curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/api/dpi/csv/template | head -n1 | tr -d '\r')"
+          echo "TEMPLATE_HEADER=$header"
 
-          headers="$tmpl"
+          # Costruisci una riga valida in base alle colonne richieste
+          IFS=',' read -r -a cols <<< "$header"
+          vals=()
+          for c in "${cols[@]}"; do
+            c="$(echo "$c" | xargs)"
+            case "$c" in
+              codice) vals+=("X") ;;
+              nome|descrizione) vals+=("Desc") ;;
+              scadenza|data|data_scadenza) vals+=("2099-12-31") ;;
+              prezzo) vals+=("0") ;;
+              gruppo|categoria) vals+=("dpi") ;;
+              *) vals+=("X") ;;
+            esac
+          done
+          row="$(IFS=','; echo "${vals[*]}")"
 
-          values="$(echo "$headers" | awk -F',' '{
-            for (i=1;i<=NF;i++){
-              h=$i
-              if (h=="codice") v="X"
-              else if (h=="nome" || h=="descrizione") v="Desc"
-              else if (h=="scadenza" || h=="data") v="2030-01-01"
-              else v=""
-              printf "%s%s", v, (i<NF?FS:RS)
-            }
-          }')"
-
-          pa
+          csv_payload="${header}\n${row}\n"
+          echo -e "$csv_payload" > smoke_import.csv
+          echo "CSV_PAYLOAD:"
+          cat smoke_import.csv
