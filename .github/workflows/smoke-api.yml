@@ -46,11 +46,17 @@ jobs:
           python -m pip install fastapi "uvicorn[standard]" starlette pydantic curl-cffi | tee -a install.log || true
           python -m pip freeze | head -n 200 > freeze_head.log || true
 
+      - name: CI env (safe defaults)
+        shell: bash
+        run: |
+          echo "DATABASE_URL=sqlite:///./ci.db" >> "$GITHUB_ENV"
+          echo "JWT_SECRET=ci-secret" >> "$GITHUB_ENV"
+          echo "ENV=ci" >> "$GITHUB_ENV"
+
       - name: Launch API
         shell: bash
         run: |
           set -euo pipefail
-          # avvio in background
           python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --log-level warning > uvicorn.log 2>&1 &
           echo $! > uvicorn.pid
           sleep 1
@@ -60,7 +66,6 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # 30s max
           for i in {1..30}; do
             if curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/openapi.json >/dev/null; then
               echo "API UP in ${i}s"
@@ -78,34 +83,25 @@ jobs:
           set -euo pipefail
           curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/api/dpi/csv/template
 
-      - name: Probe /import (CSV)
+      - name: Probe /import (CSV) (template-driven)
         shell: bash
         run: |
           set -euo pipefail
-          printf "codice,descrizione,prezzo,gruppo\nX,Desc,,dpi\n" |
-            curl -fsS --retry 2 --retry-delay 1 \
-              -H 'Content-Type: text/csv' --data-binary @- \
-              http://127.0.0.1:8000/api/dpi/csv/import
 
-      - name: Stop API
-        if: always()
-        shell: bash
-        run: |
-          set +e
-          if [ -f uvicorn.pid ]; then
-            kill "$(cat uvicorn.pid)" 2>/dev/null || true
-          fi
-          # prova anche pkill come rete di sicurezza
-          pkill -f "uvicorn app.main:app" 2>/dev/null || true
-          sleep 1
-          echo "Stopped."
+          tmpl="$(curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/api/dpi/csv/template)"
+          echo "TEMPLATE=$tmpl"
 
-      - name: Upload logs
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: smoke-logs
-          path: |
-            uvicorn.log
-            install.log
-            freeze_head.log
+          headers="$tmpl"
+
+          values="$(echo "$headers" | awk -F',' '{
+            for (i=1;i<=NF;i++){
+              h=$i
+              if (h=="codice") v="X"
+              else if (h=="nome" || h=="descrizione") v="Desc"
+              else if (h=="scadenza" || h=="data") v="2030-01-01"
+              else v=""
+              printf "%s%s", v, (i<NF?FS:RS)
+            }
+          }')"
+
+          pa
