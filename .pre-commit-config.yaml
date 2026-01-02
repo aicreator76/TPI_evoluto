@@ -1,6 +1,5 @@
-# .pre-commit-config.yaml
-# CAMELOT — Regno d'Acciaio
-# Qualità + sicurezza + normalizzazione (LF repo, CRLF solo cmd/bat) + push gate duro
+# CAMELOT â€“ Regno dâ€™Acciaio
+# QualitÃ  + sicurezza + gate push (mypy/compileall/pip-audit) + normalizzazioni (LF/BOM/CRLF cmd)
 
 minimum_pre_commit_version: "3.5.0"
 
@@ -9,8 +8,6 @@ default_language_version:
 
 default_stages: [commit]
 
-fail_fast: false
-
 exclude: |
   (?x)(
     ^\.ruff_cache/|
@@ -18,15 +15,15 @@ exclude: |
     ^\.pytest_cache/|
     ^\.venv/|
     ^venv/|
-    ^node_modules/|
-    ^dist/|
     ^build/|
+    ^dist/|
+    ^node_modules/|
     ^site/|
     ^TPI_site_skeleton_.*
   )
 
 repos:
-  # 0) Local steel tools (stabili, no python -c)
+  # 0) Local steel tools
   - repo: local
     hooks:
       - id: normalize-cmd-crlf
@@ -43,13 +40,15 @@ repos:
         entry: python
         args: [ops/git/strip_utf8_bom.py]
         pass_filenames: true
-        files: '.*'
+        files: '.'
+        exclude: '\.(csv|png|jpg|jpeg|gif|pdf|zip|exe|apk)$'
 
       - id: guardian-merge-markers
         name: Guardian merge markers (push gate)
         language: system
         entry: pwsh -NoProfile -ExecutionPolicy Bypass -File ops/guardian_merge_markers.ps1
         pass_filenames: false
+        always_run: true
         stages: [push]
 
       - id: mypy
@@ -66,21 +65,22 @@ repos:
         pass_filenames: false
         stages: [push]
 
-  # 1) Base hooks (YAML/JSON/TOML + conflitti + eol + BOM + keys + large files)
+      - id: pip-audit
+        name: pip-audit (push gate)
+        language: system
+        entry: pip-audit -r requirements.txt
+        pass_filenames: false
+        stages: [push]
+
+  # 1) Pre-commit hooks (igiene repo)
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
       - id: check-yaml
-        name: Check YAML syntax
-
       - id: check-toml
       - id: check-json
-
       - id: check-merge-conflict
-        name: Block merge conflict markers
-
       - id: check-case-conflict
-        name: Block case-conflict paths (Windows safe)
 
       - id: mixed-line-ending
         name: Normalize line endings to LF (except cmd/bat)
@@ -88,6 +88,7 @@ repos:
         exclude: '\.(cmd|bat)$'
 
       - id: end-of-file-fixer
+
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
 
@@ -96,29 +97,24 @@ repos:
         exclude: '\.csv$'
 
       - id: detect-private-key
-        name: Detect private keys
 
       - id: check-added-large-files
-        name: Block large files (except known datasets)
         args: [--maxkb=2048]
         exclude: '^(data/big\.csv|data/dpi_import\.csv)$'
 
-  # 2) Ruff (lint + format)
+  # 2) Ruff (lint+format)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.7.1
     hooks:
       - id: ruff
-        name: Ruff (lint + fix)
         args: [--fix]
       - id: ruff-format
-        name: Ruff Format
 
   # 3) detect-secrets (baseline)
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
       - id: detect-secrets
-        name: Detect secrets (baseline)
         args:
           - --baseline
           - .secrets.baseline

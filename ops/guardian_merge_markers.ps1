@@ -2,21 +2,32 @@ $ErrorActionPreference = "Stop"
 
 $root = (git rev-parse --show-toplevel).Trim()
 if (-not $root) { throw "Repo root not found" }
+Set-Location $root
 
-$files = git ls-files
-if (-not $files) { exit 0 }
+# Marker veri:
+#   <<<<<<<
+#   =======
+#   >>>>>>>
+# Nota: la riga di mezzo deve essere ESATTAMENTE 7 '='
+$patterns = @(
+  '^<<<<<<<',
+  '^=======$',
+  '^>>>>>>>'
+)
 
-$files = $files | Where-Object { $_ -notmatch '\.(png|jpg|jpeg|gif|pdf|zip|exe|apk)$' }
-$paths = $files | ForEach-Object { Join-Path $root $_ }
+$hits = New-Object System.Collections.Generic.List[string]
 
-$pattern = '^(<{7}|={7}|>{7})'
+foreach($pat in $patterns){
+  # git grep: exit 1 = nessun match (NON è errore)
+  $out = & git grep -n --no-color -E $pat -- . 2>$null
+  if ($out) { $hits.AddRange(@($out)) }
+}
 
-$hits = Select-String -Path $paths -Pattern $pattern -AllMatches -ErrorAction SilentlyContinue
-if ($hits) {
-  Write-Host "❌ MERGE MARKERS TROVATI (blocca push)" -ForegroundColor Red
-  $hits | Select-Object Path, LineNumber, Line | Format-Table -AutoSize
+if ($hits.Count -gt 0) {
+  Write-Host "❌ MERGE CONFLICT MARKERS TROVATI (blocca push)" -ForegroundColor Red
+  ($hits | Sort-Object -Unique) | ForEach-Object { Write-Host $_ -ForegroundColor Red }
   exit 1
 }
 
-Write-Host "✅ OK: nessun merge marker" -ForegroundColor Green
+Write-Host "✅ OK: nessun merge conflict marker" -ForegroundColor Green
 exit 0
