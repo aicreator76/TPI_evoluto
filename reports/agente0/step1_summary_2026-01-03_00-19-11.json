@@ -1,0 +1,27 @@
+{
+  "input_path": "data\\dpi_import.csv",
+  "detected_encoding": "utf-8",
+  "delimiter": ",",
+  "headers": [
+    "id",
+    "name",
+    "expiry"
+  ],
+  "headers_normalized": [
+    "id",
+    "name",
+    "expiry"
+  ],
+  "row_count": 4,
+  "empty_lines": 0,
+  "inconsistent_rows": 0,
+  "marker_hits": 0,
+  "date_columns": [
+    "expiry"
+  ],
+  "date_parse_failures": {
+    "expiry": 0
+  },
+  "issues_sample": [],
+  "normalized_path": "E:\\CLONAZIONE\\tpi_evoluto\\reports\\agente0\\normalized_dpi_import.csv"
+}
