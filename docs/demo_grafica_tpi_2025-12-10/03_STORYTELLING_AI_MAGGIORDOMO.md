@@ -1,4 +1,4 @@
-﻿# 03 – STORYTELLING AI & MAGGIORDOMO
+# 03 – STORYTELLING AI & MAGGIORDOMO
 
 ## Personaggi presenti nella demo
 

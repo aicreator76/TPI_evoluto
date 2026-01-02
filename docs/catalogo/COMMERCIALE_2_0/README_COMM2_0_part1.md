@@ -1,4 +1,4 @@
-﻿# Catalogo DPI – COMMERCIALE 2.0 (part 1)
+# Catalogo DPI – COMMERCIALE 2.0 (part 1)
 
 Questa pagina documenta la **prima tranche commerciale** del catalogo DPI,
 estratta dal catalogo Teufelberger/Petzl (pagg. 11–52) e normalizzata nel formato TPI.

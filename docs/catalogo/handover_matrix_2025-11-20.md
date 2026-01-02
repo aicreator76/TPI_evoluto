@@ -1,4 +1,4 @@
-﻿# Handover Catalogo DPI – Matrix SPEC vs TEST (2025-11-20)
+# Handover Catalogo DPI – Matrix SPEC vs TEST (2025-11-20)
 
 | # | Requisito Handover                               | Stato   | Test / file                              |
 |---|--------------------------------------------------|---------|------------------------------------------|

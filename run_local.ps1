@@ -1,4 +1,4 @@
-﻿# run_local.ps1 — avvio rapido FastAPI su 8011
+# run_local.ps1 — avvio rapido FastAPI su 8011
 $ErrorActionPreference="Stop"
 if (-not (Test-Path ".\.venv\Scripts\Activate.ps1")) { py -3.11 -m venv .venv }
 . .\.venv\Scripts\Activate.ps1

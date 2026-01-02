@@ -1,4 +1,4 @@
-﻿## Descrizione
+## Descrizione
 <!-- cosa cambia e perché -->
 
 ## Checklist

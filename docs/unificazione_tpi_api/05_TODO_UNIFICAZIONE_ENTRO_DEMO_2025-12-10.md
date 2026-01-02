@@ -1,4 +1,4 @@
-﻿# 05 – TODO UNIFICAZIONE ENTRO LA DEMO (LUNEDÌ)
+# 05 – TODO UNIFICAZIONE ENTRO LA DEMO (LUNEDÌ)
 
 ## Fase 1 – Allineamento rapido per demo
 

@@ -1,4 +1,4 @@
-﻿Set-Location "E:\CLONAZIONE\tpi_evoluto"
+Set-Location "E:\CLONAZIONE\tpi_evoluto"
 
 $ts=(Get-Date -Format "yyyy-MM-dd_HHmmss")
 $bk="E:\CLONAZIONE\BACKUP_EMERGENZA\COMMIT_DEMO_CLEAN_$ts"

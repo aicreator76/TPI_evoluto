@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$Message = "chore: update agente0 orchestratore"
 )
 

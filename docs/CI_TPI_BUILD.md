@@ -1,4 +1,4 @@
-﻿# Build TPI (stub) – Collegamento CESARE ↔ GitHub Actions
+# Build TPI (stub) – Collegamento CESARE ↔ GitHub Actions
 
 ## 1. Come creare un tag con CESARE_TPI_CI_BRIDGE.ps1
 

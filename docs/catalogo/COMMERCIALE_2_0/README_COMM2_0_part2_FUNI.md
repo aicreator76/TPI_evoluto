@@ -1,4 +1,4 @@
-﻿# COMMERCIALE 2.0 – Part 2
+# COMMERCIALE 2.0 – Part 2
 Sezione FUNI (linee KM, Pro, Light)
 
 Questa tranche raccoglie tutti gli articoli FUNI estratti dal catalogo Teufelberger/Petzl.

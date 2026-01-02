@@ -1,4 +1,4 @@
-﻿# Stato TPI (generale) – dicembre 2025
+# Stato TPI (generale) – dicembre 2025
 
 ## Dove siamo oggi
 

@@ -1,4 +1,4 @@
-﻿TPI — DEMO WOW (3 minuti) — Script Presentazione (2025-12-13)
+TPI — DEMO WOW (3 minuti) — Script Presentazione (2025-12-13)
 
 0) APERTURA (10s)
 - “Questa è la WOW Dashboard TPI: cataloghi + movimenti + revisione. Anche senza API resta operativa (fallback). Con API online diventa live.”

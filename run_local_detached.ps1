@@ -1,4 +1,4 @@
-﻿$ErrorActionPreference="Stop"
+$ErrorActionPreference="Stop"
 Set-Location $PSScriptRoot
 
 if (-not (Test-Path ".\.venv\Scripts\Activate.ps1")) { py -3.11 -m venv .venv }

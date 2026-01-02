@@ -1,4 +1,4 @@
-﻿name: Feature
+name: Feature
 about: Richiesta funzionalità
 labels: enhancement
 

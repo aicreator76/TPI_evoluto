@@ -1,4 +1,4 @@
-﻿param(
+param(
   [string]$Repo = "E:\CLONAZIONE\tpi_evoluto",
   [string]$Demo = "E:\CLONAZIONE\tpi_evoluto\docs\demo_grafica_tpi_2025-12-10",
   [string]$ApiBase = "https://tpi-api-staging.onrender.com"

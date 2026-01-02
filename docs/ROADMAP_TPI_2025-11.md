@@ -1,4 +1,4 @@
-﻿# Roadmap TPI – Novembre 2025 (consuntivo)
+# Roadmap TPI – Novembre 2025 (consuntivo)
 
 ## Obiettivi iniziali di novembre
 

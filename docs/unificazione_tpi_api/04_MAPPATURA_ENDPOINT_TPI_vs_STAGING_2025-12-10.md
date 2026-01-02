@@ -1,4 +1,4 @@
-﻿# 04 – MAPPATURA ENDPOINT TPI_evoluto vs TPI_api_staging (2025-12-10)
+# 04 – MAPPATURA ENDPOINT TPI_evoluto vs TPI_api_staging (2025-12-10)
 
 Questo file va COMPILATO a partire dai diff salvati:
 

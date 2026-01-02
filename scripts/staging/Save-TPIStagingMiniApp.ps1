@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$Message = "chore: update mini_app TPI_evoluto staging"
 )
 

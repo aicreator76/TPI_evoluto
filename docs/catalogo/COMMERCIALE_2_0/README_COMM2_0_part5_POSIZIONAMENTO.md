@@ -1,4 +1,4 @@
-﻿# COMMERCIALE 2.0 – Part 5
+# COMMERCIALE 2.0 – Part 5
 Sistemi di posizionamento (GRILLON, cordini regolabili, longe da lavoro)
 
 Questa tranche include DPI certificati EN 358 per il posizionamento sul lavoro.

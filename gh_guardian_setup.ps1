@@ -1,4 +1,4 @@
-﻿param(
+param(
   [string]$Owner = "aicreator76",
   [string]$Repo  = "TPI_evoluto",
   [string]$Branch = "main"

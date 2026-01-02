@@ -1,4 +1,4 @@
-﻿param(
+param(
   [Parameter(Mandatory=$true)]
   [string]$FullRepo # es. "aicreator76/TPI_evoluto"
 )

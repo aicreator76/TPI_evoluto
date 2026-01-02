@@ -1,4 +1,4 @@
-﻿# 01 – BRIEF DEMO TPI (API + AI)
+# 01 – BRIEF DEMO TPI (API + AI)
 
 ## Obiettivo demo
 - Mostrare che TPI_evoluto + TPI_api_staging lavorano insieme.

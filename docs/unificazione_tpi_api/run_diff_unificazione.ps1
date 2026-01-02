@@ -1,4 +1,4 @@
-﻿# ============================================
+# ============================================
 # Script di supporto – diff TPI_evoluto vs TPI_api_staging
 # Da lanciare MANUALMENTE in PowerShell.
 # Percorsi COMPLETI, pronti da copiare.

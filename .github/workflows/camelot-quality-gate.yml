@@ -1,4 +1,4 @@
-﻿name: Camelot Quality Gate
+name: Camelot Quality Gate
 
 on:
   push:

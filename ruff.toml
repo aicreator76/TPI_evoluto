@@ -1,4 +1,4 @@
-﻿line-length = 100
+line-length = 100
 exclude = [
   ".git",
   ".venv", "venv", ".venv*", "venv*",

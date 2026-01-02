@@ -1,4 +1,4 @@
-﻿name: Bug
+name: Bug
 about: Segnala un malfunzionamento
 labels: bug
 

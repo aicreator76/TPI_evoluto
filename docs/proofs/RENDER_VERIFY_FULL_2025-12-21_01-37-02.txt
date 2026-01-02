@@ -1,4 +1,4 @@
-﻿=== TS 2025-12-21T01:37:03 ===
+=== TS 2025-12-21T01:37:03 ===
 BASE=https://tpi-evoluto-staging.onrender.com
 TRY=1 healthz=200 linee_vita=200 inox=200 openapi=200
 LINEE_VITA_count=10

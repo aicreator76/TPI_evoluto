@@ -1,1 +1,1 @@
-﻿***INCOLLA QUI catalogo_tpi.md***
+***INCOLLA QUI catalogo_tpi.md***

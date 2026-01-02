@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$SrcCsv = "E:\CLONAZIONE\tpi_evoluto\docs\catalogo\COMMERCIALE_2_0\catalogo_dpi_comm2_part1_raw.csv",
     [string]$DstCsv = "E:\CLONAZIONE\tpi_evoluto\docs\catalogo\COMMERCIALE_2_0\catalogo_dpi_comm2_part1_TPI.csv",
     [string]$ApiUrl = "http://127.0.0.1:8000/api/dpi/csv/save"
