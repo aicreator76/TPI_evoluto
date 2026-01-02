@@ -1,20 +1,80 @@
 # .pre-commit-config.yaml
-# Qualità + sicurezza repo TPI_evoluto
-# Ordine: utility base → lint/format → sicurezza → quality gate locale (push)
+# CAMELOT — Regno d'Acciaio
+# Qualità + sicurezza + normalizzazione (LF repo, CRLF solo cmd/bat) + push gate duro
 
 minimum_pre_commit_version: "3.5.0"
+
 default_language_version:
   python: python3
 
 default_stages: [commit]
 
+fail_fast: false
+
+exclude: |
+  (?x)(
+    ^\.ruff_cache/|
+    ^\.mypy_cache/|
+    ^\.pytest_cache/|
+    ^\.venv/|
+    ^venv/|
+    ^node_modules/|
+    ^dist/|
+    ^build/|
+    ^site/|
+    ^TPI_site_skeleton_.*
+  )
+
 repos:
-  # 1) Utility di base
+  # 0) Local steel tools (stabili, no python -c)
+  - repo: local
+    hooks:
+      - id: normalize-cmd-crlf
+        name: Normalize cmd/bat to CRLF (auto-fix)
+        language: system
+        entry: python
+        args: [ops/git/normalize_cmd_crlf.py]
+        pass_filenames: true
+        files: '\.(cmd|bat)$'
+
+      - id: strip-utf8-bom
+        name: Strip UTF-8 BOM (auto-fix, except csv)
+        language: system
+        entry: python
+        args: [ops/git/strip_utf8_bom.py]
+        pass_filenames: true
+        files: '.*'
+
+      - id: guardian-merge-markers
+        name: Guardian merge markers (push gate)
+        language: system
+        entry: pwsh -NoProfile -ExecutionPolicy Bypass -File ops/guardian_merge_markers.ps1
+        pass_filenames: false
+        stages: [push]
+
+      - id: mypy
+        name: mypy (push gate)
+        language: system
+        entry: python -m mypy .
+        pass_filenames: false
+        stages: [push]
+
+      - id: compileall
+        name: compileall (push gate)
+        language: system
+        entry: python -m compileall -q .
+        pass_filenames: false
+        stages: [push]
+
+  # 1) Base hooks (YAML/JSON/TOML + conflitti + eol + BOM + keys + large files)
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
       - id: check-yaml
         name: Check YAML syntax
+
+      - id: check-toml
+      - id: check-json
 
       - id: check-merge-conflict
         name: Block merge conflict markers
@@ -22,22 +82,15 @@ repos:
       - id: check-case-conflict
         name: Block case-conflict paths (Windows safe)
 
-      # LF per tutto, ESCLUSI cmd/bat (su Linux i cmd in CRLF sono ok)
       - id: mixed-line-ending
         name: Normalize line endings to LF (except cmd/bat)
         args: [--fix=lf]
         exclude: '\.(cmd|bat)$'
 
-      # CRLF SOLO per cmd/bat (evita “mixed line endings” in CI)
-      - id: mixed-line-ending
-        name: Normalize cmd/bat to CRLF
-        args: [--fix=crlf]
-        files: '\.(cmd|bat)$'
-
       - id: end-of-file-fixer
       - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
 
-      # BOM vietato (tranne csv, per non rompere dataset/export)
       - id: check-byte-order-marker
         name: Block UTF-8 BOM (except csv)
         exclude: '\.csv$'
@@ -50,7 +103,7 @@ repos:
         args: [--maxkb=2048]
         exclude: '^(data/big\.csv|data/dpi_import\.csv)$'
 
-  # 2) Ruff: lint + format
+  # 2) Ruff (lint + format)
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.7.1
     hooks:
@@ -60,7 +113,7 @@ repos:
       - id: ruff-format
         name: Ruff Format
 
-  # 3) Sicurezza: detect-secrets
+  # 3) detect-secrets (baseline)
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.5.0
     hooks:
@@ -73,27 +126,3 @@ repos:
           - '(^site/|^TPI_site_skeleton_.*|^\.ruff_cache/|^\.secrets\.baseline$)'
         pass_filenames: false
         stages: [commit, push]
-
-  # 4) Quality gate locale (solo su PUSH)
-  - repo: local
-    hooks:
-      - id: mypy
-        name: mypy (push gate)
-        entry: python -m mypy .
-        language: system
-        pass_filenames: false
-        stages: [push]
-
-      - id: compileall
-        name: compileall (push gate)
-        entry: python -m compileall -q .
-        language: system
-        pass_filenames: false
-        stages: [push]
-
-      - id: pip-audit
-        name: pip-audit (push gate)
-        entry: pip-audit -r requirements.txt
-        language: system
-        pass_filenames: false
-        stages: [push]
