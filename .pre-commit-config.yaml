@@ -22,12 +22,25 @@ repos:
       - id: check-case-conflict
         name: Block case-conflict paths (Windows safe)
 
+      # LF per tutto, ESCLUSI cmd/bat (su Linux i cmd in CRLF sono ok)
       - id: mixed-line-ending
-        name: Normalize line endings to LF
+        name: Normalize line endings to LF (except cmd/bat)
         args: [--fix=lf]
+        exclude: '\.(cmd|bat)$'
+
+      # CRLF SOLO per cmd/bat (evita “mixed line endings” in CI)
+      - id: mixed-line-ending
+        name: Normalize cmd/bat to CRLF
+        args: [--fix=crlf]
+        files: '\.(cmd|bat)$'
 
       - id: end-of-file-fixer
       - id: trailing-whitespace
+
+      # BOM vietato (tranne csv, per non rompere dataset/export)
+      - id: check-byte-order-marker
+        name: Block UTF-8 BOM (except csv)
+        exclude: '\.csv$'
 
       - id: detect-private-key
         name: Detect private keys
@@ -35,7 +48,7 @@ repos:
       - id: check-added-large-files
         name: Block large files (except known datasets)
         args: [--maxkb=2048]
-        exclude: ^(data/big\.csv|data/dpi_import\.csv)$
+        exclude: '^(data/big\.csv|data/dpi_import\.csv)$'
 
   # 2) Ruff: lint + format
   - repo: https://github.com/astral-sh/ruff-pre-commit
@@ -61,7 +74,7 @@ repos:
         pass_filenames: false
         stages: [commit, push]
 
-  # 4) Quality gate locale (solo su PUSH) — niente fuffa, solo prove dure
+  # 4) Quality gate locale (solo su PUSH)
   - repo: local
     hooks:
       - id: mypy
@@ -74,6 +87,13 @@ repos:
       - id: compileall
         name: compileall (push gate)
         entry: python -m compileall -q .
+        language: system
+        pass_filenames: false
+        stages: [push]
+
+      - id: pip-audit
+        name: pip-audit (push gate)
+        entry: pip-audit -r requirements.txt
         language: system
         pass_filenames: false
         stages: [push]
