@@ -1,8 +1,16 @@
-*           text=auto eol=lf
-*.md        text eol=lf working-tree-encoding=UTF-8
-*.yml       text eol=lf working-tree-encoding=UTF-8
-*.yaml      text eol=lf working-tree-encoding=UTF-8
-*.py        text eol=lf working-tree-encoding=UTF-8
-*.csv       text eol=lf working-tree-encoding=UTF-8
-*.http      text eol=lf working-tree-encoding=UTF-8
-*.ps1       text eol=crlf working-tree-encoding=UTF-8
+# Camelot Steel: repo in LF
+* text=auto eol=lf
+
+# Windows batch: CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binaries
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.pdf binary
+*.zip binary
+*.exe binary
+*.apk binary

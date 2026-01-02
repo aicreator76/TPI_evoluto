@@ -1,4 +1,4 @@
-﻿# Savepoint & Workflows helper (locale)
+# Savepoint & Workflows helper (locale)
 
 Repo: `aicreator76/TPI_evoluto`
 Script: `savepoint_workflows.ps1`

@@ -1,4 +1,4 @@
-﻿# Sintesi TPI - Modalita DEMO (per la Regina)
+# Sintesi TPI - Modalita DEMO (per la Regina)
 
 Oggi:
 

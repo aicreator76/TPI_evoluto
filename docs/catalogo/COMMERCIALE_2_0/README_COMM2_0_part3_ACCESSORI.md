@@ -1,4 +1,4 @@
-﻿# COMMERCIALE 2.0 – Part 3
+# COMMERCIALE 2.0 – Part 3
 Sezione ACCESSORI (moschettoni, longe, carrucole, discensori)
 
 Questa tranche raccoglie tutti gli ACCESSORI DPI estratti dal catalogo Teufelberger/Petzl.

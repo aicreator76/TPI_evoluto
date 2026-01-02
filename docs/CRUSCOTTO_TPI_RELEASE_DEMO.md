@@ -1,4 +1,4 @@
-﻿# \# Cruscotto TPI – Catena Release DEMO
+# \# Cruscotto TPI – Catena Release DEMO
 
 #
 

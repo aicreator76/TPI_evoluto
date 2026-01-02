@@ -1,4 +1,4 @@
-﻿# 03 – MERGE PLAN OPERATIVO TPI_evoluto + TPI_api_staging
+# 03 – MERGE PLAN OPERATIVO TPI_evoluto + TPI_api_staging
 
 ## Fase 0 – Preparazione (oggi)
 

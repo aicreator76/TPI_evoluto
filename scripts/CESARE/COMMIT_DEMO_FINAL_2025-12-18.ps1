@@ -1,4 +1,4 @@
-﻿Set-Location "E:\CLONAZIONE\tpi_evoluto"
+Set-Location "E:\CLONAZIONE\tpi_evoluto"
 
 if(-not (Test-Path "E:\CLONAZIONE\tpi_evoluto\.git")){ Write-Host "FAIL: non sei nel repo"; exit 1 }
 

@@ -1,4 +1,4 @@
-﻿# 33 – Endpoint VETRINA per demo TPI (TPI_evoluto + TPI_api_staging)
+# 33 – Endpoint VETRINA per demo TPI (TPI_evoluto + TPI_api_staging)
 Data: 2025-12-10
 
 Obiettivo:

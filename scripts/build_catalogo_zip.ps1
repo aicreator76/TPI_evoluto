@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$WorkDir = "E:\CLONAZIONE\tpi_evoluto\catalogo_work",
     [string]$OutZip  = "E:\CLONAZIONE\tpi_evoluto\RELEASE_TPI\catalogo\catalogo_tpi_lynx_v1.zip"
 )

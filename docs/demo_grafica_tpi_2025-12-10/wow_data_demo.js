@@ -1,4 +1,4 @@
-﻿/* DEMO FULL — dati locali (fallback se API non risponde / CORS) */
+/* DEMO FULL — dati locali (fallback se API non risponde / CORS) */
 window.WOW_DEMO = {
   dpi: [
     {codice:"DPI-ELM-001", descrizione:"Elmetto dielettrico EN 397 con jugulare", famiglia:"TESTA", giorni:120, revisione_ok:true, ultima_rev:"2025-10-02"},

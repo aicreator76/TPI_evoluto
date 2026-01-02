@@ -1,4 +1,4 @@
-﻿pandas
+pandas
 pyyaml
 requests
 python-dateutil

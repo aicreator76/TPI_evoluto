@@ -1,4 +1,4 @@
-﻿$csvPath = "E:\CLONAZIONE\tpi_evoluto\docs\catalogo\COMMERCIALE_2_0\catalogo_dpi_comm2_part5_posizionamento_TPI.csv"
+$csvPath = "E:\CLONAZIONE\tpi_evoluto\docs\catalogo\COMMERCIALE_2_0\catalogo_dpi_comm2_part5_posizionamento_TPI.csv"
 $csvData = Get-Content $csvPath -Raw
 
 Invoke-RestMethod -Uri "http://127.0.0.1:8000/api/dpi/csv/save" `

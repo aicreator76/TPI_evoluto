@@ -1,4 +1,4 @@
-﻿param(
+param(
   [switch]$Savepoint,
   [switch]$Align,
   [string]$Feature,

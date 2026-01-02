@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$RootPath = "E:\CLONAZIONE\tpi_evoluto"
 )
 

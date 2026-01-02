@@ -1,4 +1,4 @@
-﻿# Cruscotto CESARI / Agenti
+# Cruscotto CESARI / Agenti
 
 Cruscotto operativo per Sovrano, Regina e tecnici.
 

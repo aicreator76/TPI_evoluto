@@ -1,4 +1,4 @@
-﻿param(
+param(
   [string]$Root = "https://aicreator76.github.io/TPI_evoluto/",
   [string]$Rel  = "demo_grafica_tpi_2025-12-10"
 )

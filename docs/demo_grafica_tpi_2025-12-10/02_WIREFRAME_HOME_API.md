@@ -1,4 +1,4 @@
-﻿# 02 – WIREFRAME HOME API / DEMO
+# 02 – WIREFRAME HOME API / DEMO
 
 ## Layout concettuale (desktop)
 

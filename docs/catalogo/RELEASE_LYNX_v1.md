@@ -1,4 +1,4 @@
-﻿# Catalogo DPI — Release Tecnica LYNX v1
+# Catalogo DPI — Release Tecnica LYNX v1
 Ultima ricostruzione: 2025-12-05 08:40:22
 
 Righe catalogo: 38

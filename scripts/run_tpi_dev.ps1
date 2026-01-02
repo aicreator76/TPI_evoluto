@@ -1,4 +1,4 @@
-﻿param(
+param(
     [switch]$NoAlembic  # usa: -NoAlembic per saltare alembic upgrade head
 )
 

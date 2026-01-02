@@ -1,4 +1,4 @@
-﻿# Cruscotto COMPITI-REGINA – 2025-11-23
+# Cruscotto COMPITI-REGINA – 2025-11-23
 
 ## Semaforo Unità
 - 001–BLD (Catalogo / Smoke): 🟢 Smoke Catalogo DPI COMPLETATO

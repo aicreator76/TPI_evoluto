@@ -1,4 +1,4 @@
-﻿# 01 – STATO ATTUALE TPI_evoluto vs TPI_api_staging (2025-12-10)
+# 01 – STATO ATTUALE TPI_evoluto vs TPI_api_staging (2025-12-10)
 
 ## Repos coinvolti
 

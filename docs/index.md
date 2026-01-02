@@ -1,4 +1,4 @@
-﻿# Catalogo DPI – Release LYNX v1
+# Catalogo DPI – Release LYNX v1
 
 Questa pagina documenta il **primo catalogo DPI reale** caricato in TPI_evoluto
 a partire dal catalogo PDF (pagine 11–32).

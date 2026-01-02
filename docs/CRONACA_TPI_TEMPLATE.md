@@ -1,4 +1,4 @@
-﻿# Cronaca TPI – TEMPLATE
+# Cronaca TPI – TEMPLATE
 
 **Data:** YYYY-MM-DD
 **Versione SUMMARY:** vDEMO-YYYYMMDD-HHMM (o simile)

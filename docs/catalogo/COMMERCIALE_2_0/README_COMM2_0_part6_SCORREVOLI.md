@@ -1,4 +1,4 @@
-﻿# COMMERCIALE 2.0 – Part 6
+# COMMERCIALE 2.0 – Part 6
 Dispositivi scorrevoli (ASAP, ASAP LOCK)
 
 Questa tranche include dispositivi anticaduta scorrevoli su linea flessibile.
