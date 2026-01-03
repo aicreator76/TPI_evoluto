@@ -2,7 +2,7 @@
 Agente0 – Step2
 Obiettivo:
 - leggere reports/agente0/normalized_dpi_import.csv (output Step1)
-- assegnare categoria/stato/scadenze (regole Step2)
+- assegnare stato/scadenze (OK / IN_SCADENZA / SCADUTO / UNKNOWN)
 - generare dashboard + actions log in reports/agente0/
 
 Nota: notifiche (n8n/email) nello Step3/Step4.
@@ -30,13 +30,13 @@ def _parse_date(value: str) -> date | None:
     if not v:
         return None
 
-    # prova ISO: YYYY-MM-DD
+    # ISO
     try:
         return date.fromisoformat(v[:10])
     except Exception:
         pass
 
-    # prova formati comuni: DD/MM/YYYY, DD-MM-YYYY
+    # formati comuni
     for fmt in ("%d/%m/%Y", "%d-%m-%Y", "%Y/%m/%d", "%Y-%m-%d"):
         try:
             return datetime.strptime(v[:10], fmt).date()
@@ -47,7 +47,6 @@ def _parse_date(value: str) -> date | None:
 
 
 def _pick_expiry(row: dict[str, str]) -> date | None:
-    # prova chiavi plausibili (senza sapere ancora lo schema definitivo dello Step1)
     keys = (
         "scadenza",
         "data_scadenza",
@@ -58,8 +57,9 @@ def _pick_expiry(row: dict[str, str]) -> date | None:
         "prossima_revisione",
     )
     for k in keys:
-        if k in row and row[k].strip():
-            d = _parse_date(row[k])
+        val = (row.get(k) or "").strip()
+        if val:
+            d = _parse_date(val)
             if d:
                 return d
     return None
@@ -88,19 +88,18 @@ def main() -> int:
         raise SystemExit(f"Missing input CSV: {IN_CSV}")
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-
     today = date.today()
-    rows: list[dict[str, str]] = []
 
+    rows: list[dict[str, str]] = []
     with IN_CSV.open("r", encoding="utf-8", newline="") as f:
         reader = csv.DictReader(f)
         for r in reader:
             rows.append({k: (v or "") for k, v in r.items()})
 
-    enriched: list[dict[str, Any]] = []
-    counts = {"TOTAL": 0, "OK": 0, "IN_SCADENZA": 0, "SCADUTO": 0, "UNKNOWN": 0}
+    counts: dict[str, int] = {"TOTAL": 0, "OK": 0, "IN_SCADENZA": 0, "SCADUTO": 0, "UNKNOWN": 0}
     by_family: dict[str, int] = {}
 
+    enriched: list[dict[str, Any]] = []
     for r in rows:
         counts["TOTAL"] += 1
 
@@ -120,11 +119,13 @@ def main() -> int:
             }
         )
 
-    dashboard = {
+    by_family_sorted: dict[str, int] = dict(sorted(by_family.items(), key=lambda x: (-x[1], x[0])))
+
+    dashboard: dict[str, Any] = {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "input": str(IN_CSV.relative_to(ROOT)),
         "counts": counts,
-        "by_family": dict(sorted(by_family.items(), key=lambda x: (-x[1], x[0]))),
+        "by_family": by_family_sorted,
         "rules": {"warning_days": DAYS_WARNING},
     }
 
@@ -132,7 +133,7 @@ def main() -> int:
         json.dumps(dashboard, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
     )
 
-    md = []
+    md: list[str] = []
     md.append("# Agente0 — Step2 Dashboard\n")
     md.append(f"- Generato: `{dashboard['generated_at']}`\n")
     md.append(f"- Input: `{dashboard['input']}`\n")
@@ -145,12 +146,11 @@ def main() -> int:
         f"- UNKNOWN: **{counts['UNKNOWN']}**\n"
     )
     md.append("\n## Per famiglia\n")
-    for k, v in dashboard["by_family"].items():
+    for k, v in by_family_sorted.items():
         md.append(f"- {k}: **{v}**\n")
 
     (OUT_DIR / "step2_dashboard.md").write_text("".join(md), encoding="utf-8")
 
-    # Actions CSV (stub utile per Step3/Step4)
     actions_path = OUT_DIR / "step2_actions.csv"
     with actions_path.open("w", encoding="utf-8", newline="") as f:
         w = csv.writer(f)
