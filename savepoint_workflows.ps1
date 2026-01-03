@@ -2,18 +2,19 @@
 E:\CLONAZIONE\tpi_evoluto\savepoint_workflows.ps1
 
 WORKFLOWS:
-- Savepoint: commit snapshot (se serve) + tag Snapshot-OK-YYYY-MM-DD (annotated) + push + (opz) Cronista
-            - su branch != BaseBranch: tag = Snapshot-OK-YYYY-MM-DD-<branch-suffix> (non tocca il tag main)
-- Align:     fetch + rebase origin/<branch> (solo working tree pulita)
+- Savepoint: commit snapshot (se serve) + push + tag annotated + (opz) Cronista
+- Align:     fetch + rebase su origin/<BaseBranch> (solo working tree pulita)
 - Feature:   crea feat/<slug> (da BaseBranch o FromCurrent) + commit start (allow-empty) + push
-- Hotfix:    crea hotfix/<slug> + commit start (allow-empty) + push + tag Snapshot-OK-YYYY-MM-DD-hotfix (annotated) + (opz) Cronista
-            - su branch != BaseBranch: tag = Snapshot-OK-YYYY-MM-DD-hotfix-<branch-suffix>
-- Doctor:    diagnostica repo/branch/head/dirty (+ remoto se disponibile)
+- Hotfix:    crea hotfix/<slug> + commit start (allow-empty) + push + tag + (opz) Cronista
+- Doctor:    diagnostica repo/branch/head/dirty (+ remote url se disponibile)
 
 NOTE:
 - -DryRun: esegue SOLO git di lettura (locale); stampa gli altri comandi senza eseguirli.
 - Hook pre-commit: se auto-fixa file, ristage e ritenta il commit.
-- Tag: se remoto è "protetto" e non sovrascrivibile, crea fallback -02/-03/... fino a -99.
+  Se dopo auto-fix “nothing to commit” e working tree pulita -> OK (non fallisce).
+- Tag: su main/base usa Snapshot-OK-YYYY-MM-DD.
+  Su branch non-base usa Snapshot-OK-YYYY-MM-DD-<branch_slug> per evitare collisioni tra rami.
+  Se remoto “protetto” e non sovrascrivibile, fallback -02/-03/... fino a -99.
 #>
 
 [CmdletBinding(DefaultParameterSetName = "Help")]
@@ -36,7 +37,7 @@ param(
   [string]$Remote = "origin",
   [string]$BaseBranch = "main",
 
-  # Feature/Hotfix: parte dal branch corrente
+  # Feature/Hotfix: parte dal branch corrente (non fa checkout/pull BaseBranch)
   [switch]$FromCurrent,
 
   # Cronista post-savepoint/hotfix
@@ -57,22 +58,6 @@ try {
   [Console]::OutputEncoding = $utf8
 } catch {}
 
-function Show-Usage {
-  Write-Host @"
-Usage:
-  pwsh .\savepoint_workflows.ps1 -Doctor   [-DryRun]
-  pwsh .\savepoint_workflows.ps1 -Savepoint [-Cronista] [-Remote origin] [-BaseBranch main] [-DryRun]
-  pwsh .\savepoint_workflows.ps1 -Align     [-Remote origin] [-DryRun]
-  pwsh .\savepoint_workflows.ps1 -Feature "nome" [-BaseBranch main] [-Remote origin] [-FromCurrent] [-DryRun]
-  pwsh .\savepoint_workflows.ps1 -Hotfix  "nome" [-BaseBranch main] [-Remote origin] [-FromCurrent] [-Cronista] [-DryRun]
-
-Note:
-  - -DryRun esegue SOLO git di lettura (locale); stampa gli altri.
-  - -FromCurrent crea il branch da dove sei ORA.
-  - -Cronista cerca: cronista_salva_giornata_YYYY-MM-DD.ps1 poi cronista_salva_giornata.ps1
-"@ -ForegroundColor Gray
-}
-
 function Normalize-GitArgs {
   param([object]$GitArgs)
 
@@ -90,6 +75,7 @@ function Normalize-GitArgs {
   $arr = @($arr | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
   if($arr.Count -eq 0){ return @() }
 
+  # Split solo se sembra un comando git vero e proprio "verb ...".
   if($arr.Count -eq 1){
     $s = $arr[0].Trim()
     if($s -match "^(rev-parse|status|remote|show-ref|for-each-ref|rev-list|log|cat-file|diff|show|fetch|push|tag|checkout|commit|pull|rebase|add|ls-remote)\b" -and
@@ -103,7 +89,7 @@ function Normalize-GitArgs {
 
 function Get-GitVerb {
   param([object]$GitArgs)
-  $argv = @(Normalize-GitArgs $GitArgs)
+  $argv = @(Normalize-GitArgs $GitArgs)   # FORZA ARRAY
   if($argv.Count -eq 0){ return "" }
 
   foreach($a in $argv){
@@ -122,7 +108,7 @@ function Invoke-Git {
     [switch]$Quiet
   )
 
-  $argv = @(Normalize-GitArgs $GitArgs)
+  $argv = @(Normalize-GitArgs $GitArgs)   # FORZA ARRAY
   if($argv.Count -eq 0){
     throw "❌ Invoke-Git: argomenti vuoti (GitArgs)."
   }
@@ -235,7 +221,27 @@ function Find-AltTag([string]$baseTag){
   throw "❌ Nessun tag alternativo libero per: $baseTag (fino a -99)."
 }
 
+function Normalize-BranchForTag([string]$branch){
+  if([string]::IsNullOrWhiteSpace($branch)){ return "unknown-branch" }
+  $s = $branch.Trim().ToLower()
+  $s = $s -replace '[\\\/]+','-'          # / e \ -> -
+  $s = $s -replace '[^a-z0-9\-]+','-'     # solo safe chars
+  $s = $s -replace '-{2,}','-'
+  $s = $s.Trim('-')
+  if([string]::IsNullOrWhiteSpace($s)){ return "branch" }
+  return $s
+}
+
+function Build-SavepointTag([string]$baseTag, [string]$branch){
+  # Su main/base -> baseTag, sugli altri -> baseTag-<branch_slug>
+  if([string]::IsNullOrWhiteSpace($branch)){ return $baseTag }
+  if($branch -ieq $BaseBranch){ return $baseTag }
+  $slug = Normalize-BranchForTag $branch
+  return "$baseTag-$slug"
+}
+
 function Ensure-TagAnnotated([string]$tag){
+  # RITORNA il tag effettivamente usato (tag o fallback -02/-03...)
   $head = Get-Head
   if([string]::IsNullOrWhiteSpace($head)){
     throw "❌ HEAD vuoto: rev-parse HEAD fallito."
@@ -304,16 +310,6 @@ function Normalize-Slug([string]$name){
   return $slug
 }
 
-function Get-BranchTagSuffix([string]$branch){
-  if([string]::IsNullOrWhiteSpace($branch)){ return "" }
-  $b = $branch.ToLower()
-  $b = $b -replace '^refs/heads/',''
-  $b = $b -replace '[/\\]+','-'
-  $b = $b -replace '[^a-z0-9\-]+','-'
-  $b = $b -replace '-{2,}','-'
-  return $b.Trim('-')
-}
-
 function Commit-WithHookRetry {
   param(
     [Parameter(Mandatory=$true)][string]$Message,
@@ -342,6 +338,7 @@ function Commit-WithHookRetry {
     $out2 = Invoke-Git -GitArgs $args -AllowFail
     if($LASTEXITCODE -eq 0){ return }
 
+    # Se dopo auto-fix non c'è più nulla da committare, NON rompiamo (specie su start-branch).
     if(($out2 -match "nothing to commit") -or ($out2 -match "nothing added to commit")){
       $st = (Invoke-Git -GitArgs @("status","--porcelain") -Quiet)
       if($st.Length -eq 0){ return }
@@ -376,16 +373,8 @@ function Do-Savepoint {
 
   Push-BranchUpstreamIfNeeded $branch
 
-  $tagBase = "Snapshot-OK-$date"
-  $tag = $tagBase
-
-  if($branch -ne $BaseBranch){
-    $suffix = Get-BranchTagSuffix $branch
-    if(-not [string]::IsNullOrWhiteSpace($suffix)){
-      $tag = "$tagBase-$suffix"
-    }
-  }
-
+  $baseTag = "Snapshot-OK-$date"
+  $tag = Build-SavepointTag -baseTag $baseTag -branch $branch
   $usedTag = Ensure-TagAnnotated $tag
 
   Write-Host "✅ Savepoint completato su '$branch' + tag $usedTag" -ForegroundColor Green
@@ -411,9 +400,9 @@ function Do-Align {
 
   $branch = Get-Branch
   if([string]::IsNullOrWhiteSpace($branch)){ throw "❌ Branch vuoto: rev-parse --abbrev-ref HEAD fallito." }
-  $up = "$Remote/$branch"
 
-  Write-Host "ℹ️ Rebase su $up" -ForegroundColor Cyan
+  $up = "$Remote/$BaseBranch"
+  Write-Host "ℹ️ Rebase su $up (da $branch)" -ForegroundColor Cyan
   Write-Host "ℹ️ Se conflitti: risolvi, poi 'git rebase --continue'." -ForegroundColor DarkGray
   Write-Host "ℹ️ Poi: 'git push --force-with-lease' (solo se necessario)." -ForegroundColor DarkGray
 
@@ -462,16 +451,8 @@ function New-Hotfix([string]$name) {
   Invoke-Git -GitArgs @("push","-u",$Remote,$branch) | Out-Null
 
   $date = Get-Date -Format "yyyy-MM-dd"
-  $tagBase = "Snapshot-OK-$date-hotfix"
-  $tag = $tagBase
-
-  if($branch -ne $BaseBranch){
-    $suffix = Get-BranchTagSuffix $branch
-    if(-not [string]::IsNullOrWhiteSpace($suffix)){
-      $tag = "$tagBase-$suffix"
-    }
-  }
-
+  $baseTag = "Snapshot-OK-$date-hotfix"
+  $tag = Build-SavepointTag -baseTag $baseTag -branch $branch
   $usedTag = Ensure-TagAnnotated $tag
 
   Write-Host "🚑 Hotfix creato: $branch + tag $usedTag" -ForegroundColor Green
@@ -501,11 +482,23 @@ function Do-Doctor {
   Invoke-Git -GitArgs @("--no-pager","log","-1","--oneline","--decorate") | Out-Null
 }
 
-switch ($PSCmdlet.ParameterSetName) {
-  "Savepoint" { Do-Savepoint; break }
-  "Align"     { Do-Align;     break }
-  "Feature"   { New-Feature $Feature; break }
-  "Hotfix"    { New-Hotfix  $Hotfix;  break }
-  "Doctor"    { Do-Doctor;   break }
-  default     { Show-Usage;  break }
-}
+# ROUTING
+if ($Savepoint) { Do-Savepoint; exit 0 }
+if ($Align)     { Do-Align;     exit 0 }
+if ($Feature)   { New-Feature $Feature; exit 0 }
+if ($Hotfix)    { New-Hotfix $Hotfix; exit 0 }
+if ($Doctor)    { Do-Doctor; exit 0 }
+
+Write-Host @"
+Usage:
+  pwsh .\savepoint_workflows.ps1 -Doctor   [-DryRun]
+  pwsh .\savepoint_workflows.ps1 -Savepoint [-Cronista] [-Remote origin] [-DryRun]
+  pwsh .\savepoint_workflows.ps1 -Align     [-BaseBranch main] [-Remote origin] [-DryRun]
+  pwsh .\savepoint_workflows.ps1 -Feature "nome" [-BaseBranch main] [-Remote origin] [-FromCurrent] [-DryRun]
+  pwsh .\savepoint_workflows.ps1 -Hotfix  "nome" [-BaseBranch main] [-Remote origin] [-FromCurrent] [-Cronista] [-DryRun]
+
+Note:
+  - -DryRun esegue SOLO git di lettura (locale); stampa gli altri.
+  - -FromCurrent crea il branch da dove sei ORA.
+  - -Cronista cerca: cronista_salva_giornata_YYYY-MM-DD.ps1 poi cronista_salva_giornata.ps1
+"@ -ForegroundColor Gray
