@@ -414,16 +414,24 @@
   // se hook immagini aggiorna i thumb dopo il render, riallineiamo preview
   function syncPhotoPreview(){
     const selected = STATE.selectedCode;
+
+    const imgs = document.querySelectorAll("#mainTbody img.wow-thumb");
+    const findByCode = (code)=>{
+      for(const im of imgs){
+        if(im.getAttribute("data-wow-code") === String(code)) return im;
+      }
+      return null;
+    };
+
     if(selected){
-      const im = document.querySelector(`#mainTbody img.wow-thumb[data-wow-code="${CSS && CSS.escape ? CSS.escape(selected) : selected}"]`);
-      if(im) setPhotoPreview(selected, im.src);
-      return;
+      const im = findByCode(selected);
+      if(im) return setPhotoPreview(selected, im.src);
     }
-    const first = document.querySelector("#mainTbody img.wow-thumb");
+
+    const first = imgs[0];
     if(first) setPhotoPreview(first.getAttribute("data-wow-code"), first.src);
   }
-
-  el("photoPreview").addEventListener("click", ()=>{
+el("photoPreview").addEventListener("click", ()=>{
     const src = el("photoPreview").src;
     if(src) window.open(src, "_blank", "noopener");
   });
@@ -580,7 +588,15 @@
     const tb = el("mainTbody");
     tb.innerHTML = "";
 
-    if(STATE.tab==="movimenti"){
+
+    function ensureEmpty(){
+      if(tb.children.length === 0){
+        const tr = document.createElement("tr");
+        tr.innerHTML = '<td colspan="5" style="padding:16px; opacity:.9"><span class="pill warn">Nessun risultato</span> &nbsp;Filtro: <b>' + esc(STATE.cat) + '</b>. <span style="opacity:.85">Premi "Tutti" sopra (o Cataloghi > Tutti).</span></td>';
+        tb.appendChild(tr);
+      }
+    }
+if(STATE.tab==="movimenti"){
       (STATE.movimenti||[]).slice().reverse().forEach(m=>{
         const tr=document.createElement("tr");
         tr.innerHTML = `
@@ -598,6 +614,7 @@
         });
         tb.appendChild(tr);
       });
+      ensureEmpty();
       afterRenderImages();
       return;
     }
@@ -636,6 +653,7 @@
         });
         tb.appendChild(tr);
       });
+      ensureEmpty();
       afterRenderImages();
       return;
     }
@@ -671,6 +689,7 @@
         });
         tb.appendChild(tr);
       });
+      ensureEmpty();
       afterRenderImages();
       return;
     }
@@ -705,6 +724,7 @@
       });
       tb.appendChild(tr);
     });
+    ensureEmpty();
     afterRenderImages();
   }
 
