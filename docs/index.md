@@ -119,4 +119,4 @@ Benvenuto nel backend ufficiale di **TPI_evoluto**.
 - **Catalogo DPI** → dati reali DPI (CSV/JSON/MD) e release LYNX v1
 - **Database / Schema TPI v1** → struttura tabelle
 
-Usa il menu a sinistra per navigare tra le sezioni.
+Usa il menu a sinistra per navigare tra le sezioni.- Agente0: [Step2](agente0_STEP2.md)
