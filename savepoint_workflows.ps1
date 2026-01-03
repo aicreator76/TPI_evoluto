@@ -37,7 +37,6 @@ function Normalize-GitArgs {
 
   if($null -eq $GitArgs){ return @() }
 
-  # Se arriva array -> string[]
   if($GitArgs -is [System.Array]){
     $arr = @()
     foreach($x in $GitArgs){
@@ -47,11 +46,9 @@ function Normalize-GitArgs {
     $arr = @([string]$GitArgs)
   }
 
-  # No vuoti
   $arr = @($arr | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
   if($arr.Count -eq 0){ return @() }
 
-  # Split solo se sembra un comando git completo in una stringa
   if($arr.Count -eq 1){
     $s = $arr[0].Trim()
     if($s -match "^(rev-parse|status|remote|show-ref|for-each-ref|rev-list|log|cat-file|diff|show|fetch|push|tag|checkout|commit|pull|rebase|add|ls-remote)\b" -and
@@ -65,7 +62,7 @@ function Normalize-GitArgs {
 
 function Get-GitVerb {
   param([object]$GitArgs)
-  $argv = Normalize-GitArgs $GitArgs
+  $argv = @(Normalize-GitArgs $GitArgs)   # <-- FORZA ARRAY
   if($argv.Count -eq 0){ return "" }
   foreach($a in $argv){
     if(-not $a.StartsWith("-")) { return $a }
@@ -83,7 +80,7 @@ function Invoke-Git {
     [switch]$Quiet
   )
 
-  $argv = Normalize-GitArgs $GitArgs
+  $argv = @(Normalize-GitArgs $GitArgs)   # <-- FORZA ARRAY
   if($argv.Count -eq 0){
     throw "❌ Invoke-Git: argomenti vuoti (GitArgs)."
   }
@@ -187,7 +184,17 @@ function Get-RemoteTagInfo([string]$tag){
   return [pscustomobject]@{ Exists=$true; IsAnnotated=$false; TargetCommit=$sha2; Unknown=$false; Raw=$raw }
 }
 
+function Find-AltTag([string]$baseTag){
+  for($i=2; $i -le 99; $i++){
+    $alt = "{0}-{1:00}" -f $baseTag, $i
+    $rt = Get-RemoteTagInfo $alt
+    if(-not $rt.Exists){ return $alt }
+  }
+  throw "❌ Nessun tag alternativo libero per: $baseTag (fino a -99)."
+}
+
 function Ensure-TagAnnotated([string]$tag){
+  # RITORNA il tag effettivamente usato (tag o fallback -02/-03)
   $head = Get-Head
   if([string]::IsNullOrWhiteSpace($head)){
     throw "❌ HEAD vuoto: rev-parse HEAD fallito."
@@ -199,25 +206,30 @@ function Ensure-TagAnnotated([string]$tag){
     Delete-TagEverywhere $tag
     Invoke-Git -GitArgs @("tag","-a",$tag,$head,"-m","Savepoint $tag") | Out-Null
     Invoke-Git -GitArgs @("push",$Remote,$tag) | Out-Null
-    return
+    return $tag
   }
 
   if($rt.Exists -and $rt.IsAnnotated -and ($rt.TargetCommit -eq $head)){
     Write-Host "ℹ️ Tag remoto già OK (annotated) su HEAD: $tag" -ForegroundColor DarkGray
     if(Tag-ExistsLocal $tag){ Invoke-Git -GitArgs @("tag","-d",$tag) | Out-Null }
     Invoke-Git -GitArgs @("tag","-a",$tag,$head,"-m","Savepoint $tag") | Out-Null
-    return
+    return $tag
   }
 
   Delete-TagEverywhere $tag
 
   $rt2 = Get-RemoteTagInfo $tag
   if($rt2.Exists){
-    throw "❌ Impossibile sovrascrivere il tag remoto '$tag' (policy/permessi). Rimuovilo manualmente o usa suffisso (-02)."
+    $alt = Find-AltTag $tag
+    Write-Host "⚠️ Tag remoto '$tag' protetto. Fallback: $alt" -ForegroundColor Yellow
+    Invoke-Git -GitArgs @("tag","-a",$alt,$head,"-m","Savepoint $alt") | Out-Null
+    Invoke-Git -GitArgs @("push",$Remote,$alt) | Out-Null
+    return $alt
   }
 
   Invoke-Git -GitArgs @("tag","-a",$tag,$head,"-m","Savepoint $tag") | Out-Null
   Invoke-Git -GitArgs @("push",$Remote,$tag) | Out-Null
+  return $tag
 }
 
 function Run-Cronista([string]$date){
@@ -252,11 +264,9 @@ function Normalize-Slug([string]$name){
 }
 
 function Commit-WithHookRetry([string]$message){
-  # 1) tentativo
   $out = Invoke-Git -GitArgs @("commit","-m",$message) -AllowFail
   if($LASTEXITCODE -eq 0){ return }
 
-  # Se hook ha modificato file, git abortisce: ristage + retry
   $maybeFixed =
     ($out -match "fixed mixed line endings") -or
     ($out -match "files were modified") -or
@@ -302,9 +312,9 @@ function Do-Savepoint {
   Push-BranchUpstreamIfNeeded $branch
 
   $tag = "Snapshot-OK-$date"
-  Ensure-TagAnnotated $tag
+  $usedTag = Ensure-TagAnnotated $tag
 
-  Write-Host "✅ Savepoint completato su '$branch' + tag $tag" -ForegroundColor Green
+  Write-Host "✅ Savepoint completato su '$branch' + tag $usedTag" -ForegroundColor Green
   Run-Cronista $date
 }
 
@@ -351,7 +361,6 @@ function New-Feature([string]$name) {
   }
 
   Invoke-Git -GitArgs @("checkout","-b",$branch) | Out-Null
-  # commit empty: se qualche hook tocca cose, retry non fa male
   Commit-WithHookRetry "chore: start $branch"
   Invoke-Git -GitArgs @("push","-u",$Remote,$branch) | Out-Null
 
@@ -378,9 +387,9 @@ function New-Hotfix([string]$name) {
 
   $date = Get-Date -Format "yyyy-MM-dd"
   $tag = "Snapshot-OK-$date-hotfix"
-  Ensure-TagAnnotated $tag
+  $usedTag = Ensure-TagAnnotated $tag
 
-  Write-Host "🚑 Hotfix creato: $branch + tag $tag" -ForegroundColor Green
+  Write-Host "🚑 Hotfix creato: $branch + tag $usedTag" -ForegroundColor Green
   Run-Cronista $date
 }
 
