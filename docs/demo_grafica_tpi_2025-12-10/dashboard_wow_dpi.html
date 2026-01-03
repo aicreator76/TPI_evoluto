@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>TPI – WOW Dashboard DPI</title>
+  <title>TPI - WOW Dashboard DPI</title>
 
   <link rel="stylesheet" href="./wow_anim.css" />
   <link rel="stylesheet" href="./wow_photo.css" />
@@ -11,27 +11,91 @@
   <!-- Config + demo -->
   <script src="./config.js"></script>
   <script src="./wow_data_demo.js"></script>
+
+  <!-- Extra UI: Cataloghi popup + preview foto in alto + bottoni categoria -->
+  <style>
+    .tabCat { opacity: .95; }
+    .tabCat.activeCat { outline: 2px solid rgba(0,255,255,.35); }
+
+    /* Photo preview */
+    .photoTop{
+      display:flex; gap:12px; align-items:center;
+      padding:10px 12px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .photoTop img{
+      width:78px; height:78px; object-fit:cover; border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      cursor:pointer;
+    }
+    .photoTop .phTitle { font-weight:900; }
+    .photoTop .phSub { font-size:12px; opacity:.8; }
+
+    /* Catalog modal */
+    .catBg{
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center;
+      background: rgba(0,0,0,.55); z-index: 9999;
+    }
+    .catModal{
+      width:min(760px, 92vw);
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(10,12,18,.92);
+      padding:18px;
+      box-shadow: 0 20px 80px rgba(0,0,0,.55);
+    }
+    .catTop{
+      display:flex; justify-content:space-between; align-items:center; gap:10px;
+      margin-bottom:12px;
+    }
+    .catTitle{ font-size:18px; font-weight:900; }
+    .catGrid{
+      display:grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap:10px;
+    }
+    .catCard{
+      padding:12px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+    }
+    .catCard h3{ margin:0 0 8px 0; font-size:14px; }
+    .catCard .catBtns{ display:flex; flex-wrap:wrap; gap:8px; }
+  </style>
 </head>
 
 <body>
   <div class="wrap">
     <div class="top">
       <div>
-        <h1 class="h1">TPI – WOW Dashboard DPI</h1>
-        <div class="sub">Cataloghi + Movimenti + Click dettaglio + Revisione • Effetto WOW reale</div>
+        <h1 class="h1">TPI - WOW Dashboard DPI</h1>
+        <div class="sub">Cataloghi + Movimenti + Click dettaglio + Revisione - Effetto WOW reale</div>
+
         <div class="badges">
           <div class="badge"><span class="dot"></span><span>Motore reale</span></div>
-          <div class="badge"><span class="dot"></span><span>Cataloghi live</span></div>
-          <div class="badge" id="apiBadge"><span class="dot warn" id="apiDot"></span><span id="apiTxt">API: verifica…</span></div>
+
+          <!-- Cataloghi: cliccabile -->
+          <div class="badge" id="catalogBadge" style="cursor:pointer">
+            <span class="dot"></span><span>Cataloghi live (clicca)</span>
+          </div>
+
+          <div class="badge" id="apiBadge">
+            <span class="dot warn" id="apiDot"></span>
+            <span id="apiTxt">API: verifica...</span>
+          </div>
         </div>
       </div>
 
       <div class="ctrl">
+        <button class="btn" id="catalogBtn">Cataloghi</button>
+
         <select class="select" id="langSel">
           <option value="it" selected>IT</option>
           <option value="en">EN</option>
           <option value="de">DE</option>
         </select>
+
         <button class="btn" id="themeBtn">Tema</button>
         <button class="btn pulse" id="refreshBtn">Aggiorna</button>
       </div>
@@ -40,38 +104,59 @@
     <div class="grid4">
       <div class="card" id="kpi1">
         <div class="kpiTitle">Prodotti attivi</div>
-        <div class="kpiVal" id="kpiAttivi">—</div>
+        <div class="kpiVal" id="kpiAttivi">&mdash;</div>
         <div class="kpiHint">DPI disponibili a catalogo</div>
       </div>
       <div class="card" id="kpi2">
         <div class="kpiTitle">In scadenza</div>
-        <div class="kpiVal" id="kpiScad">—</div>
+        <div class="kpiVal" id="kpiScad">&mdash;</div>
         <div class="kpiHint">&le; 60 giorni</div>
       </div>
       <div class="card" id="kpi3">
         <div class="kpiTitle">Scaduti</div>
-        <div class="kpiVal" id="kpiScaduti">—</div>
+        <div class="kpiVal" id="kpiScaduti">&mdash;</div>
         <div class="kpiHint">Blocco utilizzo</div>
       </div>
       <div class="card" id="kpi4">
         <div class="kpiTitle">Revisione OK</div>
-        <div class="kpiVal" id="kpiRevOk">—</div>
+        <div class="kpiVal" id="kpiRevOk">&mdash;</div>
         <div class="kpiHint">Ultima revisione valida</div>
       </div>
     </div>
 
-    <div class="tabs">
+    <div class="tabs" id="tabsBar">
+      <!-- Tab principali -->
       <div class="tab active" data-tab="dpi">DPI</div>
       <div class="tab" data-tab="accessori">Accessori</div>
       <div class="tab" data-tab="sottogancio">Sottogancio</div>
+
+      <!-- BOTTONI ACCANTO A SOTTOGANCIO -->
+      <div class="tab tabCat" data-cat="formazione">Formazione</div>
+      <div class="tab tabCat" data-cat="funi-fibra">Funi in fibra</div>
+      <div class="tab tabCat" data-cat="linea-vita">Linea vita</div>
+      <div class="tab tabCat" data-cat="funi-acciaio">Funi in acciaio</div>
+      <div class="tab tabCat" data-cat="all">Tutti</div>
+
       <div class="tab" data-tab="movimenti">Timeline movimenti</div>
     </div>
 
     <div class="panel">
       <div class="row2">
         <div class="card">
-          <div class="kpiTitle" id="panelTitle">DPI & Revisioni</div>
+          <div class="kpiTitle" id="panelTitle">DPI &amp; Revisioni</div>
+          <div style="height:10px"></div>
+
+          <!-- FOTO IN ALTO -->
+          <div class="photoTop" id="photoTop">
+            <img id="photoPreview" src="./data/img/placeholder.png" alt="Foto DPI" title="Clicca per aprire l'immagine" />
+            <div>
+              <div class="phTitle" id="photoTitle">Foto</div>
+              <div class="phSub" id="photoSub">Clicca una riga: la foto sale qui sopra</div>
+            </div>
+          </div>
+
           <div style="height:12px"></div>
+
           <table class="table" id="mainTable">
             <thead>
               <tr>
@@ -84,53 +169,56 @@
             </thead>
             <tbody id="mainTbody"></tbody>
           </table>
+
           <div style="height:10px"></div>
-          <div class="kpiHint" id="originHint">Origine dati: —</div>
+          <div class="kpiHint" id="originHint">Origine dati: &mdash;</div>
         </div>
 
         <div class="card">
           <div class="kpiTitle">Stato API</div>
           <div style="height:10px"></div>
+
           <div class="box">
             <h3>Health / Version</h3>
             <div class="kv">
-              <div class="k">health</div><div class="v" id="hVal">—</div>
-              <div class="k">version</div><div class="v" id="vVal">—</div>
-              <div class="k">API_BASE</div><div class="v" id="bVal">—</div>
-              <div class="k">Note</div><div class="v" id="eVal">—</div>
+              <div class="k">health</div><div class="v" id="hVal">&mdash;</div>
+              <div class="k">version</div><div class="v" id="vVal">&mdash;</div>
+              <div class="k">API_BASE</div><div class="v" id="bVal">&mdash;</div>
+              <div class="k">Note</div><div class="v" id="eVal">&mdash;</div>
             </div>
           </div>
 
           <div style="height:12px"></div>
+
           <div class="box">
             <h3>Maggiordomo TPI</h3>
             <div style="font-weight:900; color:var(--mut); line-height:1.35">
-              Clicca un elemento → dettaglio → timeline revisioni. <br/>
-              Se API è online ma vuota → passa a DEMO (niente più “tutti 0”). <br/>
-              Con API piena: dati reali.
+              Clicca un elemento -&gt; dettaglio -&gt; timeline revisioni.<br/>
+              Se API online ma vuota -&gt; DEMO locale (niente piu' "tutti 0").<br/>
+              Con API piena: dati reali e campi completi nel dettaglio.
             </div>
             <div style="height:12px"></div>
-            <div class="pill cyan" id="quickHint">Tip: premi Aggiorna per “effetto movimento”</div>
+            <div class="pill cyan" id="quickHint">Tip: premi Aggiorna per "effetto movimento"</div>
           </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- MODAL -->
+  <!-- MODAL DETTAGLIO -->
   <div class="modalBg" id="modalBg">
     <div class="modal">
       <div class="mTop">
         <div>
           <h2 class="mTitle" id="mTitle">Dettaglio</h2>
-          <div class="mSub" id="mSub">—</div>
+          <div class="mSub" id="mSub">&mdash;</div>
         </div>
         <button class="btn" id="closeBtn">Chiudi</button>
       </div>
 
       <div class="mGrid">
         <div class="box">
-          <h3>Dati</h3>
+          <h3>Dati (tutti i campi)</h3>
           <div class="kv" id="mKv"></div>
         </div>
         <div class="box">
@@ -138,6 +226,50 @@
           <div class="timeline" id="mTimeline"></div>
           <div style="height:12px"></div>
           <button class="btn" id="simRevBtn">Simula revisione (movimento)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POPUP CATALOGHI -->
+  <div class="catBg" id="catBg">
+    <div class="catModal">
+      <div class="catTop">
+        <div class="catTitle">TPI - Tutti i cataloghi</div>
+        <button class="btn" id="catClose">Chiudi</button>
+      </div>
+
+      <div class="catGrid">
+        <div class="catCard">
+          <h3>Filtri rapidi (stessa tabella)</h3>
+          <div class="catBtns">
+            <button class="btn" data-catpick="all">Tutti</button>
+            <button class="btn" data-catpick="formazione">Formazione</button>
+            <button class="btn" data-catpick="funi-fibra">Funi in fibra</button>
+            <button class="btn" data-catpick="linea-vita">Linea vita</button>
+            <button class="btn" data-catpick="funi-acciaio">Funi in acciaio</button>
+          </div>
+          <div style="height:10px"></div>
+          <div class="kpiHint">Filtro su Famiglia + Descrizione (cosi' prende anche le voci "testuali").</div>
+        </div>
+
+        <div class="catCard">
+          <h3>Sezioni (tab principali)</h3>
+          <div class="catBtns">
+            <button class="btn" data-tabpick="dpi">DPI</button>
+            <button class="btn" data-tabpick="accessori">Accessori</button>
+            <button class="btn" data-tabpick="sottogancio">Sottogancio</button>
+            <button class="btn" data-tabpick="movimenti">Movimenti</button>
+          </div>
+          <div style="height:10px"></div>
+          <div class="kpiHint">Apri una sezione e poi filtra.</div>
+        </div>
+
+        <div class="catCard">
+          <h3>Nota</h3>
+          <div class="kpiHint">
+            Se vuoi mappatura perfetta: dimmi i valori reali della tua API per "Famiglia" e li rendo 100% precisi.
+          </div>
         </div>
       </div>
     </div>
@@ -164,23 +296,70 @@
   const PREFER_DEMO_ON_EMPTY = (qs.get("empty") === "1") ? false : true;
 
   const el = (id)=>document.getElementById(id);
+  const esc = (s)=>String(s ?? "").replace(/[&<>"']/g, (c)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
   el("bVal").textContent = API_BASE;
-  el("eVal").textContent = "—";
+  el("eVal").textContent = "-";
 
   // --- STATE ---
   let STATE = {
     tab: "dpi",
+    cat: "all",
+    selectedCode: null,
+
     dpi: [],
     accessori: [],
     sottogancio: [],
     movimenti: [],
+
     apiOnline: false,
-    origin: "—",
+    origin: "-",
     revisioni: {}
   };
 
   // --- UI HELPERS ---
+  function norm(s){ return (s||"").toString().trim().toLowerCase(); }
+
+  // filtro categoria su Famiglia + Descrizione (robusto)
+  function matchCat(famiglia, descrizione, cat){
+    if(!cat || cat === "all") return true;
+    const text = (norm(famiglia) + " " + norm(descrizione)).trim();
+
+    if(cat === "formazione") return text.includes("formazione");
+    if(cat === "linea-vita") return text.includes("linea vita") || text.includes("lineavita") || text.includes("linea_vita");
+    if(cat === "funi-fibra") return text.includes("fibra") || (text.includes("funi") && text.includes("fibra"));
+    if(cat === "funi-acciaio") return text.includes("acciaio") || (text.includes("funi") && text.includes("acciaio"));
+
+    return text.includes(cat);
+  }
+
+  function setCat(cat){
+    STATE.cat = cat || "all";
+
+    // evidenzia bottoni categoria
+    document.querySelectorAll(".tabCat").forEach(b=>{
+      b.classList.toggle("activeCat", b.dataset.cat === STATE.cat);
+    });
+
+    // titolo
+    const base =
+      STATE.tab==="dpi" ? "DPI & Revisioni" :
+      STATE.tab==="accessori" ? "Accessori 3.0" :
+      STATE.tab==="sottogancio" ? "Sottogancio" :
+      "Timeline movimenti";
+
+    const label =
+      STATE.cat==="all" ? "" :
+      STATE.cat==="formazione" ? " - Formazione" :
+      STATE.cat==="funi-fibra" ? " - Funi in fibra" :
+      STATE.cat==="linea-vita" ? " - Linea vita" :
+      STATE.cat==="funi-acciaio" ? " - Funi in acciaio" :
+      (" - " + STATE.cat);
+
+    el("panelTitle").textContent = base + label;
+    renderTable();
+  }
+
   function pillForDpi(g){
     if(g < 0) return `<span class="pill bad">Scaduto</span>`;
     if(g <= 60) return `<span class="pill warn">&le; 60g</span>`;
@@ -201,6 +380,7 @@
     if(t.includes("revis")) return `<span class="pill warn">In revisione</span>`;
     return `<span class="pill good">OK</span>`;
   }
+
   function toast(msg, kind="good"){
     const t = el("toast");
     const d = t.querySelector(".dot");
@@ -209,6 +389,7 @@
     t.style.display = "flex";
     setTimeout(()=>t.style.display="none", 1400);
   }
+
   function animateNumber(node, to){
     const from = Number(String(node.textContent).replace(/\D/g,"")) || 0;
     const start = performance.now();
@@ -221,6 +402,31 @@
     }
     requestAnimationFrame(tick);
   }
+
+  // --- FOTO PREVIEW IN ALTO ---
+  function setPhotoPreview(code, src){
+    const img = el("photoPreview");
+    const sub = el("photoSub");
+    if(img && src) img.src = src;
+    if(sub) sub.textContent = "Selezionato: " + (code || "-");
+  }
+
+  // se hook immagini aggiorna i thumb dopo il render, riallineiamo preview
+  function syncPhotoPreview(){
+    const selected = STATE.selectedCode;
+    if(selected){
+      const im = document.querySelector(`#mainTbody img.wow-thumb[data-wow-code="${CSS && CSS.escape ? CSS.escape(selected) : selected}"]`);
+      if(im) setPhotoPreview(selected, im.src);
+      return;
+    }
+    const first = document.querySelector("#mainTbody img.wow-thumb");
+    if(first) setPhotoPreview(first.getAttribute("data-wow-code"), first.src);
+  }
+
+  el("photoPreview").addEventListener("click", ()=>{
+    const src = el("photoPreview").src;
+    if(src) window.open(src, "_blank", "noopener");
+  });
 
   // --- API ---
   async function fetchJson(url, timeoutMs=3800){
@@ -246,10 +452,9 @@
     let usedHealth = null;
 
     try{
-      // prova health
       for(const p of healthCandidates){
         try{
-          const h = await fetchJson(API_BASE + p + "?_t=" + t, 2800);
+          await fetchJson(API_BASE + p + "?_t=" + t, 2800);
           healthOk = true;
           usedHealth = p;
           el("hVal").textContent = "online (" + p + ")";
@@ -258,7 +463,6 @@
       }
       if(!healthOk) throw new Error("health offline / CORS");
 
-      // version
       const v = await fetchJson(API_BASE + "/version?_t=" + t, 2800);
       el("vVal").textContent = JSON.stringify(v);
       STATE.apiOnline = true;
@@ -271,7 +475,7 @@
     } catch(e){
       STATE.apiOnline = false;
       el("hVal").textContent = "offline / CORS";
-      el("vVal").textContent = "—";
+      el("vVal").textContent = "-";
       el("apiDot").className = "dot warn";
       el("apiTxt").textContent = "API: offline / fallback";
       el("apiBadge").classList.remove("pulse");
@@ -299,14 +503,13 @@
         const dpi = Array.isArray(dpiResp) ? dpiResp : (dpiResp.items || dpiResp.data || []);
         const acc = Array.isArray(accResp) ? accResp : (accResp.items || accResp.data || []);
 
-        // sottogancio/movimenti sempre demo per ora
+        // per ora demo per sottogancio/movimenti
         const demoS = (window.WOW_DEMO && window.WOW_DEMO.sottogancio) ? window.WOW_DEMO.sottogancio : [];
         const demoM = (window.WOW_DEMO && window.WOW_DEMO.movimenti) ? window.WOW_DEMO.movimenti : [];
 
-        // Se API è online ma lista vuota -> DEMO (default)
         if(PREFER_DEMO_ON_EMPTY && (!dpi || dpi.length === 0)){
           demoFill();
-          STATE.origin = "API online ma DPI vuoti → DEMO locale (niente 0)";
+          STATE.origin = "API online ma DPI vuoti -> DEMO locale (niente 0)";
           return;
         }
 
@@ -315,7 +518,7 @@
         STATE.sottogancio = demoS;
         STATE.movimenti = demoM;
 
-        STATE.origin = "API online (con fallback demo per movimenti/sottogancio)";
+        STATE.origin = "API online (fallback demo per movimenti/sottogancio)";
         return;
       } catch(e){
         // fallback totale
@@ -349,22 +552,28 @@
   }
 
   function setActiveTab(name){
+    if(!name) return;
     STATE.tab = name;
-    document.querySelectorAll(".tab").forEach(t=>{
+
+    document.querySelectorAll(".tab[data-tab]").forEach(t=>{
       t.classList.toggle("active", t.dataset.tab===name);
     });
-    const title =
-      name==="dpi" ? "DPI & Revisioni" :
-      name==="accessori" ? "Accessori 3.0" :
-      name==="sottogancio" ? "Sottogancio" : "Timeline movimenti";
-    el("panelTitle").textContent = title;
-    renderTable();
+
+    setCat(STATE.cat);
   }
 
   function fotoCell(code){
-    const safe = String(code||"—");
-    // thumbnail hook (se wow_images_hook.js è presente, può sostituire src)
-    return `<img class="wow-thumb" data-wow-code="${safe}" alt="${safe}" src="./data/img/placeholder.png" onerror="this.style.opacity=0.25" />`;
+    const safe = String(code||"-");
+    return `<img class="wow-thumb" data-wow-code="${esc(safe)}" alt="${esc(safe)}" src="./data/img/placeholder.png" onerror="this.style.opacity=0.25" />`;
+  }
+
+  function afterRenderImages(){
+    try{
+      if(window.WOW_IMAGES_HOOK && typeof window.WOW_IMAGES_HOOK.apply === "function"){
+        window.WOW_IMAGES_HOOK.apply();
+      }
+    }catch(e){}
+    syncPhotoPreview();
   }
 
   function renderTable(){
@@ -376,12 +585,17 @@
         const tr=document.createElement("tr");
         tr.innerHTML = `
           <td>${fotoCell(m.ref)}</td>
-          <td>${m.ref}</td>
-          <td>${m.tipo}</td>
+          <td>${esc(m.ref)}</td>
+          <td>${esc(m.tipo)}</td>
           <td>MOVIMENTO</td>
           <td><span class="pill cyan">Apri</span></td>
         `;
-        tr.addEventListener("click", ()=>openDetail({codice:m.ref, descrizione:m.note, famiglia:"MOVIMENTO", giorni:0, revisione_ok:true, ultima_rev:"—"}));
+        tr.addEventListener("click", ()=>{
+          STATE.selectedCode = m.ref || null;
+          const img = tr.querySelector("img.wow-thumb");
+          if(img) setPhotoPreview(m.ref, img.src);
+          openDetail({codice:m.ref, descrizione:m.note, famiglia:"MOVIMENTO", giorni:0, revisione_ok:true, ultima_rev:"-", raw:m});
+        });
         tb.appendChild(tr);
       });
       afterRenderImages();
@@ -390,25 +604,36 @@
 
     if(STATE.tab==="dpi"){
       (STATE.dpi||[]).forEach(x=>{
-        const code = x.codice ?? x.code ?? "—";
+        const code = x.codice ?? x.code ?? "-";
+        const fam  = x.famiglia ?? x.family ?? "-";
+        const desc = x.descrizione ?? x.desc ?? "-";
+        if(!matchCat(fam, desc, STATE.cat)) return;
+
         const g = Number(x.giorni ?? x.giorni_scadenza ?? x.days ?? 999);
         const ok = !!(x.revisione_ok ?? x.rev_ok ?? true);
+
         const tr=document.createElement("tr");
         tr.innerHTML = `
           <td>${fotoCell(code)}</td>
-          <td>${code}</td>
-          <td>${x.descrizione ?? x.desc ?? "—"}</td>
-          <td>${x.famiglia ?? x.family ?? "—"}</td>
+          <td>${esc(code)}</td>
+          <td>${esc(desc)}</td>
+          <td>${esc(fam)}</td>
           <td>${pillForDpi(g)} &nbsp; ${pillForRev(ok)}</td>
         `;
-        tr.addEventListener("click", ()=>openDetail({
-          codice: code,
-          descrizione: x.descrizione ?? x.desc,
-          famiglia: x.famiglia ?? x.family,
-          giorni: g,
-          revisione_ok: ok,
-          ultima_rev: x.ultima_rev ?? x.last_review ?? "—"
-        }));
+        tr.addEventListener("click", ()=>{
+          STATE.selectedCode = code || null;
+          const img = tr.querySelector("img.wow-thumb");
+          if(img) setPhotoPreview(code, img.src);
+          openDetail({
+            codice: code,
+            descrizione: desc,
+            famiglia: fam,
+            giorni: g,
+            revisione_ok: ok,
+            ultima_rev: x.ultima_rev ?? x.last_review ?? "-",
+            raw: x
+          });
+        });
         tb.appendChild(tr);
       });
       afterRenderImages();
@@ -417,23 +642,33 @@
 
     if(STATE.tab==="accessori"){
       (STATE.accessori||[]).forEach(a=>{
-        const code = a.codice ?? a.code ?? "—";
+        const code = a.codice ?? a.code ?? "-";
+        const fam  = a.famiglia ?? a.family ?? "-";
+        const desc = a.descrizione ?? a.desc ?? "-";
+        if(!matchCat(fam, desc, STATE.cat)) return;
+
         const tr=document.createElement("tr");
         tr.innerHTML = `
           <td>${fotoCell(code)}</td>
-          <td>${code}</td>
-          <td>${a.descrizione ?? a.desc ?? "—"}</td>
-          <td>${a.famiglia ?? a.family ?? "—"}</td>
+          <td>${esc(code)}</td>
+          <td>${esc(desc)}</td>
+          <td>${esc(fam)}</td>
           <td>${pillForDisp(a.disponibilita ?? a.stock ?? "Disponibile")}</td>
         `;
-        tr.addEventListener("click", ()=>openDetail({
-          codice: code,
-          descrizione: a.descrizione ?? a.desc,
-          famiglia: a.famiglia ?? a.family,
-          giorni: 999,
-          revisione_ok: true,
-          ultima_rev: "—"
-        }));
+        tr.addEventListener("click", ()=>{
+          STATE.selectedCode = code || null;
+          const img = tr.querySelector("img.wow-thumb");
+          if(img) setPhotoPreview(code, img.src);
+          openDetail({
+            codice: code,
+            descrizione: desc,
+            famiglia: fam,
+            giorni: 999,
+            revisione_ok: true,
+            ultima_rev: "-",
+            raw: a
+          });
+        });
         tb.appendChild(tr);
       });
       afterRenderImages();
@@ -442,56 +677,76 @@
 
     // sottogancio
     (STATE.sottogancio||[]).forEach(s=>{
+      const fam  = s.famiglia || "-";
+      const desc = s.descrizione || "-";
+      if(!matchCat(fam, desc, STATE.cat)) return;
+
       const tr=document.createElement("tr");
       tr.innerHTML = `
         <td>${fotoCell(s.codice)}</td>
-        <td>${s.codice}</td>
-        <td>${s.descrizione}</td>
-        <td>${s.famiglia}</td>
+        <td>${esc(s.codice)}</td>
+        <td>${esc(desc)}</td>
+        <td>${esc(fam)}</td>
         <td>${pillForStato(s.stato)}</td>
       `;
-      tr.addEventListener("click", ()=>openDetail({
-        codice: s.codice,
-        descrizione: s.descrizione,
-        famiglia: s.famiglia,
-        giorni: (s.stato||"").toLowerCase().includes("scad") ? -1 : 120,
-        revisione_ok: !(s.stato||"").toLowerCase().includes("scad"),
-        ultima_rev: (s.stato||"").toLowerCase().includes("revis") ? "in corso" : "—"
-      }));
+      tr.addEventListener("click", ()=>{
+        STATE.selectedCode = s.codice || null;
+        const img = tr.querySelector("img.wow-thumb");
+        if(img) setPhotoPreview(s.codice, img.src);
+        openDetail({
+          codice: s.codice,
+          descrizione: desc,
+          famiglia: fam,
+          giorni: (s.stato||"").toLowerCase().includes("scad") ? -1 : 120,
+          revisione_ok: !(s.stato||"").toLowerCase().includes("scad"),
+          ultima_rev: (s.stato||"").toLowerCase().includes("revis") ? "in corso" : "-",
+          raw: s
+        });
+      });
       tb.appendChild(tr);
     });
     afterRenderImages();
   }
 
-  function afterRenderImages(){
-    try{
-      if(window.WOW_IMAGES_HOOK && typeof window.WOW_IMAGES_HOOK.apply === "function"){
-        window.WOW_IMAGES_HOOK.apply();
-      }
-    }catch(e){}
-  }
-
   // --- MODAL / REVISIONI ---
   function openDetail(item){
-    const code = item.codice || "—";
+    const code = item.codice || "-";
     el("mTitle").textContent = code;
-    el("mSub").textContent = item.descrizione || "—";
+    el("mSub").textContent = item.descrizione || "-";
+
+    const baseRows = [
+      ["Famiglia", item.famiglia||"-"],
+      ["Scadenza", (item.giorni<0)?"SCADUTO":(item.giorni===999?"-":(item.giorni+" giorni"))],
+      ["Revisione", item.revisione_ok ? "OK" : "KO"],
+      ["Ultima rev", item.ultima_rev||"-"],
+      ["Origine", STATE.origin]
+    ];
+
+    // EXTRA: TUTTI I CAMPI DELL'API
+    const extra = [];
+    const raw = item.raw && typeof item.raw === "object" ? item.raw : null;
+    if(raw){
+      const skip = new Set(["codice","code","descrizione","desc","famiglia","family","giorni","giorni_scadenza","days","revisione_ok","rev_ok","ultima_rev","last_review"]);
+      Object.keys(raw).sort().forEach(k=>{
+        if(skip.has(k)) return;
+        const v = raw[k];
+        if(v === null || v === undefined) return;
+        extra.push([k, (typeof v === "object") ? JSON.stringify(v) : String(v)]);
+      });
+    }
 
     const kv = el("mKv");
-    kv.innerHTML = `
-      <div class="k">Famiglia</div><div class="v">${item.famiglia||"—"}</div>
-      <div class="k">Scadenza</div><div class="v">${(item.giorni<0)?"SCADUTO":(item.giorni===999?"—":(item.giorni+" giorni"))}</div>
-      <div class="k">Revisione</div><div class="v">${item.revisione_ok ? "OK" : "KO"}</div>
-      <div class="k">Ultima rev</div><div class="v">${item.ultima_rev||"—"}</div>
-      <div class="k">Origine</div><div class="v">${STATE.origin}</div>
-    `;
+    kv.innerHTML = "";
+    [...baseRows, ...extra].forEach(([k,v])=>{
+      kv.innerHTML += `<div class="k">${esc(k)}</div><div class="v">${esc(v)}</div>`;
+    });
 
     if(!STATE.revisioni[code]){
       STATE.revisioni[code] = [
-        {ts:"2025-11-20 09:10", tipo:"REVISIONE", note:"Controllo generale — OK"},
-        {ts:"2025-12-12 09:16", tipo:"CHECK PRE-USO", note:"Foto ok • AI OK • Autorizzato"},
+        {ts:"2025-11-20 09:10", tipo:"REVISIONE", note:"Controllo generale - OK"},
+        {ts:"2025-12-12 09:16", tipo:"CHECK PRE-USO", note:"Foto ok - AI OK - Autorizzato"}
       ];
-      if(item.giorni < 0) STATE.revisioni[code].push({ts:"2025-12-13 08:10", tipo:"SCADENZA", note:"Blocco utilizzo — richiede intervento"});
+      if(item.giorni < 0) STATE.revisioni[code].push({ts:"2025-12-13 08:10", tipo:"SCADENZA", note:"Blocco utilizzo - richiede intervento"});
     }
 
     renderRevTimeline(code);
@@ -500,7 +755,7 @@
     el("simRevBtn").onclick = ()=> {
       const now = new Date();
       const ts = now.toISOString().slice(0,16).replace("T"," ");
-      STATE.revisioni[code].push({ts, tipo:"REVISIONE", note:"Revisione registrata (demo) • certificato pronto"});
+      STATE.revisioni[code].push({ts, tipo:"REVISIONE", note:"Revisione registrata (demo) - certificato pronto"});
       STATE.movimenti.push({ts, tipo:"REVISIONE", ref:code, note:"Revisione registrata (demo)"});
       renderRevTimeline(code);
       toast("Revisione aggiunta (movimento)","good");
@@ -515,8 +770,8 @@
       div.className="titem";
       div.innerHTML = `
         <div class="tleft">
-          <div class="tt">${e.tipo}</div>
-          <div class="ts">${e.ts} • ${e.note}</div>
+          <div class="tt">${esc(e.tipo)}</div>
+          <div class="ts">${esc(e.ts)} - ${esc(e.note)}</div>
         </div>
         <div>${e.tipo==="SCADENZA" ? `<span class="pill bad">ALERT</span>` : e.tipo==="REVISIONE" ? `<span class="pill good">OK</span>` : `<span class="pill cyan">LOG</span>`}</div>
       `;
@@ -524,16 +779,53 @@
     });
   }
 
+  // --- CATALOG POPUP ---
+  function openCatalog(){ el("catBg").style.display="flex"; }
+  function closeCatalog(){ el("catBg").style.display="none"; }
+
+  el("catalogBtn").addEventListener("click", openCatalog);
+  el("catalogBadge").addEventListener("click", openCatalog);
+  el("catClose").addEventListener("click", closeCatalog);
+  el("catBg").addEventListener("click", (e)=>{ if(e.target===el("catBg")) closeCatalog(); });
+
   // --- EVENTS ---
   el("closeBtn").addEventListener("click", ()=>el("modalBg").style.display="none");
   el("modalBg").addEventListener("click", (e)=>{ if(e.target===el("modalBg")) el("modalBg").style.display="none"; });
 
-  document.querySelectorAll(".tab").forEach(t=>{
+  // tab principali
+  document.querySelectorAll(".tab[data-tab]").forEach(t=>{
     t.addEventListener("click", ()=>setActiveTab(t.dataset.tab));
   });
 
+  // bottoni categoria (accanto a sottogancio)
+  document.querySelectorAll(".tabCat").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      if(STATE.tab === "movimenti") setActiveTab("dpi");
+      setCat(b.dataset.cat || "all");
+    });
+  });
+
+  // bottoni nel popup cataloghi
+  document.querySelectorAll("[data-catpick]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const c = btn.getAttribute("data-catpick");
+      if(STATE.tab === "movimenti") setActiveTab("dpi");
+      setCat(c);
+      closeCatalog();
+      toast("Filtro: " + c, "good");
+    });
+  });
+  document.querySelectorAll("[data-tabpick]").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      const t = btn.getAttribute("data-tabpick");
+      setActiveTab(t);
+      closeCatalog();
+      toast("Sezione: " + t, "good");
+    });
+  });
+
   el("refreshBtn").addEventListener("click", async ()=>{
-    toast("Aggiorno…","warn");
+    toast("Aggiorno...","warn");
     await boot(true);
     toast("WOW aggiornato","good");
   });
@@ -563,7 +855,10 @@
     }
   }
 
+  // start
   boot(false);
+  setActiveTab("dpi");
+  setCat("all");
   setInterval(()=>boot(false), REFRESH_MS);
 
 })();
