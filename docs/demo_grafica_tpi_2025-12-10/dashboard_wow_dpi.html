@@ -12,23 +12,23 @@
   <script src="./config.js"></script>
   <script src="./wow_data_demo.js"></script>
 
-  <!-- Mini stile extra SOLO per: cataloghi popup + preview foto + bottoni categoria -->
+  <!-- Extra UI: Cataloghi popup + preview foto in alto + bottoni categoria -->
   <style>
     .tabCat { opacity: .95; }
     .tabCat.activeCat { outline: 2px solid rgba(0,255,255,.35); }
-    .btnLink { text-decoration:none; display:inline-flex; align-items:center; justify-content:center; }
 
     /* Photo preview */
-    .photoTop {
+    .photoTop{
       display:flex; gap:12px; align-items:center;
       padding:10px 12px; border-radius:14px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(255,255,255,.04);
     }
-    .photoTop img {
+    .photoTop img{
       width:78px; height:78px; object-fit:cover; border-radius:14px;
       border:1px solid rgba(255,255,255,.12);
       background: rgba(255,255,255,.06);
+      cursor:pointer;
     }
     .photoTop .phTitle { font-weight:900; }
     .photoTop .phSub { font-size:12px; opacity:.8; }
@@ -75,7 +75,7 @@
         <div class="badges">
           <div class="badge"><span class="dot"></span><span>Motore reale</span></div>
 
-          <!-- Cataloghi: ora cliccabile (apre popup) -->
+          <!-- Cataloghi: cliccabile -->
           <div class="badge" id="catalogBadge" style="cursor:pointer">
             <span class="dot"></span><span>Cataloghi live (clicca)</span>
           </div>
@@ -88,7 +88,6 @@
       </div>
 
       <div class="ctrl">
-        <!-- Cataloghi button -->
         <button class="btn" id="catalogBtn">Cataloghi</button>
 
         <select class="select" id="langSel">
@@ -105,22 +104,22 @@
     <div class="grid4">
       <div class="card" id="kpi1">
         <div class="kpiTitle">Prodotti attivi</div>
-        <div class="kpiVal" id="kpiAttivi">—</div>
+        <div class="kpiVal" id="kpiAttivi">&mdash;</div>
         <div class="kpiHint">DPI disponibili a catalogo</div>
       </div>
       <div class="card" id="kpi2">
         <div class="kpiTitle">In scadenza</div>
-        <div class="kpiVal" id="kpiScad">—</div>
+        <div class="kpiVal" id="kpiScad">&mdash;</div>
         <div class="kpiHint">&le; 60 giorni</div>
       </div>
       <div class="card" id="kpi3">
         <div class="kpiTitle">Scaduti</div>
-        <div class="kpiVal" id="kpiScaduti">—</div>
+        <div class="kpiVal" id="kpiScaduti">&mdash;</div>
         <div class="kpiHint">Blocco utilizzo</div>
       </div>
       <div class="card" id="kpi4">
         <div class="kpiTitle">Revisione OK</div>
-        <div class="kpiVal" id="kpiRevOk">—</div>
+        <div class="kpiVal" id="kpiRevOk">&mdash;</div>
         <div class="kpiHint">Ultima revisione valida</div>
       </div>
     </div>
@@ -131,7 +130,7 @@
       <div class="tab" data-tab="accessori">Accessori</div>
       <div class="tab" data-tab="sottogancio">Sottogancio</div>
 
-      <!-- Bottoni categoria (accanto a Sottogancio) -->
+      <!-- BOTTONI ACCANTO A SOTTOGANCIO -->
       <div class="tab tabCat" data-cat="formazione">Formazione</div>
       <div class="tab tabCat" data-cat="funi-fibra">Funi in fibra</div>
       <div class="tab tabCat" data-cat="linea-vita">Linea vita</div>
@@ -144,14 +143,14 @@
     <div class="panel">
       <div class="row2">
         <div class="card">
-          <div class="kpiTitle" id="panelTitle">DPI & Revisioni</div>
+          <div class="kpiTitle" id="panelTitle">DPI &amp; Revisioni</div>
           <div style="height:10px"></div>
 
           <!-- FOTO IN ALTO -->
           <div class="photoTop" id="photoTop">
-            <img id="photoPreview" src="./data/img/placeholder.png" alt="Foto DPI" />
+            <img id="photoPreview" src="./data/img/placeholder.png" alt="Foto DPI" title="Clicca per aprire l'immagine" />
             <div>
-              <div class="phTitle" id="photoTitle">Foto DPI</div>
+              <div class="phTitle" id="photoTitle">Foto</div>
               <div class="phSub" id="photoSub">Clicca una riga: la foto sale qui sopra</div>
             </div>
           </div>
@@ -172,32 +171,34 @@
           </table>
 
           <div style="height:10px"></div>
-          <div class="kpiHint" id="originHint">Origine dati: —</div>
+          <div class="kpiHint" id="originHint">Origine dati: &mdash;</div>
         </div>
 
         <div class="card">
           <div class="kpiTitle">Stato API</div>
           <div style="height:10px"></div>
+
           <div class="box">
             <h3>Health / Version</h3>
             <div class="kv">
-              <div class="k">health</div><div class="v" id="hVal">—</div>
-              <div class="k">version</div><div class="v" id="vVal">—</div>
-              <div class="k">API_BASE</div><div class="v" id="bVal">—</div>
-              <div class="k">Note</div><div class="v" id="eVal">—</div>
+              <div class="k">health</div><div class="v" id="hVal">&mdash;</div>
+              <div class="k">version</div><div class="v" id="vVal">&mdash;</div>
+              <div class="k">API_BASE</div><div class="v" id="bVal">&mdash;</div>
+              <div class="k">Note</div><div class="v" id="eVal">&mdash;</div>
             </div>
           </div>
 
           <div style="height:12px"></div>
+
           <div class="box">
             <h3>Maggiordomo TPI</h3>
             <div style="font-weight:900; color:var(--mut); line-height:1.35">
-              Clicca un elemento → dettaglio → timeline revisioni.<br/>
-              Se API online ma vuota → passa a DEMO (niente più “tutti 0”).<br/>
-              Con API piena: dati reali.
+              Clicca un elemento -&gt; dettaglio -&gt; timeline revisioni.<br/>
+              Se API online ma vuota -&gt; DEMO locale (niente piu' "tutti 0").<br/>
+              Con API piena: dati reali e campi completi nel dettaglio.
             </div>
             <div style="height:12px"></div>
-            <div class="pill cyan" id="quickHint">Tip: premi Aggiorna per “effetto movimento”</div>
+            <div class="pill cyan" id="quickHint">Tip: premi Aggiorna per "effetto movimento"</div>
           </div>
         </div>
       </div>
@@ -210,14 +211,14 @@
       <div class="mTop">
         <div>
           <h2 class="mTitle" id="mTitle">Dettaglio</h2>
-          <div class="mSub" id="mSub">—</div>
+          <div class="mSub" id="mSub">&mdash;</div>
         </div>
         <button class="btn" id="closeBtn">Chiudi</button>
       </div>
 
       <div class="mGrid">
         <div class="box">
-          <h3>Dati</h3>
+          <h3>Dati (tutti i campi)</h3>
           <div class="kv" id="mKv"></div>
         </div>
         <div class="box">
@@ -249,7 +250,7 @@
             <button class="btn" data-catpick="funi-acciaio">Funi in acciaio</button>
           </div>
           <div style="height:10px"></div>
-          <div class="kpiHint">Applica un filtro senza cambiare pagina.</div>
+          <div class="kpiHint">Filtro su Famiglia + Descrizione (cosi' prende anche le voci "testuali").</div>
         </div>
 
         <div class="catCard">
@@ -261,14 +262,13 @@
             <button class="btn" data-tabpick="movimenti">Movimenti</button>
           </div>
           <div style="height:10px"></div>
-          <div class="kpiHint">Se vuoi: apri la sezione e poi filtri.</div>
+          <div class="kpiHint">Apri una sezione e poi filtra.</div>
         </div>
 
         <div class="catCard">
           <h3>Nota</h3>
           <div class="kpiHint">
-            Il filtro categoria lavora sulla colonna <b>Famiglia</b>.<br/>
-            Se l’API manda famiglie diverse, dimmi i nomi esatti e li mappo perfetti.
+            Se vuoi mappatura perfetta: dimmi i valori reali della tua API per "Famiglia" e li rendo 100% precisi.
           </div>
         </div>
       </div>
@@ -296,52 +296,57 @@
   const PREFER_DEMO_ON_EMPTY = (qs.get("empty") === "1") ? false : true;
 
   const el = (id)=>document.getElementById(id);
+  const esc = (s)=>String(s ?? "").replace(/[&<>"']/g, (c)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
 
   el("bVal").textContent = API_BASE;
-  el("eVal").textContent = "—";
+  el("eVal").textContent = "-";
 
   // --- STATE ---
   let STATE = {
     tab: "dpi",
-    cat: "all",        // filtro categoria
+    cat: "all",
+    selectedCode: null,
+
     dpi: [],
     accessori: [],
     sottogancio: [],
     movimenti: [],
+
     apiOnline: false,
-    origin: "—",
+    origin: "-",
     revisioni: {}
   };
 
   // --- UI HELPERS ---
   function norm(s){ return (s||"").toString().trim().toLowerCase(); }
 
-  function matchCat(famiglia, cat){
+  // filtro categoria su Famiglia + Descrizione (robusto)
+  function matchCat(famiglia, descrizione, cat){
     if(!cat || cat === "all") return true;
-    const f = norm(famiglia);
+    const text = (norm(famiglia) + " " + norm(descrizione)).trim();
 
-    if(cat === "formazione") return f.includes("formazione");
-    if(cat === "linea-vita") return f.includes("linea vita") || f.includes("lineavita") || f.includes("linea_vita");
-    if(cat === "funi-fibra") return f.includes("fibra") || (f.includes("funi") && f.includes("fibra"));
-    if(cat === "funi-acciaio") return f.includes("acciaio") || (f.includes("funi") && f.includes("acciaio"));
+    if(cat === "formazione") return text.includes("formazione");
+    if(cat === "linea-vita") return text.includes("linea vita") || text.includes("lineavita") || text.includes("linea_vita");
+    if(cat === "funi-fibra") return text.includes("fibra") || (text.includes("funi") && text.includes("fibra"));
+    if(cat === "funi-acciaio") return text.includes("acciaio") || (text.includes("funi") && text.includes("acciaio"));
 
-    // fallback
-    return f.includes(cat);
+    return text.includes(cat);
   }
 
   function setCat(cat){
     STATE.cat = cat || "all";
 
-    // evidenzia bottoni categoria (solo quelli con data-cat)
+    // evidenzia bottoni categoria
     document.querySelectorAll(".tabCat").forEach(b=>{
       b.classList.toggle("activeCat", b.dataset.cat === STATE.cat);
     });
 
-    // aggiorna titolo
+    // titolo
     const base =
       STATE.tab==="dpi" ? "DPI & Revisioni" :
       STATE.tab==="accessori" ? "Accessori 3.0" :
-      STATE.tab==="sottogancio" ? "Sottogancio" : "Timeline movimenti";
+      STATE.tab==="sottogancio" ? "Sottogancio" :
+      "Timeline movimenti";
 
     const label =
       STATE.cat==="all" ? "" :
@@ -352,7 +357,6 @@
       (" - " + STATE.cat);
 
     el("panelTitle").textContent = base + label;
-
     renderTable();
   }
 
@@ -404,8 +408,25 @@
     const img = el("photoPreview");
     const sub = el("photoSub");
     if(img && src) img.src = src;
-    if(sub) sub.textContent = "Selezionato: " + (code || "—");
+    if(sub) sub.textContent = "Selezionato: " + (code || "-");
   }
+
+  // se hook immagini aggiorna i thumb dopo il render, riallineiamo preview
+  function syncPhotoPreview(){
+    const selected = STATE.selectedCode;
+    if(selected){
+      const im = document.querySelector(`#mainTbody img.wow-thumb[data-wow-code="${CSS && CSS.escape ? CSS.escape(selected) : selected}"]`);
+      if(im) setPhotoPreview(selected, im.src);
+      return;
+    }
+    const first = document.querySelector("#mainTbody img.wow-thumb");
+    if(first) setPhotoPreview(first.getAttribute("data-wow-code"), first.src);
+  }
+
+  el("photoPreview").addEventListener("click", ()=>{
+    const src = el("photoPreview").src;
+    if(src) window.open(src, "_blank", "noopener");
+  });
 
   // --- API ---
   async function fetchJson(url, timeoutMs=3800){
@@ -454,7 +475,7 @@
     } catch(e){
       STATE.apiOnline = false;
       el("hVal").textContent = "offline / CORS";
-      el("vVal").textContent = "—";
+      el("vVal").textContent = "-";
       el("apiDot").className = "dot warn";
       el("apiTxt").textContent = "API: offline / fallback";
       el("apiBadge").classList.remove("pulse");
@@ -482,6 +503,7 @@
         const dpi = Array.isArray(dpiResp) ? dpiResp : (dpiResp.items || dpiResp.data || []);
         const acc = Array.isArray(accResp) ? accResp : (accResp.items || accResp.data || []);
 
+        // per ora demo per sottogancio/movimenti
         const demoS = (window.WOW_DEMO && window.WOW_DEMO.sottogancio) ? window.WOW_DEMO.sottogancio : [];
         const demoM = (window.WOW_DEMO && window.WOW_DEMO.movimenti) ? window.WOW_DEMO.movimenti : [];
 
@@ -533,39 +555,46 @@
     if(!name) return;
     STATE.tab = name;
 
-    // attiva SOLO tab principali (data-tab)
     document.querySelectorAll(".tab[data-tab]").forEach(t=>{
       t.classList.toggle("active", t.dataset.tab===name);
     });
 
-    // aggiorna titolo + filtro
     setCat(STATE.cat);
   }
 
   function fotoCell(code){
-    const safe = String(code||"—");
-    return `<img class="wow-thumb" data-wow-code="${safe}" alt="${safe}" src="./data/img/placeholder.png" onerror="this.style.opacity=0.25" />`;
+    const safe = String(code||"-");
+    return `<img class="wow-thumb" data-wow-code="${esc(safe)}" alt="${esc(safe)}" src="./data/img/placeholder.png" onerror="this.style.opacity=0.25" />`;
+  }
+
+  function afterRenderImages(){
+    try{
+      if(window.WOW_IMAGES_HOOK && typeof window.WOW_IMAGES_HOOK.apply === "function"){
+        window.WOW_IMAGES_HOOK.apply();
+      }
+    }catch(e){}
+    syncPhotoPreview();
   }
 
   function renderTable(){
     const tb = el("mainTbody");
     tb.innerHTML = "";
 
-    // MOVIMENTI: non filtriamo per categoria
     if(STATE.tab==="movimenti"){
       (STATE.movimenti||[]).slice().reverse().forEach(m=>{
         const tr=document.createElement("tr");
         tr.innerHTML = `
           <td>${fotoCell(m.ref)}</td>
-          <td>${m.ref}</td>
-          <td>${m.tipo}</td>
+          <td>${esc(m.ref)}</td>
+          <td>${esc(m.tipo)}</td>
           <td>MOVIMENTO</td>
           <td><span class="pill cyan">Apri</span></td>
         `;
         tr.addEventListener("click", ()=>{
+          STATE.selectedCode = m.ref || null;
           const img = tr.querySelector("img.wow-thumb");
           if(img) setPhotoPreview(m.ref, img.src);
-          openDetail({codice:m.ref, descrizione:m.note, famiglia:"MOVIMENTO", giorni:0, revisione_ok:true, ultima_rev:"—", raw:m});
+          openDetail({codice:m.ref, descrizione:m.note, famiglia:"MOVIMENTO", giorni:0, revisione_ok:true, ultima_rev:"-", raw:m});
         });
         tb.appendChild(tr);
       });
@@ -575,9 +604,10 @@
 
     if(STATE.tab==="dpi"){
       (STATE.dpi||[]).forEach(x=>{
-        const code = x.codice ?? x.code ?? "—";
-        const fam  = x.famiglia ?? x.family ?? "—";
-        if(!matchCat(fam, STATE.cat)) return;
+        const code = x.codice ?? x.code ?? "-";
+        const fam  = x.famiglia ?? x.family ?? "-";
+        const desc = x.descrizione ?? x.desc ?? "-";
+        if(!matchCat(fam, desc, STATE.cat)) return;
 
         const g = Number(x.giorni ?? x.giorni_scadenza ?? x.days ?? 999);
         const ok = !!(x.revisione_ok ?? x.rev_ok ?? true);
@@ -585,21 +615,22 @@
         const tr=document.createElement("tr");
         tr.innerHTML = `
           <td>${fotoCell(code)}</td>
-          <td>${code}</td>
-          <td>${x.descrizione ?? x.desc ?? "—"}</td>
-          <td>${fam}</td>
+          <td>${esc(code)}</td>
+          <td>${esc(desc)}</td>
+          <td>${esc(fam)}</td>
           <td>${pillForDpi(g)} &nbsp; ${pillForRev(ok)}</td>
         `;
         tr.addEventListener("click", ()=>{
+          STATE.selectedCode = code || null;
           const img = tr.querySelector("img.wow-thumb");
           if(img) setPhotoPreview(code, img.src);
           openDetail({
             codice: code,
-            descrizione: x.descrizione ?? x.desc,
+            descrizione: desc,
             famiglia: fam,
             giorni: g,
             revisione_ok: ok,
-            ultima_rev: x.ultima_rev ?? x.last_review ?? "—",
+            ultima_rev: x.ultima_rev ?? x.last_review ?? "-",
             raw: x
           });
         });
@@ -611,28 +642,30 @@
 
     if(STATE.tab==="accessori"){
       (STATE.accessori||[]).forEach(a=>{
-        const code = a.codice ?? a.code ?? "—";
-        const fam  = a.famiglia ?? a.family ?? "—";
-        if(!matchCat(fam, STATE.cat)) return;
+        const code = a.codice ?? a.code ?? "-";
+        const fam  = a.famiglia ?? a.family ?? "-";
+        const desc = a.descrizione ?? a.desc ?? "-";
+        if(!matchCat(fam, desc, STATE.cat)) return;
 
         const tr=document.createElement("tr");
         tr.innerHTML = `
           <td>${fotoCell(code)}</td>
-          <td>${code}</td>
-          <td>${a.descrizione ?? a.desc ?? "—"}</td>
-          <td>${fam}</td>
+          <td>${esc(code)}</td>
+          <td>${esc(desc)}</td>
+          <td>${esc(fam)}</td>
           <td>${pillForDisp(a.disponibilita ?? a.stock ?? "Disponibile")}</td>
         `;
         tr.addEventListener("click", ()=>{
+          STATE.selectedCode = code || null;
           const img = tr.querySelector("img.wow-thumb");
           if(img) setPhotoPreview(code, img.src);
           openDetail({
             codice: code,
-            descrizione: a.descrizione ?? a.desc,
+            descrizione: desc,
             famiglia: fam,
             giorni: 999,
             revisione_ok: true,
-            ultima_rev: "—",
+            ultima_rev: "-",
             raw: a
           });
         });
@@ -642,29 +675,31 @@
       return;
     }
 
-    // SOTTOGANCIO
+    // sottogancio
     (STATE.sottogancio||[]).forEach(s=>{
-      const fam = s.famiglia || "—";
-      if(!matchCat(fam, STATE.cat)) return;
+      const fam  = s.famiglia || "-";
+      const desc = s.descrizione || "-";
+      if(!matchCat(fam, desc, STATE.cat)) return;
 
       const tr=document.createElement("tr");
       tr.innerHTML = `
         <td>${fotoCell(s.codice)}</td>
-        <td>${s.codice}</td>
-        <td>${s.descrizione}</td>
-        <td>${fam}</td>
+        <td>${esc(s.codice)}</td>
+        <td>${esc(desc)}</td>
+        <td>${esc(fam)}</td>
         <td>${pillForStato(s.stato)}</td>
       `;
       tr.addEventListener("click", ()=>{
+        STATE.selectedCode = s.codice || null;
         const img = tr.querySelector("img.wow-thumb");
         if(img) setPhotoPreview(s.codice, img.src);
         openDetail({
           codice: s.codice,
-          descrizione: s.descrizione,
+          descrizione: desc,
           famiglia: fam,
           giorni: (s.stato||"").toLowerCase().includes("scad") ? -1 : 120,
           revisione_ok: !(s.stato||"").toLowerCase().includes("scad"),
-          ultima_rev: (s.stato||"").toLowerCase().includes("revis") ? "in corso" : "—",
+          ultima_rev: (s.stato||"").toLowerCase().includes("revis") ? "in corso" : "-",
           raw: s
         });
       });
@@ -673,29 +708,21 @@
     afterRenderImages();
   }
 
-  function afterRenderImages(){
-    try{
-      if(window.WOW_IMAGES_HOOK && typeof window.WOW_IMAGES_HOOK.apply === "function"){
-        window.WOW_IMAGES_HOOK.apply();
-      }
-    }catch(e){}
-  }
-
   // --- MODAL / REVISIONI ---
   function openDetail(item){
-    const code = item.codice || "—";
+    const code = item.codice || "-";
     el("mTitle").textContent = code;
-    el("mSub").textContent = item.descrizione || "—";
+    el("mSub").textContent = item.descrizione || "-";
 
-    // KV base + campi extra dall'API (tutto quello che arriva in item.raw)
     const baseRows = [
-      ["Famiglia", item.famiglia||"—"],
-      ["Scadenza", (item.giorni<0)?"SCADUTO":(item.giorni===999?"—":(item.giorni+" giorni"))],
+      ["Famiglia", item.famiglia||"-"],
+      ["Scadenza", (item.giorni<0)?"SCADUTO":(item.giorni===999?"-":(item.giorni+" giorni"))],
       ["Revisione", item.revisione_ok ? "OK" : "KO"],
-      ["Ultima rev", item.ultima_rev||"—"],
+      ["Ultima rev", item.ultima_rev||"-"],
       ["Origine", STATE.origin]
     ];
 
+    // EXTRA: TUTTI I CAMPI DELL'API
     const extra = [];
     const raw = item.raw && typeof item.raw === "object" ? item.raw : null;
     if(raw){
@@ -711,13 +738,13 @@
     const kv = el("mKv");
     kv.innerHTML = "";
     [...baseRows, ...extra].forEach(([k,v])=>{
-      kv.innerHTML += `<div class="k">${k}</div><div class="v">${v}</div>`;
+      kv.innerHTML += `<div class="k">${esc(k)}</div><div class="v">${esc(v)}</div>`;
     });
 
     if(!STATE.revisioni[code]){
       STATE.revisioni[code] = [
         {ts:"2025-11-20 09:10", tipo:"REVISIONE", note:"Controllo generale - OK"},
-        {ts:"2025-12-12 09:16", tipo:"CHECK PRE-USO", note:"Foto ok - AI OK - Autorizzato"},
+        {ts:"2025-12-12 09:16", tipo:"CHECK PRE-USO", note:"Foto ok - AI OK - Autorizzato"}
       ];
       if(item.giorni < 0) STATE.revisioni[code].push({ts:"2025-12-13 08:10", tipo:"SCADENZA", note:"Blocco utilizzo - richiede intervento"});
     }
@@ -743,8 +770,8 @@
       div.className="titem";
       div.innerHTML = `
         <div class="tleft">
-          <div class="tt">${e.tipo}</div>
-          <div class="ts">${e.ts} - ${e.note}</div>
+          <div class="tt">${esc(e.tipo)}</div>
+          <div class="ts">${esc(e.ts)} - ${esc(e.note)}</div>
         </div>
         <div>${e.tipo==="SCADENZA" ? `<span class="pill bad">ALERT</span>` : e.tipo==="REVISIONE" ? `<span class="pill good">OK</span>` : `<span class="pill cyan">LOG</span>`}</div>
       `;
@@ -770,10 +797,9 @@
     t.addEventListener("click", ()=>setActiveTab(t.dataset.tab));
   });
 
-  // bottoni categoria
+  // bottoni categoria (accanto a sottogancio)
   document.querySelectorAll(".tabCat").forEach(b=>{
     b.addEventListener("click", ()=>{
-      // se sei su movimenti e premi un filtro, ti porto su DPI (ha senso)
       if(STATE.tab === "movimenti") setActiveTab("dpi");
       setCat(b.dataset.cat || "all");
     });
@@ -783,7 +809,6 @@
   document.querySelectorAll("[data-catpick]").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       const c = btn.getAttribute("data-catpick");
-      // porta su DPI se sei su movimenti
       if(STATE.tab === "movimenti") setActiveTab("dpi");
       setCat(c);
       closeCatalog();
