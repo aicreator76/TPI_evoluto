@@ -2,7 +2,7 @@
 title: Agente0 - Step2
 ---
 
-# Agente0 â€” Step2 (Dashboard + Assegnazioni)
+# Agente0 Ã¢â‚¬â€ Step2 (Dashboard + Assegnazioni)
 
 ## Input
 - `reports/agente0/normalized_dpi_import.csv` (generato dallo Step1)
