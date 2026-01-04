@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import json
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Any
 
-from sqlalchemy import Date, DateTime, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Date, DateTime, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -12,16 +12,13 @@ from app.db.base import Base
 
 class OrchestratorEvent(Base):
     """
-    Coda eventi per orchestratore (notifiche scadenze 30/15/1 ecc).
+    Coda eventi orchestratore (notifiche scadenze 30/15/1 ecc).
 
-    IDempotenza:
-      unique(tenant, ref_type, ref_id, threshold_days, event_date)
+    Idempotenza garantita da unique constraint su:
+    (tenant, ref_type, ref_id, threshold_days, event_date)
 
-    Convenzioni:
-      - ref_type: "dpi" | "impianto" | "altro"
-      - status:   "pending" | "sent" | "ack" | "error" | "cancelled"
-      - event_date: data in cui l'evento deve "scattare" (expiry - soglia)
-      - payload_json: JSON string con dettagli (es: expiry_date originale, metadati, ecc.)
+    Nota:
+    - payload_json è Text per compatibilità semplice (SQLite/Postgres) senza migrazioni immediate.
     """
 
     __tablename__ = "orchestrator_events"
@@ -34,13 +31,9 @@ class OrchestratorEvent(Base):
             "event_date",
             name="uq_orchestrator_event",
         ),
+        Index("ix_orch_tenant_status_date", "tenant", "status", "event_date"),
+        Index("ix_orch_ref", "tenant", "ref_type", "ref_id"),
     )
-
-    STATUS_PENDING = "pending"
-    STATUS_SENT = "sent"
-    STATUS_ACK = "ack"
-    STATUS_ERROR = "error"
-    STATUS_CANCELLED = "cancelled"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
@@ -51,33 +44,38 @@ class OrchestratorEvent(Base):
     threshold_days: Mapped[int] = mapped_column(Integer)  # 30/15/1
     event_date: Mapped[date] = mapped_column(Date, index=True)
 
-    status: Mapped[str] = mapped_column(String(16), default=STATUS_PENDING, index=True)
+    # pending/sent/ack/error
+    status: Mapped[str] = mapped_column(String(16), default="pending", index=True)
+
     payload_json: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
     updated_at: Mapped[datetime] = mapped_column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
     )
 
-    @property
-    def payload(self) -> dict[str, Any] | None:
-        """Payload come dict (per API)."""
+    def set_payload(self, payload: dict[str, Any] | list[Any] | None) -> None:
+        self.payload_json = None if payload is None else json.dumps(payload, ensure_ascii=False)
+
+    def get_payload(self) -> Any:
         if not self.payload_json:
             return None
         try:
-            v = json.loads(self.payload_json)
-            return v if isinstance(v, dict) else {"value": v}
+            return json.loads(self.payload_json)
         except Exception:
-            # payload sporco: non rompiamo l'API
-            return {"_raw": self.payload_json}
+            return self.payload_json  # fallback grezzo
 
-    @payload.setter
-    def payload(self, value: dict[str, Any] | None) -> None:
-        self.payload_json = None if value is None else json.dumps(value, ensure_ascii=False)
-
-    def __repr__(self) -> str:  # pragma: no cover
+    def __repr__(self) -> str:
         return (
             "OrchestratorEvent("
-            f"id={self.id}, tenant={self.tenant!r}, ref_type={self.ref_type!r}, ref_id={self.ref_id!r}, "
-            f"threshold_days={self.threshold_days}, event_date={self.event_date}, status={self.status!r})"
+            f"id={self.id}, tenant={self.tenant}, ref={self.ref_type}:{self.ref_id}, "
+            f"th={self.threshold_days}, date={self.event_date}, status={self.status}"
+            ")"
         )
