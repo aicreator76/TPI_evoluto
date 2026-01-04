@@ -1,0 +1,16 @@
+"""
+E:\CLONAZIONE\tpi_evoluto\app\db\models\__init__.py
+
+Auto-import di tutti i moduli del package per registrare i modelli su Base.metadata.
+"""
+
+from __future__ import annotations
+
+import importlib
+import pkgutil
+
+
+for m in pkgutil.iter_modules(__path__):  # type: ignore[name-defined]
+    if m.ispkg:
+        continue
+    importlib.import_module(f"{__name__}.{m.name}")

@@ -1,3 +1,22 @@
+<#
+E:\CLONAZIONE\tpi_evoluto\savepoint_workflows.ps1
+
+WORKFLOWS:
+- Savepoint: commit snapshot (se serve) + push + tag annotated + (opz) Cronista
+- Align:     fetch + rebase su origin/<BaseBranch> (solo working tree pulita)
+- Feature:   crea feat/<slug> (da BaseBranch o FromCurrent) + commit start (allow-empty) + push
+- Hotfix:    crea hotfix/<slug> + commit start (allow-empty) + push + tag + (opz) Cronista
+- Doctor:    diagnostica repo/branch/head/dirty (+ remote url se disponibile)
+
+NOTE:
+- -DryRun: esegue SOLO git di lettura (locale); stampa gli altri comandi senza eseguirli.
+- Hook pre-commit: se auto-fixa file, ristage e ritenta il commit.
+  Se dopo auto-fix “nothing to commit” e working tree pulita -> OK (non fallisce).
+- Tag: su main/base usa Snapshot-OK-YYYY-MM-DD.
+  Su branch non-base usa Snapshot-OK-YYYY-MM-DD-<branch_slug> per evitare collisioni tra rami.
+  Se remoto “protetto” e non sovrascrivibile, fallback -02/-03/... fino a -99.
+#>
+
 [CmdletBinding(DefaultParameterSetName = "Help")]
 param(
   [Parameter(ParameterSetName="Savepoint", Mandatory=$true)]
@@ -18,7 +37,7 @@ param(
   [string]$Remote = "origin",
   [string]$BaseBranch = "main",
 
-  # Feature/Hotfix: parte dal branch corrente
+  # Feature/Hotfix: parte dal branch corrente (non fa checkout/pull BaseBranch)
   [switch]$FromCurrent,
 
   # Cronista post-savepoint/hotfix
@@ -31,6 +50,13 @@ param(
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+# UTF-8 output (riduce "  " in console)
+try {
+  $utf8 = [System.Text.UTF8Encoding]::new($false)
+  $OutputEncoding = $utf8
+  [Console]::OutputEncoding = $utf8
+} catch {}
 
 function Normalize-GitArgs {
   param([object]$GitArgs)
@@ -49,6 +75,7 @@ function Normalize-GitArgs {
   $arr = @($arr | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
   if($arr.Count -eq 0){ return @() }
 
+  # Split solo se sembra un comando git vero e proprio "verb ...".
   if($arr.Count -eq 1){
     $s = $arr[0].Trim()
     if($s -match "^(rev-parse|status|remote|show-ref|for-each-ref|rev-list|log|cat-file|diff|show|fetch|push|tag|checkout|commit|pull|rebase|add|ls-remote)\b" -and
@@ -62,8 +89,9 @@ function Normalize-GitArgs {
 
 function Get-GitVerb {
   param([object]$GitArgs)
-  $argv = @(Normalize-GitArgs $GitArgs)   # <-- FORZA ARRAY
+  $argv = @(Normalize-GitArgs $GitArgs)   # FORZA ARRAY
   if($argv.Count -eq 0){ return "" }
+
   foreach($a in $argv){
     if(-not $a.StartsWith("-")) { return $a }
   }
@@ -80,7 +108,7 @@ function Invoke-Git {
     [switch]$Quiet
   )
 
-  $argv = @(Normalize-GitArgs $GitArgs)   # <-- FORZA ARRAY
+  $argv = @(Normalize-GitArgs $GitArgs)   # FORZA ARRAY
   if($argv.Count -eq 0){
     throw "❌ Invoke-Git: argomenti vuoti (GitArgs)."
   }
@@ -193,8 +221,27 @@ function Find-AltTag([string]$baseTag){
   throw "❌ Nessun tag alternativo libero per: $baseTag (fino a -99)."
 }
 
+function Normalize-BranchForTag([string]$branch){
+  if([string]::IsNullOrWhiteSpace($branch)){ return "unknown-branch" }
+  $s = $branch.Trim().ToLower()
+  $s = $s -replace '[\\\/]+','-'          # / e \ -> -
+  $s = $s -replace '[^a-z0-9\-]+','-'     # solo safe chars
+  $s = $s -replace '-{2,}','-'
+  $s = $s.Trim('-')
+  if([string]::IsNullOrWhiteSpace($s)){ return "branch" }
+  return $s
+}
+
+function Build-SavepointTag([string]$baseTag, [string]$branch){
+  # Su main/base -> baseTag, sugli altri -> baseTag-<branch_slug>
+  if([string]::IsNullOrWhiteSpace($branch)){ return $baseTag }
+  if($branch -ieq $BaseBranch){ return $baseTag }
+  $slug = Normalize-BranchForTag $branch
+  return "$baseTag-$slug"
+}
+
 function Ensure-TagAnnotated([string]$tag){
-  # RITORNA il tag effettivamente usato (tag o fallback -02/-03)
+  # RITORNA il tag effettivamente usato (tag o fallback -02/-03...)
   $head = Get-Head
   if([string]::IsNullOrWhiteSpace($head)){
     throw "❌ HEAD vuoto: rev-parse HEAD fallito."
@@ -263,8 +310,17 @@ function Normalize-Slug([string]$name){
   return $slug
 }
 
-function Commit-WithHookRetry([string]$message){
-  $out = Invoke-Git -GitArgs @("commit","-m",$message) -AllowFail
+function Commit-WithHookRetry {
+  param(
+    [Parameter(Mandatory=$true)][string]$Message,
+    [switch]$AllowEmpty
+  )
+
+  $args = @("commit")
+  if($AllowEmpty){ $args += "--allow-empty" }
+  $args += @("-m",$Message)
+
+  $out = Invoke-Git -GitArgs $args -AllowFail
   if($LASTEXITCODE -eq 0){ return }
 
   $maybeFixed =
@@ -279,8 +335,14 @@ function Commit-WithHookRetry([string]$message){
     Write-Host "♻️ Hook ha auto-fixato file: ristage + retry commit..." -ForegroundColor Yellow
     Invoke-Git -GitArgs @("add","-A") | Out-Null
 
-    $out2 = Invoke-Git -GitArgs @("commit","-m",$message) -AllowFail
+    $out2 = Invoke-Git -GitArgs $args -AllowFail
     if($LASTEXITCODE -eq 0){ return }
+
+    # Se dopo auto-fix non c'è più nulla da committare, NON rompiamo (specie su start-branch).
+    if(($out2 -match "nothing to commit") -or ($out2 -match "nothing added to commit")){
+      $st = (Invoke-Git -GitArgs @("status","--porcelain") -Quiet)
+      if($st.Length -eq 0){ return }
+    }
 
     throw "❌ git commit (retry) FAILED (exit=$LASTEXITCODE)`n$out2"
   }
@@ -304,14 +366,15 @@ function Do-Savepoint {
   if($status.Length -gt 0){
     Write-Host "🧩 Modifiche trovate: commit snapshot." -ForegroundColor Cyan
     Invoke-Git -GitArgs @("add","-A") | Out-Null
-    Commit-WithHookRetry "chore(savepoint): snapshot $date"
+    Commit-WithHookRetry -Message "chore(savepoint): snapshot $date"
   } else {
     Write-Host "ℹ️ Nessuna modifica locale: solo push/tag." -ForegroundColor DarkGray
   }
 
   Push-BranchUpstreamIfNeeded $branch
 
-  $tag = "Snapshot-OK-$date"
+  $baseTag = "Snapshot-OK-$date"
+  $tag = Build-SavepointTag -baseTag $baseTag -branch $branch
   $usedTag = Ensure-TagAnnotated $tag
 
   Write-Host "✅ Savepoint completato su '$branch' + tag $usedTag" -ForegroundColor Green
@@ -337,9 +400,9 @@ function Do-Align {
 
   $branch = Get-Branch
   if([string]::IsNullOrWhiteSpace($branch)){ throw "❌ Branch vuoto: rev-parse --abbrev-ref HEAD fallito." }
-  $up = "$Remote/$branch"
 
-  Write-Host "ℹ️ Rebase su $up" -ForegroundColor Cyan
+  $up = "$Remote/$BaseBranch"
+  Write-Host "ℹ️ Rebase su $up (da $branch)" -ForegroundColor Cyan
   Write-Host "ℹ️ Se conflitti: risolvi, poi 'git rebase --continue'." -ForegroundColor DarkGray
   Write-Host "ℹ️ Poi: 'git push --force-with-lease' (solo se necessario)." -ForegroundColor DarkGray
 
@@ -350,6 +413,7 @@ function New-Feature([string]$name) {
   Ensure-GitRepo
   Ensure-Remote
 
+  if([string]::IsNullOrWhiteSpace($name)){ throw "Fornisci un nome: -Feature <slug>" }
   $slug = Normalize-Slug $name
   $branch = "feat/$slug"
 
@@ -361,7 +425,7 @@ function New-Feature([string]$name) {
   }
 
   Invoke-Git -GitArgs @("checkout","-b",$branch) | Out-Null
-  Commit-WithHookRetry "chore: start $branch"
+  Commit-WithHookRetry -Message "chore: start $branch" -AllowEmpty
   Invoke-Git -GitArgs @("push","-u",$Remote,$branch) | Out-Null
 
   Write-Host "🌿 Branch creato: $branch" -ForegroundColor Green
@@ -371,6 +435,7 @@ function New-Hotfix([string]$name) {
   Ensure-GitRepo
   Ensure-Remote
 
+  if([string]::IsNullOrWhiteSpace($name)){ throw "Fornisci un nome: -Hotfix <slug>" }
   $slug = Normalize-Slug $name
   $branch = "hotfix/$slug"
 
@@ -382,11 +447,12 @@ function New-Hotfix([string]$name) {
   }
 
   Invoke-Git -GitArgs @("checkout","-b",$branch) | Out-Null
-  Commit-WithHookRetry "chore: start $branch"
+  Commit-WithHookRetry -Message "chore: start $branch" -AllowEmpty
   Invoke-Git -GitArgs @("push","-u",$Remote,$branch) | Out-Null
 
   $date = Get-Date -Format "yyyy-MM-dd"
-  $tag = "Snapshot-OK-$date-hotfix"
+  $baseTag = "Snapshot-OK-$date-hotfix"
+  $tag = Build-SavepointTag -baseTag $baseTag -branch $branch
   $usedTag = Ensure-TagAnnotated $tag
 
   Write-Host "🚑 Hotfix creato: $branch + tag $usedTag" -ForegroundColor Green
@@ -407,9 +473,16 @@ function Do-Doctor {
   Write-Host "HEAD:   $head"
   Write-Host ("Dirty:  " + ($(if($dirty.Length -gt 0){"SI"}else{"NO"})))
 
+  try {
+    Ensure-Remote
+    $url = (Invoke-Git -GitArgs @("remote","get-url",$Remote) -Quiet).Trim()
+    if($url){ Write-Host "Remote: $Remote -> $url" }
+  } catch {}
+
   Invoke-Git -GitArgs @("--no-pager","log","-1","--oneline","--decorate") | Out-Null
 }
 
+# ROUTING
 if ($Savepoint) { Do-Savepoint; exit 0 }
 if ($Align)     { Do-Align;     exit 0 }
 if ($Feature)   { New-Feature $Feature; exit 0 }
@@ -420,12 +493,12 @@ Write-Host @"
 Usage:
   pwsh .\savepoint_workflows.ps1 -Doctor   [-DryRun]
   pwsh .\savepoint_workflows.ps1 -Savepoint [-Cronista] [-Remote origin] [-DryRun]
-  pwsh .\savepoint_workflows.ps1 -Align     [-Remote origin] [-DryRun]
+  pwsh .\savepoint_workflows.ps1 -Align     [-BaseBranch main] [-Remote origin] [-DryRun]
   pwsh .\savepoint_workflows.ps1 -Feature "nome" [-BaseBranch main] [-Remote origin] [-FromCurrent] [-DryRun]
   pwsh .\savepoint_workflows.ps1 -Hotfix  "nome" [-BaseBranch main] [-Remote origin] [-FromCurrent] [-Cronista] [-DryRun]
 
 Note:
-  - -DryRun esegue SOLO git di lettura (locale), stampa gli altri.
+  - -DryRun esegue SOLO git di lettura (locale); stampa gli altri.
   - -FromCurrent crea il branch da dove sei ORA.
   - -Cronista cerca: cronista_salva_giornata_YYYY-MM-DD.ps1 poi cronista_salva_giornata.ps1
 "@ -ForegroundColor Gray
