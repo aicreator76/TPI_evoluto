@@ -1,5 +1,4 @@
-"""Modelli DB TPI."""
+from app.db.models.orchestrator_event import OrchestratorEvent
+from app.db.models.orchestrator_lock import OrchestratorLock
 
-from .orchestrator_event import OrchestratorEvent  # noqa: F401
-
-__all__ = ["OrchestratorEvent"]
+__all__ = ["OrchestratorEvent", "OrchestratorLock"]
