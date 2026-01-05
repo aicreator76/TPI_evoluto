@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 from datetime import date, datetime, timezone
-from typing import Any
+from typing import Any, ClassVar
 
 from sqlalchemy import Date, DateTime, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
@@ -14,11 +14,9 @@ class OrchestratorEvent(Base):
     """
     Coda eventi orchestratore (notifiche scadenze 30/15/1 ecc).
 
-    Idempotenza garantita da unique constraint su:
-    (tenant, ref_type, ref_id, threshold_days, event_date)
+    Idempotenza: unique su (tenant, ref_type, ref_id, threshold_days, event_date).
 
-    Nota:
-    - payload_json è Text per compatibilità semplice (SQLite/Postgres) senza migrazioni immediate.
+    payload_json resta TEXT per compatibilità SQLite/Postgres senza migrazioni immediate.
     """
 
     __tablename__ = "orchestrator_events"
@@ -35,6 +33,12 @@ class OrchestratorEvent(Base):
         Index("ix_orch_ref", "tenant", "ref_type", "ref_id"),
     )
 
+    # Status canonici (job/router/n8n)
+    STATUS_PENDING: ClassVar[str] = "pending"
+    STATUS_SENT: ClassVar[str] = "sent"
+    STATUS_ACK: ClassVar[str] = "ack"
+    STATUS_ERROR: ClassVar[str] = "error"
+
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
     tenant: Mapped[str] = mapped_column(String(64), index=True)
@@ -44,8 +48,7 @@ class OrchestratorEvent(Base):
     threshold_days: Mapped[int] = mapped_column(Integer)  # 30/15/1
     event_date: Mapped[date] = mapped_column(Date, index=True)
 
-    # pending/sent/ack/error
-    status: Mapped[str] = mapped_column(String(16), default="pending", index=True)
+    status: Mapped[str] = mapped_column(String(16), default=STATUS_PENDING, index=True)
 
     payload_json: Mapped[str | None] = mapped_column(Text, nullable=True)
 
@@ -53,13 +56,23 @@ class OrchestratorEvent(Base):
     last_error: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
     )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
+
+    # --- payload API (compat: job.py usa .payload) ---
+    @property
+    def payload(self) -> Any:
+        return self.get_payload()
+
+    @payload.setter
+    def payload(self, value: dict[str, Any] | list[Any] | None) -> None:
+        self.set_payload(value)
 
     def set_payload(self, payload: dict[str, Any] | list[Any] | None) -> None:
         self.payload_json = None if payload is None else json.dumps(payload, ensure_ascii=False)
@@ -71,6 +84,17 @@ class OrchestratorEvent(Base):
             return json.loads(self.payload_json)
         except Exception:
             return self.payload_json  # fallback grezzo
+
+    def mark_sent(self) -> None:
+        self.status = self.STATUS_SENT
+
+    def mark_ack(self) -> None:
+        self.status = self.STATUS_ACK
+
+    def mark_error(self, message: str) -> None:
+        self.status = self.STATUS_ERROR
+        self.last_error = message
+        self.attempts += 1
 
     def __repr__(self) -> str:
         return (
