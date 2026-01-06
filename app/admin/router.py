@@ -215,7 +215,7 @@ function renderEvents(items){
       <td>${ev.threshold_days}</td>
       <td>${escapeHtml(ev.event_date||"")}</td>
       <td>${escapeHtml(ev.status||"")}</td>
-      <td><button class="btn2" onclick="ackEvent(, 'ack')">acked</button></td>
+      <td><button class="btn2" onclick="ackEvent(${ev.id}, 'ack')">ack</button></td>
     </tr>`;
   }
   html += `</tbody></table>`;
