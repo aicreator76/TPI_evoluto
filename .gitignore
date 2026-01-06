@@ -21,3 +21,5 @@ requirements.txt.bak-*
 
 *.sqlite
 *.sqlite3
+
+LOG/
