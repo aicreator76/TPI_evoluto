@@ -170,7 +170,7 @@ async function lockRelease(){
 function fillSample(){
   const root = "E:\\\\CLONAZIONE\\\\tpi_evoluto";
   const sample = {
-    dpi_csv: root + "\\\\data\\\\dpi_sample.csv",
+    dpi_csv: "data/dpi_sample.csv",
     horizon_days: 60,
     backfill_days: 2,
     thresholds: [30,15,1],
