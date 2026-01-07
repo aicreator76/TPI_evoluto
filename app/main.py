@@ -19,7 +19,7 @@ from app.orchestrator.router import router as orchestrator_router
 from app.routers.cataloghi import router as cataloghi_router
 from app.admin.router import router as admin_router
 from app.routers import demo_real
-from app.routers.dpi_csv import router as dpi_csv_router
+from app.dpi_csv import router as dpi_csv_router
 
 logger = logging.getLogger("tpi_evoluto")
 
