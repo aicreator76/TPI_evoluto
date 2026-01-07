@@ -16,6 +16,7 @@ from app.api.funi_acciaio import router as funi_acciaio_router
 from app.api.inox import router as inox_router
 from app.api.linee_vita import router as linee_vita_router
 from app.orchestrator.router import router as orchestrator_router
+from app.routers.cataloghi import router as cataloghi_router
 from app.admin.router import router as admin_router
 from app.routers import demo_real
 from app.routers.dpi_csv import router as dpi_csv_router
@@ -113,7 +114,7 @@ WOW_ACCESSORI_DEMO: list[dict[str, Any]] = [
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
-    Startup ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œsafeÃƒÂ¢Ã¢â€šÂ¬Ã‚Â: crea tabelle minime se richiesto (utile in dev/SQLite).
+    Startup ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã¢â‚¬Å“safeÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â: crea tabelle minime se richiesto (utile in dev/SQLite).
     Disattivabile: AUTO_INIT_DB=0
     """
     auto_init = os.getenv("AUTO_INIT_DB", "1").strip() not in {"0", "false", "False", "no", "NO"}
@@ -227,6 +228,7 @@ def create_app() -> FastAPI:
         ],
     )
     app.include_router(admin_router, prefix="/admin")
+    app.include_router(cataloghi_router)
     return app
 
 
