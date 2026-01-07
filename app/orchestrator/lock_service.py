@@ -190,7 +190,7 @@ def acquire_lock(
         raise
 
 
-def release_lock(db: Session, name: str = DEFAULT_LOCK_NAME, token: str = "") -> bool:
+def release_lock(db: Session, name: str = DEFAULT_LOCK_NAME, token: str | None = None) -> bool:
     """
     Rilascio lock con token (hardening minimo).
     """
