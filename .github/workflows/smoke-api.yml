@@ -81,7 +81,7 @@ jobs:
               echo "API UP in ${i}s"
               exit 0
             fi
-            # se il processo è morto, esci subito con log
+            # se il processo ÃƒÂ¨ morto, esci subito con log
             if ! ps -p "$(cat uvicorn.pid)" >/dev/null 2>&1; then
               echo "uvicorn died early. Last log:"
               tail -n 200 uvicorn.log || true
