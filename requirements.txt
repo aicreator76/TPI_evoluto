@@ -1,3 +1,4 @@
+-r requirements.txt
 pandas
 pyyaml
 requests
@@ -13,3 +14,5 @@ email-validator
 PyJWT[crypto]
 SQLAlchemy>=2,<3
 aiosqlite
+SQLAlchemy>=2.0,<3
+aiosqlite>=0.20

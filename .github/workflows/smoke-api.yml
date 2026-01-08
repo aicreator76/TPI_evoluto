@@ -24,6 +24,7 @@ jobs:
     env:
       DATABASE_URL: "sqlite:///./ci.db"
       JWT_SECRET: "ci-secret"
+      PYTHONUNBUFFERED: "1"
 
     steps:
       - uses: actions/checkout@v4
@@ -39,15 +40,27 @@ jobs:
           python -V
           python -m pip --version
 
-      - name: Install deps (best-effort)
+      - name: Install deps (strict -> fallback)
         shell: bash
         run: |
-          set -o pipefail
-          python -m pip install -U pip wheel setuptools | tee -a install.log || true
-          python -m pip install -r requirements.txt | tee -a install.log || true
-          # fallback minimo per garantire boot API
-          python -m pip install fastapi "uvicorn[standard]" starlette pydantic curl-cffi | tee -a install.log || true
+          set -euo pipefail
+          python -m pip install -U pip wheel setuptools | tee -a install.log
+
+          if python -m pip install -r requirements.txt | tee -a install.log; then
+            echo "requirements.txt OK"
+          else
+            echo "requirements.txt FAILED -> fallback minimal deps"
+            python -m pip install \
+              fastapi "uvicorn[standard]" starlette pydantic \
+              SQLAlchemy aiosqlite \
+              curl-cffi | tee -a install.log
+          fi
+
           python -m pip freeze | head -n 200 > freeze_head.log || true
+          python -m pip check || true
+
+          # Fail fast se non importa l'app (evita curl loop inutile)
+          python -c "import app.main; print('IMPORT app.main: OK')"
 
       - name: Launch API
         shell: bash
@@ -57,6 +70,7 @@ jobs:
           echo $! > uvicorn.pid
           sleep 1
           echo "PID=$(cat uvicorn.pid)"
+          ps -p "$(cat uvicorn.pid)" >/dev/null
 
       - name: Wait for /openapi.json
         shell: bash
@@ -66,6 +80,12 @@ jobs:
             if curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/openapi.json >/dev/null; then
               echo "API UP in ${i}s"
               exit 0
+            fi
+            # se il processo è morto, esci subito con log
+            if ! ps -p "$(cat uvicorn.pid)" >/dev/null 2>&1; then
+              echo "uvicorn died early. Last log:"
+              tail -n 200 uvicorn.log || true
+              exit 1
             fi
             sleep 1
           done
@@ -87,7 +107,6 @@ jobs:
           header="$(curl -fsS --retry 2 --retry-delay 1 http://127.0.0.1:8000/api/dpi/csv/template | head -n1 | tr -d '\r')"
           echo "TEMPLATE_HEADER=$header"
 
-          # Costruisci una riga valida in base alle colonne richieste
           IFS=',' read -r -a cols <<< "$header"
           vals=()
           for c in "${cols[@]}"; do
@@ -103,7 +122,36 @@ jobs:
           done
           row="$(IFS=','; echo "${vals[*]}")"
 
-          csv_payload="${header}\n${row}\n"
-          echo -e "$csv_payload" > smoke_import.csv
+          printf "%s\n%s\n" "$header" "$row" > smoke_import.csv
           echo "CSV_PAYLOAD:"
           cat smoke_import.csv
+
+          # endpoint import (default)
+          url="http://127.0.0.1:8000/api/dpi/csv/import"
+
+          # prova 3 nomi campo file (robusto)
+          ok=0
+          for field in file csv upload; do
+            if curl -fsS --retry 1 --retry-delay 1 -X POST -F "${field}=@smoke_import.csv;type=text/csv" "$url" >/dev/null; then
+              echo "IMPORT OK (field=$field)"
+              ok=1
+              break
+            fi
+          done
+
+          if [ "$ok" -ne 1 ]; then
+            echo "IMPORT FAILED. Last uvicorn log:"
+            tail -n 200 uvicorn.log || true
+            exit 1
+          fi
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-api-logs
+          path: |
+            install.log
+            freeze_head.log
+            uvicorn.log
+            smoke_import.csv
