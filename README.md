@@ -1,27 +1,28 @@
-# TPI Evoluto — Enterprise Scadenze DPI (FastAPI)
+# TPI Evoluto — Enterprise Scadenze DPI
 
-TPI Evoluto genera **eventi di scadenza** in modo **deduplicato** e **idempotente**.
-Stati ufficiali: **pending** (da gestire) e **ack** (gestito).
-Nessun “sent” finto: flusso **auditabile**, coerente, enterprise.
+TPI Evoluto genera eventi di scadenza in modo deduplicato e idempotente.
+Stati ufficiali: pending e ack.
+Nessun invio automatico finto.
+Tracciabile. Auditabile. Vendibile.
 
 ## Live
 - Render OpenAPI: https://tpi-evoluto-staging.onrender.com/openapi.json
-- GitHub Pages (docs): INSERISCI_URL_PAGES
+- Docs pubbliche: INSERISCI_URL_PAGES
 
-## Release pronte
+## Release
 - Cataloghi Enterprise: https://github.com/aicreator76/TPI_evoluto/releases/tag/cataloghi-enterprise-2026-01-11
 
 ## Cosa risolve
-- Scadenze gestite a mano (Excel/email) con rischio non conformità
+- Scadenze gestite a mano, rischio non conformità
 - Nessuna traccia di presa in carico
 - Dati incoerenti tra reparti e sedi
 
-## Come funziona (vero, senza magie)
-- Il backend genera eventi e li registra (deduplica, idempotenza)
+## Come funziona
+- Backend FastAPI genera eventi e li registra con deduplica e idempotenza
 - Gli utenti prendono in carico e chiudono con ACK
-- KPI e report: pending, ack, overdue, stale (roadmap)
+- KPI e report pronti per dashboard enterprise
 
-## Demo 5 minuti
+## Demo rapida
 1) OpenAPI
 - GET /openapi.json
 
@@ -31,24 +32,26 @@ Nessun “sent” finto: flusso **auditabile**, coerente, enterprise.
 3) Import CSV
 - POST /api/dpi/csv/import
 
-4) Eventi (orchestrator)
+4) Eventi orchestrator
 - GET /events?tenant=ACME
 - POST /events/id/ack
 
-## Enterprise: SAP + CRM (adapter ready)
-Pattern consigliato: Connector/Adapter pluggabile
+## Enterprise: SAP + CRM
+Pattern consigliato: adapter pluggabile
 - pull_events
 - push_ack
 - sync_assets
 - healthcheck
-Tutto correlato con sync_run_id + external_id.
 
-## UI enterprise (proposta)
+Tracciamento
+- sync_run_id per correlazione end to end
+- external_id per mapping SAP CRM
+
+Sicurezza
+- secrets solo in env e secret store
+- tenant isolation obbligatoria
+
+## UI Enterprise proposta
 - Next.js + Tailwind + shadcn/ui + Recharts
-- DataTable filtri tenant/status/date
-- Bulk actions + export CSV
-- Audit log per sync_run_id
-
-## CI
-- pre-commit, mypy, compileall, pip-audit
-- smoke-api workflow: boot + template + import
+- Tabelle con filtri tenant, status, date range
+- Bulk actions, export CSV, audit log
