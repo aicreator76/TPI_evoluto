@@ -1,4 +1,4 @@
-# TPI Evoluto — Enterprise Scadenze DPI
+# TPI Evoluto â€” Enterprise Scadenze DPI
 
 TPI Evoluto genera eventi di scadenza in modo deduplicato e idempotente.
 Stati ufficiali: pending e ack.
@@ -7,13 +7,13 @@ Tracciabile. Auditabile. Vendibile.
 
 ## Live
 - Render OpenAPI: https://tpi-evoluto-staging.onrender.com/openapi.json
-- Docs pubbliche: INSERISCI_URL_PAGES
+- Docs pubbliche: https://aicreator76.github.io/TPI_evoluto/
 
 ## Release
 - Cataloghi Enterprise: https://github.com/aicreator76/TPI_evoluto/releases/tag/cataloghi-enterprise-2026-01-11
 
 ## Cosa risolve
-- Scadenze gestite a mano, rischio non conformità
+- Scadenze gestite a mano, rischio non conformitÃ 
 - Nessuna traccia di presa in carico
 - Dati incoerenti tra reparti e sedi
 
