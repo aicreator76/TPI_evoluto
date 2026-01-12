@@ -1,3 +1,3 @@
 # OpenAPI
 
-Schema: [openapi.json](./openapi.json)
+Schema: [openapi.json](https://tpi-evoluto-staging.onrender.com/openapi.json)
