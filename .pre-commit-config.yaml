@@ -1,12 +1,12 @@
-# CAMELOT – Regno d’Acciaio
-# Qualità + sicurezza + gate push (mypy/compileall/pip-audit) + normalizzazioni (LF/BOM/CRLF cmd)
+# CAMELOT - Regno d'Acciaio
+# Qualita + sicurezza + gate push (mypy/compileall/pip-audit) + normalizzazioni (LF/BOM/CRLF cmd)
 
 minimum_pre_commit_version: "3.5.0"
 
 default_language_version:
-  python: python
+  python: python3
 
-default_stages: [commit, push]
+default_stages: [commit]
 
 exclude: |
   (?x)(
