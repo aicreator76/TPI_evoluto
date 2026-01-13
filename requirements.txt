@@ -4,9 +4,10 @@ requests
 python-dateutil
 
 fastapi
-
 uvicorn[standard]==0.32.0
 email-validator
 
-# Security (pip-audit)
 PyJWT[crypto]
+SQLAlchemy>=2.0,<3
+aiosqlite>=0.20
+python-multipart>=0.0.9

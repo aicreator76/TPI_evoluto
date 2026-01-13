@@ -1,5 +1,5 @@
-# CAMELOT â€“ Regno dâ€™Acciaio
-# QualitÃ  + sicurezza + gate push (mypy/compileall/pip-audit) + normalizzazioni (LF/BOM/CRLF cmd)
+# CAMELOT - Regno d'Acciaio
+# Qualita + sicurezza + gate push (mypy/compileall/pip-audit) + normalizzazioni (LF/BOM/CRLF cmd)
 
 minimum_pre_commit_version: "3.5.0"
 
@@ -61,7 +61,7 @@ repos:
       - id: compileall
         name: compileall (push gate)
         language: system
-        entry: python -m compileall -q .
+        entry: python -B -m compileall -q .
         pass_filenames: false
         stages: [push]
 

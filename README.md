@@ -1,28 +1,57 @@
-# TPI_evoluto — Orchestratore DPI (FastAPI)
+# TPI Evoluto â€” Enterprise Scadenze DPI
 
-Backend FastAPI per gestione DPI via CSV: template, import/export, catalogo, metriche e report HTML.
-Obiettivo: pipeline stabile e ripetibile per classificazione, import massivo e log.
+TPI Evoluto genera eventi di scadenza in modo deduplicato e idempotente.
+Stati ufficiali: pending e ack.
+Nessun invio automatico finto.
+Tracciabile. Auditabile. Vendibile.
 
-## API principali (CSV/DPI)
-Base URL (dev): `http://127.0.0.1:8012`
+## Live
+- Render OpenAPI: https://tpi-evoluto-staging.onrender.com/openapi.json
+- Docs pubbliche: https://aicreator76.github.io/TPI_evoluto/
 
-- `GET  /api/dpi/csv/template`
-- `POST /api/dpi/csv/save`
-- `GET  /api/dpi/csv/catalogo`
-- `GET  /api/dpi/csv/export`
-- `POST /api/dpi/csv/import-file`
-- `POST /api/dpi/csv/import`
-- `GET  /api/dpi/csv/metrics`
-- `GET  /api/dpi/csv/report.html`
-- `GET  /openapi.json`
+## Release
+- Cataloghi Enterprise: https://github.com/aicreator76/TPI_evoluto/releases/tag/cataloghi-enterprise-2026-01-11
 
-## Cataloghi
-- `E:\CLONAZIONE\tpi_evoluto\app\data\catalog_linee_vita.json`
-- `E:\CLONAZIONE\tpi_evoluto\app\data\catalog_inox.json`
+## Cosa risolve
+- Scadenze gestite a mano, rischio non conformitÃ 
+- Nessuna traccia di presa in carico
+- Dati incoerenti tra reparti e sedi
 
-## Avvio (Windows PowerShell)
-```powershell
-cd E:\CLONAZIONE\tpi_evoluto
-py -3.11 -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8012 --log-level warning
+## Come funziona
+- Backend FastAPI genera eventi e li registra con deduplica e idempotenza
+- Gli utenti prendono in carico e chiudono con ACK
+- KPI e report pronti per dashboard enterprise
+
+## Demo rapida
+1) OpenAPI
+- GET /openapi.json
+
+2) Template CSV
+- GET /api/dpi/csv/template
+
+3) Import CSV
+- POST /api/dpi/csv/import
+
+4) Eventi orchestrator
+- GET /events?tenant=ACME
+- POST /events/id/ack
+
+## Enterprise: SAP + CRM
+Pattern consigliato: adapter pluggabile
+- pull_events
+- push_ack
+- sync_assets
+- healthcheck
+
+Tracciamento
+- sync_run_id per correlazione end to end
+- external_id per mapping SAP CRM
+
+Sicurezza
+- secrets solo in env e secret store
+- tenant isolation obbligatoria
+
+## UI Enterprise proposta
+- Next.js + Tailwind + shadcn/ui + Recharts
+- Tabelle con filtri tenant, status, date range
+- Bulk actions, export CSV, audit log
