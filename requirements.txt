@@ -10,3 +10,4 @@ email-validator
 PyJWT[crypto]
 SQLAlchemy>=2.0,<3
 aiosqlite>=0.20
+python-multipart>=0.0.9
