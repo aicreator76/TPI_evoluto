@@ -23,3 +23,5 @@ requirements.txt.bak-*
 *.sqlite3
 
 LOG/
+
+.venv-docs/
