@@ -1,0 +1,30 @@
+TPI — DEMO WOW (3 minuti) — Script Presentazione (2025-12-13)
+
+0) APERTURA (10s)
+- ‚¬Å“Questa è la WOW Dashboard TPI: cataloghi + movimenti + revisione. Anche senza API resta operativa (fallback). Con API online diventa live.‚¬
+
+1) WOW KPI (20s)
+- Mostra le 4 card: Attivi / In scadenza / Scaduti / Revisione OK.
+- Premi ‚¬Å“Aggiorna‚¬ € €™ micro-animazione € €™ ‚¬Å“effetto movimento‚¬.
+
+2) CATALOGO DPI (40s)
+- Tab ‚¬Å“DPI‚¬: scorri.
+- Clicca un DPI (es. DPI-IMB-002 o DPI-FUN-003).
+- Si apre il DETTAGLIO: dati + timeline revisioni.
+
+3) REVISIONE CHE MUOVE IL SISTEMA (30s)
+- Nel dettaglio premi ‚¬Å“Simula revisione (movimento)‚¬.
+- Si aggiorna la timeline del DPI + viene registrato un movimento.
+- Messaggio toast ‚¬Å“Revisione aggiunta‚¬.
+
+4) ACCESSORI + SOTTOGANCIO (40s)
+- Tab ‚¬Å“Accessori‚¬ € €™ click su un accessorio.
+- Tab ‚¬Å“Sottogancio‚¬ € €™ mostra 3+ elementi € €™ click.
+- Spiega: ‚¬Å“Stessa logica: stato, disponibilitÃƒ , certificazione.‚¬
+
+5) TIMELINE MOVIMENTI (30s)
+- Tab ‚¬Å“Timeline movimenti‚¬ € €™ si vedono eventi reali/dimostrativi.
+- Click su una riga € €™ apre dettaglio (dimostra navigazione).
+
+CHIUSURA (10s)
+- ‚¬Å“Questo è il prototipo WOW: UI pronta, dati pronti, collegabile ai cataloghi reali e all‚¬„¢API. Prossimo step: aggancio completo cataloghi e log revisioni reali.‚¬

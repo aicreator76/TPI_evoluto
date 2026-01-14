@@ -1,0 +1,44 @@
+<script>
+// ===============================
+// MOCK API ONLINE Ãƒ¢€š¬‚¬Å“ WOW MODE
+// ===============================
+const MOCK_API = {
+  health: {
+    status: "online",
+    version: "demo",
+    env: "github-pages",
+    updated: new Date().toISOString()
+  },
+  stats: () => ({
+    attivi: Math.floor(Math.random()*5)+3,
+    scadenza: Math.floor(Math.random()*3)+1,
+    scaduti: Math.floor(Math.random()*2),
+    revisione: Math.floor(Math.random()*4)+1
+  })
+};
+
+// PATCH STATO API
+function patchApiStatus(){
+  const el = document.querySelector("#api-status");
+  if(el){
+    el.innerHTML = `
+      <span style="color:#3cff8f;font-weight:bold">Online</span>
+      <span style="opacity:.7"> Ãƒ€š· ${MOCK_API.health.env}</span>
+    `;
+  }
+}
+
+// PATCH NUMERI WOW
+function patchStats(){
+  const s = MOCK_API.stats();
+  document.querySelector("#stat-attivi").innerText = s.attivi;
+  document.querySelector("#stat-scadenza").innerText = s.scadenza;
+  document.querySelector("#stat-scaduti").innerText = s.scaduti;
+  document.querySelector("#stat-revisione").innerText = s.revisione;
+}
+
+// AVVIO
+patchApiStatus();
+patchStats();
+setInterval(patchStats, 4000); // movimento continuo
+</script>
