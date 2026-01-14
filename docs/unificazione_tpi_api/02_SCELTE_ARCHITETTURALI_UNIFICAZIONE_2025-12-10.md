@@ -1,8 +1,8 @@
-# 02 – SCELTE ARCHITETTURALI PER L’UNIFICAZIONE
+# 02 – SCELTE ARCHITETTURALI PER L‚¬„¢UNIFICAZIONE
 
-## 1. Verità unica del dominio
+## 1. VeritÃƒ  unica del dominio
 
-- **TPI_evoluto** è la _fonte di verità_ per:
+- **TPI_evoluto** è la _fonte di veritÃƒ _ per:
   - modelli di dominio (DPI, ACCESSORI, FUNI, LYNX, FORESTALE, ecc.),
   - viste SQL e script di ingest,
   - API interne usate dai CESARI/LYNX,
@@ -11,7 +11,7 @@
 - **TPI_api_staging** ha il ruolo di:
   - interfaccia pubblica per Render (staging),
   - adattatore che espone solo gli endpoint autorizzati,
-  - contenitore di configurazioni specifiche per l’ambiente Render.
+  - contenitore di configurazioni specifiche per l‚¬„¢ambiente Render.
 
 ## 2. Pattern di integrazione (fase 1 – breve termine)
 
@@ -24,13 +24,13 @@ Nel breve termine (entro la demo di lunedì):
   - listino DPI/ACCESSORI che servono alla demo.
 
 Il focus NON è ancora il packaging perfetto,
-ma **coerenza funzionale** percepibile da chi prova l’API.
+ma **coerenza funzionale** percepibile da chi prova l‚¬„¢API.
 
 ## 3. Pattern di integrazione (fase 2 – medio termine)
 
 Proposta di evoluzione:
 
-1. Estrarre un piccolo “core” riusabile da TPI_evoluto:
+1. Estrarre un piccolo ‚¬Å“core‚¬ riusabile da TPI_evoluto:
    - es. modulo `tpi_core` contenente:
      - modelli Pydantic condivisi (richieste/risposte),
      - funzioni di accesso al DB per listini e DPI,
@@ -42,7 +42,7 @@ Proposta di evoluzione:
 
 3. Allineare la documentazione:
    - OpenAPI generata da TPI_evoluto come riferimento unico,
-   - README chiaro su cosa può e non può fare l’API di staging.
+   - README chiaro su cosa può e non può fare l‚¬„¢API di staging.
 
 ## 4. Linee guida di design
 

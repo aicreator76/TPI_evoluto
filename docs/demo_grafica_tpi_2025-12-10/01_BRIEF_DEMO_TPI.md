@@ -14,4 +14,4 @@
 - Persone non tecniche ma curiose (HSE, RSPP, ecc.)
 
 ## Messaggio chiave
-"Esiste già un MOTORE reale (TPI_evoluto) e una VETRINA API (TPI_api_staging) pronta per essere usata e integrata."
+"Esiste giÃƒ  un MOTORE reale (TPI_evoluto) e una VETRINA API (TPI_api_staging) pronta per essere usata e integrata."

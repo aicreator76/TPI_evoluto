@@ -16,7 +16,7 @@
 
 - Breve testo introduttivo:
   "Dietro questa API c'è una corte di agenti digitali:
-   AELIS (strategia), Tempesta (operatività), Maggiordomo (guida).
+   AELIS (strategia), Tempesta (operativitÃƒ ), Maggiordomo (guida).
    Tutto ciò che vedi punta a rendere il lavoro HSE e tecnico
    più leggero, tracciato e intelligente."
 

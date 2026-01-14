@@ -16,7 +16,7 @@
      - Nota: "Mostra la parte forestale in evoluzione."
 
   3) Card "Sottogancio"
-     - Placeholder per endpoint futuri, ma già dichiarato nel design.
+     - Placeholder per endpoint futuri, ma giÃƒ  dichiarato nel design.
 
   4) Card "Maggiordomo TPI"
      - Link / testo che spiega:

@@ -36,7 +36,7 @@
 
 #
 
-# \## 3. Workflow GitHub “Build TPI (stub)”
+# \## 3. Workflow GitHub ‚¬Å“Build TPI (stub)‚¬
 
 #
 

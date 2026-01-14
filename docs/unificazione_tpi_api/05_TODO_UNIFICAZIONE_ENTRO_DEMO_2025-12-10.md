@@ -1,4 +1,4 @@
-# 05 – TODO UNIFICAZIONE ENTRO LA DEMO (LUNEDÌ)
+# 05 – TODO UNIFICAZIONE ENTRO LA DEMO (LUNEDÃƒÅ’)
 
 ## Fase 1 – Allineamento rapido per demo
 
@@ -18,10 +18,10 @@
       - version
       - 1–2 endpoint di listino (es. ACCESSORI)
 
-## Fase 2 – Codice da toccare per l’unificazione minima
+## Fase 2 – Codice da toccare per l‚¬„¢unificazione minima
 
 - [ ] In `TPI_evoluto`:
-      - [ ] Verificare che gli endpoint “vetrina” abbiano:
+      - [ ] Verificare che gli endpoint ‚¬Å“vetrina‚¬ abbiano:
             - nomi chiari
             - risposte stabili
             - test associati (pytest)
@@ -33,14 +33,14 @@
 ## Fase 3 – Storytelling tecnico per lunedì
 
 - [ ] Preparare breve narrazione:
-      - “TPI_evoluto = motore”
-      - “TPI_api_staging = vetrina staging su Render”
+      - ‚¬Å“TPI_evoluto = motore‚¬
+      - ‚¬Å“TPI_api_staging = vetrina staging su Render‚¬
 - [ ] Evidenziare:
-      - 2–3 endpoint chiave già funzionanti in staging
+      - 2–3 endpoint chiave giÃƒ  funzionanti in staging
       - come vengono alimentati dal motore TPI_evoluto
 - [ ] Annotare eventuali limiti noti:
       - endpoint ancora solo nel motore
       - parti non ancora esposte in staging
 
 Questo TODO è la checklist ufficiale per arrivare alla demo
-con un’unificazione **credibile, reale e presentabile**.
+con un‚¬„¢unificazione **credibile, reale e presentabile**.

@@ -15,5 +15,5 @@ Questa tranche raccoglie tutti gli ACCESSORI DPI estratti dal catalogo Teufelber
 - descrizione_breve
 
 ## Prossimi step
-- tassonomia V2 (famiglia_dpi: connettori, carrucole, discensori, bloccanti, assorbitori…)
+- tassonomia V2 (famiglia_dpi: connettori, carrucole, discensori, bloccanti, assorbitori‚¬¦)
 - norme EN da estrarre per singolo modello

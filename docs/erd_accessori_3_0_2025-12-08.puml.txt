@@ -78,7 +78,7 @@ entity "tpi_accessori_tycan" as T_TYC {
 
 /'
  Relazioni logiche (non per forza con FOREIGN KEY reali):
- - famiglia (TEXT) nei codici ↔ famiglia (TEXT) in tpi_accessori_famiglie
+ - famiglia (TEXT) nei codici € € famiglia (TEXT) in tpi_accessori_famiglie
  - sorgente (TEXT) distingue il tipo di accessorio
 '/
 

@@ -8,7 +8,7 @@
 
 ## 1. Tabelle coinvolte
 
-### 1.1 `tpi_accessori_famiglie` (≈ 30 righe)
+### 1.1 `tpi_accessori_famiglie` (€°Ë† 30 righe)
 
 **Ruolo**
 Tabella di riferimento per le famiglie di accessori (ancoraggi, morsetti, catene G8, Tycan, tiranti/brache, ecc.).
@@ -98,35 +98,35 @@ Codici per catene Tycan (FCHLIFT + FCHLASH).
 > **Importante:** non è detto che il DB contenga FOREIGN KEY esplicite.
 > Le relazioni sotto sono **logiche**, da usare per VIEW e BI.
 
-1. **Famiglia ↔ Codici**
+1. **Famiglia € € Codici**
    - `tpi_accessori_famiglie.famiglia`
-     ↔ `tpi_accessori_* .famiglia`
+     € € `tpi_accessori_* .famiglia`
    - usata per collegare metadati di famiglia con righe di dettaglio.
 
 2. **Sorgente**
    - `tpi_accessori_* .sorgente` distingue i tre mondi:
-     - `MORSETTI` → `tpi_accessori_morsetti`
-     - `CATENA_G8` → `tpi_accessori_catena_g8`
-     - `TYCAN` → `tpi_accessori_tycan`
+     - `MORSETTI` € €™ `tpi_accessori_morsetti`
+     - `CATENA_G8` € €™ `tpi_accessori_catena_g8`
+     - `TYCAN` € €™ `tpi_accessori_tycan`
 
 3. **id_tpi**
    - `id_tpi` previsto come chiave logica interna TPI per il listino 3.0.
-   - Unico all’interno di ogni tabella codici.
+   - Unico all‚¬„¢interno di ogni tabella codici.
    - Potenzialmente unico cross-tabella, se gestito così a monte.
 
 ---
 
-## 3. Integrità & coerenza (osservazioni)
+## 3. IntegritÃƒ  & coerenza (osservazioni)
 
-- **Cardinalità attese**
-  - Una famiglia (`tpi_accessori_famiglie`) → N codici in una o più tabelle codici.
+- **CardinalitÃƒ  attese**
+  - Una famiglia (`tpi_accessori_famiglie`) € €™ N codici in una o più tabelle codici.
 - **Coerenza sorgente**
   - `sorgente` dovrebbe essere coerente con il tipo di tabella:
     - `MORSETTI` solo in `tpi_accessori_morsetti`
     - `CATENA_G8` solo in `tpi_accessori_catena_g8`
     - `TYCAN` solo in `tpi_accessori_tycan`
 - **Join futuro per view**
-  - Il join principale sarà:
+  - Il join principale sarÃƒ :
     - per famiglia: `famiglia` (TEXT)
     - per analisi interna: `id_tpi` (se usato in più tabelle o cluster).
 

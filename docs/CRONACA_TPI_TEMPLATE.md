@@ -2,7 +2,7 @@
 
 **Data:** YYYY-MM-DD
 **Versione SUMMARY:** vDEMO-YYYYMMDD-HHMM (o simile)
-**Semaforo tecnico:** 🟢 / 🟡 / 🔴
+**Semaforo tecnico:** Ã°Å¸Å¸¢ / Ã°Å¸Å¸¡ / Ã°Å¸€´
 
 ---
 

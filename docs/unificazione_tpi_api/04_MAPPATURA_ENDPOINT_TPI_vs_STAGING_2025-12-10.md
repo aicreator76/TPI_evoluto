@@ -17,11 +17,11 @@ Questo file va COMPILATO a partire dai diff salvati:
 |---|-----------------------------------|------------------------------------|------------------------------------|--------------------------------------|
 | 1 | Healthcheck API                   | /health (es.)                      | /healthz (es.)                     | Allineare nome/risposta              |
 | 2 | Versione servizio                 | /version                           | /version                           | Verificare payload                   |
-| 3 | Listino ACCESSORI (demo)         | /api/accessori/listino            | …                                  | Uniformare schema risposta           |
-| 4 | Overview ACCESSORI (se esiste)    | /api/accessori/overview           | …                                  |                                      |
-| 5 | Altro endpoint “vetrina”          | …                                  | …                                  |                                      |
+| 3 | Listino ACCESSORI (demo)         | /api/accessori/listino            | ‚¬¦                                  | Uniformare schema risposta           |
+| 4 | Overview ACCESSORI (se esiste)    | /api/accessori/overview           | ‚¬¦                                  |                                      |
+| 5 | Altro endpoint ‚¬Å“vetrina‚¬          | ‚¬¦                                  | ‚¬¦                                  |                                      |
 
 > Compilazione manuale:
 > - per ogni endpoint trovati nei due repo,
-> - indicare path, metodo (GET/POST/…), payload,
+> - indicare path, metodo (GET/POST/‚¬¦), payload,
 > - segnare se TPI_api_staging deve adeguarsi a TPI_evoluto o viceversa.

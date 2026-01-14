@@ -6,20 +6,20 @@ Cruscotto operativo per Sovrano, Regina e tecnici.
 
 ### Modulo DPI – Agente 0
 
-- **Stato**: 🟢 / 🟡 / 🔴
+- **Stato**: Ã°Å¸Å¸¢ / Ã°Å¸Å¸¡ / Ã°Å¸€´
 - **Fonte**: `public\agente0_dashboard.html` + log `logs\agente0_dashboard.json`
 - **Note**: numero DPI, warning, scaduti, ultimo run.
 
 ### Backend API TPI_evoluto
 
-- **Stato**: 🟢 / 🟡 / 🔴
+- **Stato**: Ã°Å¸Å¸¢ / Ã°Å¸Å¸¡ / Ã°Å¸€´
 - **Check**:
   - `GET /healthz`
   - `GET /api/ops/version`
 
 ### Git / CI
 
-- **Stato**: 🟢 / 🟡 / 🔴
+- **Stato**: Ã°Å¸Å¸¢ / Ã°Å¸Å¸¡ / Ã°Å¸€´
 - **Fonte**: git status, ultimo tag, esito CI.
 
 ---

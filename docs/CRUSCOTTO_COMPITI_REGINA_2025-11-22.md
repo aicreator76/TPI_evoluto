@@ -6,11 +6,11 @@
 
 #
 
-# \- \*\*Progetto TPI\_evoluto\*\*      : 🟡 avanzamento stabile, M1/M2 aperte ma sotto controllo
+# \- \*\*Progetto TPI\_evoluto\*\*      : Ã°Å¸Å¸¡ avanzamento stabile, M1/M2 aperte ma sotto controllo
 
-# \- \*\*Agente 0 / n8n\*\*            : 🟡 SPEC in preparazione, installazione ancora da fissare
+# \- \*\*Agente 0 / n8n\*\*            : Ã°Å¸Å¸¡ SPEC in preparazione, installazione ancora da fissare
 
-# \- \*\*Cruscotto vista Regina\*\*    : 🟢 attivo, collegato a ORDINI e primi agenti MindStudio
+# \- \*\*Cruscotto vista Regina\*\*    : Ã°Å¸Å¸¢ attivo, collegato a ORDINI e primi agenti MindStudio
 
 #
 
@@ -40,7 +40,7 @@
 
 # 1\. \*\*n8n\*\*
 
-# &nbsp;  Definire e scrivere come verrà installato n8n
+# &nbsp;  Definire e scrivere come verrÃƒ  installato n8n
 
 # &nbsp;  (nodo, percorso `E:\\CLONAZIONE\\n8n\_data` e `E:\\CLONAZIONE\\n8n\_logs`, utente che lo gestisce).
 
@@ -58,7 +58,7 @@
 
 # &nbsp;  Aggiornare `docs/Cronache\_Regina\_YYYY-MM.md` con:
 
-# &nbsp;  stato n8n (acceso/spento), cosa è stato fatto oggi su Agente 0, semaforo giornata (🟢/🟡/🔴).
+# &nbsp;  stato n8n (acceso/spento), cosa è stato fatto oggi su Agente 0, semaforo giornata (Ã°Å¸Å¸¢/Ã°Å¸Å¸¡/Ã°Å¸€´).
 
 #
 

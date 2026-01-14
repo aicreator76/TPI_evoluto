@@ -8,12 +8,12 @@
 
 ## PROBLEMI / RISCHI
 - Migrazione Alembic iniziale fragile (BOM/header, metadata).
-- Nessuna session factory centralizzata → rischio leak/non thread-safe.
+- Nessuna session factory centralizzata € €™ rischio leak/non thread-safe.
 - Enums e modelli non ancora pienamente allineati.
 - Gestione JWT/SECRET e hashing password da completare.
-- Zero test/CI → regressioni non intercettate.
+- Zero test/CI € €™ regressioni non intercettate.
 
-## PRIORITÀ PROSSIMI COMMIT
+## PRIORITÃƒ‚¬ PROSSIMI COMMIT
 1. Sistemare definitivamente migrazione Alembic + `env.py` (metadata, DATABASE_URL).
 2. Introdurre `app/db/base.py` con `naming_convention` + `app/db/session.py` con `SessionLocal`/`get_db`.
 3. Stabilizzare router (`app.routers.*` assoluti) e centralizzare enums.

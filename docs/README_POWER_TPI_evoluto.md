@@ -50,7 +50,7 @@ Script principale (lato Sovrano) per simulare una release giornaliera.
     -File "E:\CLONAZIONE\CESARE_COMANDI\scripts\CESARE_RELEASE_TPI_DEMO.ps1" `
     -Version "vTEST-DEMO-002"
 
-## Build TPI (stub) – Collegamento CESARE ↔ GitHub Actions
+## Build TPI (stub) – Collegamento CESARE € € GitHub Actions
 
 - Lo script CESARE_TPI_CI_BRIDGE.ps1 crea tag 	pi-v* (es. 	pi-vTEST-CI-BRIDGE-001)
   e attiva il workflow GitHub **Build TPI (stub)**.

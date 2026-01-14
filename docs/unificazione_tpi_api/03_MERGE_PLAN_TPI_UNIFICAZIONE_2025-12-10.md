@@ -12,7 +12,7 @@
 
 ## Fase 1 – Allineamento endpoint critici (breve termine)
 
-1. Definire elenco endpoint “vetrina” per la demo:
+1. Definire elenco endpoint ‚¬Å“vetrina‚¬ per la demo:
    - `/health` o `/healthz`,
    - `/version`,
    - 1–2 endpoint chiave (es. listino ACCESSORI, FUNI, LYNX).
@@ -45,8 +45,8 @@
 ## Fase 3 – Pulizia e storytelling (demo / partner)
 
 - Ripassare i README:
-  - TPI_evoluto = “motore”.
-  - TPI_api_staging = “vetrina staging”.
+  - TPI_evoluto = ‚¬Å“motore‚¬.
+  - TPI_api_staging = ‚¬Å“vetrina staging‚¬.
 - Preparare uno schema architetturale (anche in ASCII / PlantUML) con:
   - utenti / CESARI / Regine,
   - API staging,

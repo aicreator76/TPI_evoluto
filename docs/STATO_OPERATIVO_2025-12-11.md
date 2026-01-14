@@ -2,9 +2,9 @@
 Data: 2025-12-11
 
 ## 1. Demo Grafica
-- home_demo_tpi_api.html → funzionante
-- home_demo_accessori_api.html → funzionante
-- WOW Dashboard → generata
+- home_demo_tpi_api.html € €™ funzionante
+- home_demo_accessori_api.html € €™ funzionante
+- WOW Dashboard € €™ generata
 - Mancano: 3 pulsanti principali richiamati dal Sovrano
 
 ## 2. Unificazione TPI_evoluto + TPI_api_staging
@@ -27,7 +27,7 @@ Data: 2025-12-11
 
 ## 5. Regine & CESARI
 - AELIS (strategia)
-- Tempesta (operatività)
+- Tempesta (operativitÃƒ )
 - Builder_TPI (integrazione demo/API)
 - Nuovo ordine: evitare memoria immediata per sicurezza
 

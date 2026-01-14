@@ -12,14 +12,14 @@
   - Ruolo: API leggera pubblicata su Render (staging).
   - Tecnologia: FastAPI semplificata, healthcheck, endpoint selezionati.
 
-## Obiettivo dell’unificazione
+## Obiettivo dell‚¬„¢unificazione
 
 - Evitare doppioni di logica tra i due progetti.
 - Avere un **piano unico di versioning** per:
   - schema DB,
   - API pubbliche,
   - viste e listini (ACCESSORI, FUNI, LYNX, FORESTALE, ecc.).
-- Rendere TPI_api_staging un “guscio di pubblicazione” allineato a TPI_evoluto.
+- Rendere TPI_api_staging un ‚¬Å“guscio di pubblicazione‚¬ allineato a TPI_evoluto.
 
 ## Rischi attuali
 
@@ -28,8 +28,8 @@
   - payload JSON,
   - tipi di risposta,
   - gestione errori e rate-limit.
-- Modifiche fatte su un repo e non replicate nell’altro.
-- Complessità nel raccontare il progetto a terzi (demo lunedì, investitori, partner).
+- Modifiche fatte su un repo e non replicate nell‚¬„¢altro.
+- ComplessitÃƒ  nel raccontare il progetto a terzi (demo lunedì, investitori, partner).
 
 Questo documento fotografa lo **stato mentale e strutturale** al 10/12/2025
 e apre la strada al merge pianificato.

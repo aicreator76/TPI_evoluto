@@ -1,4 +1,4 @@
-# Build TPI (stub) – Collegamento CESARE ↔ GitHub Actions
+# Build TPI (stub) – Collegamento CESARE € € GitHub Actions
 
 ## 1. Come creare un tag con CESARE_TPI_CI_BRIDGE.ps1
 
@@ -39,6 +39,6 @@ Per vedere la run:
 - Non vengono generati pacchetti Android .apk installabili;
 - La pipeline serve solo per:
   - accendere la CI,
-  - verificare il collegamento CESARE ↔ GitHub,
+  - verificare il collegamento CESARE € € GitHub,
   - testare il flusso con file STUB;
 - Le build reali verranno documentate in una sezione separata quando saranno pronte e testate.

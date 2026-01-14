@@ -8,7 +8,7 @@ Obiettivo:
   - DPI seri (con revisioni),
   - funi in fibra / forestale,
   - sottogancio,
-  - accessori già strutturati.
+  - accessori giÃƒ  strutturati.
 
 > NOTA: i path qui sotto sono da allineare ai nomi REALI presenti in
 > `32_mappa_endpoint_TPI_vs_STAGING_2025-12-10.md` e nel codice.
@@ -81,7 +81,7 @@ Endpoint desiderati:
 5) ACCESSORI – MODELLO DI RIFERIMENTO
 ------------------------------------------------------------
 
-Endpoint già attivi in TPI_evoluto (da UP-livellare su STAGING):
+Endpoint giÃƒ  attivi in TPI_evoluto (da UP-livellare su STAGING):
 
 - [ ] `GET  /api/accessori/overview`
 - [ ] `GET  /api/accessori/listino`

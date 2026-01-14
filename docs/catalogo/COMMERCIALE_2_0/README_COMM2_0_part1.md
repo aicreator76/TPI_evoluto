@@ -14,6 +14,6 @@ estratta dal catalogo Teufelberger/Petzl (pagg. 11–52) e normalizzata nel form
 ## File tecnici associati
 
 docs/catalogo/COMMERCIALE_2_0/
-  ├─ catalogo_dpi_comm2_part1_raw.csv   (estratto originale BLOCCO 2)
-  └─ catalogo_dpi_comm2_part1_TPI.csv   (versione compatibile con API TPI)
+  €Å“€‚¬ catalogo_dpi_comm2_part1_raw.csv   (estratto originale BLOCCO 2)
+  €€€‚¬ catalogo_dpi_comm2_part1_TPI.csv   (versione compatibile con API TPI)
 scripts/catalogo_comm2_import_part1.ps1

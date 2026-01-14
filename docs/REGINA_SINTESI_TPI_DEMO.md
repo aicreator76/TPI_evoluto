@@ -34,15 +34,15 @@ Note:
   * ML.Status e ML.Check.Health.
   * Sintesi TPI – Giornata 2025-11-21
   *
-  * \## Semaforo Unità
-  * \- 001–BLD: 🟡 (pipeline DEMO solida, TOOLS ancora FAIL)
-  * \- 002–GIT: 🟢 (tag CI-bridge, workflow stub e snapshot OK)
-  * \- 003–LMB: 🟢 (doc CI e README collegano CESARE ↔ GitHub)
+  * \## Semaforo UnitÃƒ 
+  * \- 001–BLD: Ã°Å¸Å¸¡ (pipeline DEMO solida, TOOLS ancora FAIL)
+  * \- 002–GIT: Ã°Å¸Å¸¢ (tag CI-bridge, workflow stub e snapshot OK)
+  * \- 003–LMB: Ã°Å¸Å¸¢ (doc CI e README collegano CESARE € € GitHub)
   *
   * \## Cosa è stato fatto
   * \- 001 ha portato `pre-commit run --all-files` a verde su `orchestra/build-tpi-stub` e ha lanciato `CESARE\_RELEASE\_TPI\_DEMO.ps1` con versione `vTEST-CI-BRIDGE-001`, generando bucket `RELEASE\_TPI\\2025-11-21` con PACCHETTO\_TPI=OK, CHECKLISTA\_TPI=OK e `STATUS\_TPI\_2025-11-21.json`.
   * \- 002 ha creato il tag `tpi-vTEST-CI-BRIDGE-001` tramite `CESARE\_TPI\_CI\_BRIDGE.ps1`, ha fatto girare con successo il workflow GitHub \*\*Build TPI (stub)\*\* (run `19561788467`) e ha fissato il tag `Snapshot-OK-2025-11-21` come foto tecnica del giorno.
-  * \- 003 ha scritto `docs/CI\_TPI\_BUILD.md` (come usare il bridge CESARE→CI) e ha aggiornato `docs/README\_POWER\_TPI\_evoluto.md` con la sezione \*\*“Build TPI (stub) – Collegamento CESARE ↔ GitHub Actions”\*\*, rendendo esplicito che oggi esistono solo build STUB, non EXE/APK reali.
+  * \- 003 ha scritto `docs/CI\_TPI\_BUILD.md` (come usare il bridge CESARE€ €™CI) e ha aggiornato `docs/README\_POWER\_TPI\_evoluto.md` con la sezione \*\*‚¬Å“Build TPI (stub) – Collegamento CESARE € € GitHub Actions‚¬\*\*, rendendo esplicito che oggi esistono solo build STUB, non EXE/APK reali.
   * \- La cronaca giornaliera `CRONACA\_TPI\_2025-11-21.md` è stata compilata collegando SUMMARY, semafori e log reali.
   *
   * \## Stato promesse
