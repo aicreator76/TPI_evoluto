@@ -25,3 +25,6 @@ requirements.txt.bak-*
 LOG/
 
 .venv-docs/
+
+docs/openapi.json
+
