@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>TPI Ãƒ¢€š¬‚¬Å“ Accessori 3.0 (Demo API & AI)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg-dark: #020617;
+      --bg-dark-soft: #020b24;
+      --bg-card-dark: #020b24;
+      --bg-card-dark-soft: #020a20;
+      --bg-light: #f4f5fb;
+      --bg-card-light: #ffffff;
+      --bg-card-light-soft: #f0f4ff;
+      --text-dark: #0f172a;
+      --text-light: #e5e7eb;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.18);
+      --accent-strong: #0ea5e9;
+      --border-soft-dark: #1f2937;
+      --border-soft-light: #e5e7eb;
+      --muted-dark: #9ca3af;
+      --muted-light: #6b7280;
+      --danger: #ef4444;
+      --warning: #f59e0b;
+      --success: #22c55e;
+      --chip-bg: #111827;
+      --chip-bg-light: #e5f2ff;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #0f172a 0, #020617 52%, #000 100%);
+      color: var(--text-light);
+    }
+
+    body.theme-light {
+      background: radial-gradient(circle at top left, #e5f2ff 0, #f4f5fb 60%, #e5e7eb 100%);
+      color: var(--text-dark);
+    }
+
+    .page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 40px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+    }
+
+    .title-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title-eyebrow {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: #9ca3af;
+    }
+
+    body.theme-light .title-eyebrow {
+      color: #6b7280;
+    }
+
+    .title-main {
+      font-size: 1.7rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+
+    .title-sub {
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+
+    body.theme-light .title-sub {
+      color: #6b7280;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    select,
+    button,
+    .pill {
+      font-family: inherit;
+      font-size: 0.82rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.5);
+      padding: 6px 12px;
+      background: rgba(15, 23, 42, 0.8);
+      color: #e5e7eb;
+      cursor: pointer;
+    }
+
+    body.theme-light select,
+    body.theme-light button,
+    body.theme-light .pill {
+      background: rgba(255, 255, 255, 0.8);
+      color: #111827;
+      border-color: rgba(148, 163, 184, 0.7);
+    }
+
+    select {
+      padding-right: 28px;
+    }
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      background: linear-gradient(to right, #0f172a, #020617);
+      border-color: #1e293b;
+    }
+
+    body.theme-light button {
+      background: linear-gradient(to right, #e0edff, #f9fafb);
+      border-color: #cbd5f5;
+    }
+
+    button span.dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .pill {
+      border-style: dashed;
+      font-size: 0.78rem;
+    }
+
+    .pill-state {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding-inline: 10px;
+      background: rgba(22, 163, 74, 0.18);
+      border-color: rgba(34, 197, 94, 0.6);
+    }
+
+    .pill-state-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .pill-state.offline {
+      background: rgba(220, 38, 38, 0.15);
+      border-color: rgba(248, 113, 113, 0.9);
+    }
+
+    .pill-state.offline .pill-state-dot {
+      background: #ef4444;
+    }
+
+    /* Filter row */
+    .filters-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .filter-chip {
+      border-radius: 999px;
+      padding: 5px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      font-size: 0.8rem;
+      background: rgba(15, 23, 42, 0.8);
+      color: #e5e7eb;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    body.theme-light .filter-chip {
+      background: rgba(255, 255, 255, 0.92);
+      color: #111827;
+    }
+
+    .filter-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .filter-chip.work {
+      border-color: #f97316;
+    }
+
+    .filter-chip.ai {
+      border-color: #6366f1;
+    }
+
+    /* Layout cards */
+    .layout {
+      display: grid;
+      grid-template-columns: 1.3fr 0.9fr;
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      border-radius: 18px;
+      padding: 18px 18px 16px;
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.1), var(--bg-card-dark));
+      border: 1px solid var(--border-soft-dark);
+      box-shadow: 0 14px 45px rgba(15, 23, 42, 0.65);
+    }
+
+    body.theme-light .card {
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.08), var(--bg-card-light));
+      border-color: var(--border-soft-light);
+      box-shadow: 0 12px 35px rgba(15, 23, 42, 0.12);
+    }
+
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .card-title {
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+
+    body.theme-light .card-title {
+      color: #6b7280;
+    }
+
+    .card-title strong {
+      font-size: 0.92rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: #e5e7eb;
+    }
+
+    body.theme-light .card-title strong {
+      color: #111827;
+    }
+
+    .card-sub {
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+
+    body.theme-light .card-sub {
+      color: #6b7280;
+    }
+
+    .chip-endpoint {
+      font-size: 0.7rem;
+      padding: 4px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.85);
+      color: #e5e7eb;
+    }
+
+    body.theme-light .chip-endpoint {
+      background: rgba(240, 249, 255, 0.95);
+      color: #111827;
+    }
+
+    /* Table ACCESSORI */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+
+    thead {
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    body.theme-light thead {
+      background: rgba(226, 232, 240, 0.95);
+    }
+
+    th, td {
+      padding: 6px 10px;
+      text-align: left;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.7);
+      white-space: nowrap;
+    }
+
+    body.theme-light th,
+    body.theme-light td {
+      border-bottom-color: rgba(209, 213, 219, 0.95);
+    }
+
+    th {
+      font-weight: 600;
+      font-size: 0.75rem;
+      color: #9ca3af;
+    }
+
+    body.theme-light th {
+      color: #6b7280;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15, 23, 42, 0.75);
+    }
+
+    body.theme-light tbody tr:nth-child(even) {
+      background: rgba(249, 250, 251, 0.9);
+    }
+
+    .tag-origin {
+      margin-top: 6px;
+      font-size: 0.7rem;
+      color: #9ca3af;
+    }
+
+    body.theme-light .tag-origin {
+      color: #6b7280;
+    }
+
+    .tag-origin strong {
+      color: #e5e7eb;
+    }
+
+    body.theme-light .tag-origin strong {
+      color: #111827;
+    }
+
+    .state-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      min-width: 60px;
+    }
+
+    .state-ok {
+      background: rgba(34, 197, 94, 0.18);
+      color: #22c55e;
+      border: 1px solid rgba(34, 197, 94, 0.8);
+    }
+
+    .state-warn {
+      background: rgba(250, 204, 21, 0.16);
+      color: #fbbf24;
+      border: 1px solid rgba(234, 179, 8, 0.9);
+    }
+
+    .state-bad {
+      background: rgba(248, 113, 113, 0.16);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.95);
+    }
+
+    .state-unknown {
+      background: rgba(148, 163, 184, 0.12);
+      color: #e5e7eb;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+    }
+
+    body.theme-light .state-unknown {
+      background: rgba(229, 231, 235, 0.9);
+      color: #374151;
+    }
+
+    /* Right column content */
+    .status-list {
+      list-style: none;
+      padding: 0;
+      margin: 8px 0 10px;
+      border-radius: 10px;
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      overflow: hidden;
+    }
+
+    body.theme-light .status-list {
+      border-color: rgba(203, 213, 225, 0.95);
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 10px;
+      font-size: 0.78rem;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.7);
+    }
+
+    body.theme-light .status-row {
+      border-bottom-color: rgba(209, 213, 219, 0.95);
+    }
+
+    .status-row:last-child {
+      border-bottom: none;
+    }
+
+    .status-label {
+      font-weight: 500;
+    }
+
+    .status-value {
+      text-transform: lowercase;
+      color: #9ca3af;
+    }
+
+    .status-value.ok {
+      color: #22c55e;
+    }
+
+    .status-value.offline {
+      color: #ef4444;
+    }
+
+    .status-value.loading {
+      color: #f59e0b;
+    }
+
+    .section-title {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: #9ca3af;
+      margin-top: 6px;
+      margin-bottom: 4px;
+    }
+
+    body.theme-light .section-title {
+      color: #6b7280;
+    }
+
+    .body-small {
+      font-size: 0.78rem;
+      color: #9ca3af;
+    }
+
+    body.theme-light .body-small {
+      color: #6b7280;
+    }
+
+    .body-small b {
+      color: #e5e7eb;
+    }
+
+    body.theme-light .body-small b {
+      color: #111827;
+    }
+
+    footer {
+      margin-top: 20px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(31, 41, 55, 0.8);
+      font-size: 0.7rem;
+      color: #9ca3af;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    body.theme-light footer {
+      border-top-color: rgba(209, 213, 219, 0.95);
+      color: #6b7280;
+    }
+
+    a {
+      color: #38bdf8;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .links-inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      border-radius: 999px;
+      padding: 3px 8px;
+      border: 1px solid rgba(148, 163, 184, 0.7);
+      background: rgba(15, 23, 42, 0.9);
+      color: #e5e7eb;
+    }
+
+    body.theme-light .badge {
+      background: rgba(255, 255, 255, 0.96);
+      color: #111827;
+      border-color: rgba(148, 163, 184, 0.8);
+    }
+  </style>
+  <link rel="stylesheet" href="./wow_photo.css">
+</head>
+<body class="theme-dark">
+  <div class="page">
+    <header>
+      <div class="title-block">
+        <div class="title-eyebrow">TPI Ãƒ€š· DEMO TECNICA</div>
+        <div class="title-main" id="title-main">TPI Ãƒ¢€š¬‚¬Å“ Accessori 3.0</div>
+        <div class="title-sub" id="title-sub">
+          API di staging + motore TPI_evoluto Ãƒ€š· vista dedicata agli accessori industriali
+        </div>
+      </div>
+      <div class="controls">
+        <select id="lang-select" aria-label="Seleziona lingua">
+          <option value="it" selected>IT</option>
+          <option value="en">EN</option>
+        </select>
+        <button type="button" id="theme-toggle">
+          <span id="theme-label">Tema</span>
+          <span class="dot"></span>
+        </button>
+        <span class="pill pill-state offline" id="pill-staging">
+          <span class="pill-state-dot"></span>
+          <span id="pill-staging-label">Staging API offline</span>
+        </span>
+      </div>
+    </header>
+
+    <div class="filters-row">
+      <div class="filter-chip">
+        <span class="filter-dot"></span>
+        <span id="chip-acc-main">Accessori 3.0 collegati</span>
+      </div>
+      <div class="filter-chip work">
+        <span class="filter-dot"></span>
+        <span id="chip-dpi">DPI & revisioni integrabili</span>
+      </div>
+      <div class="filter-chip ai">
+        <span class="filter-dot"></span>
+        <span id="chip-ai">AI presente: AELIS, Tempesta, Maggiordomo</span>
+      </div>
+    </div>
+
+    <div class="layout">
+      <!-- COLONNA SINISTRA -->
+      <div class="card">
+        <div class="card-header-row">
+          <div>
+            <div class="card-title">
+              <span id="card-acc-title">
+                ACCESSORI 3.0 <strong>Ãƒ€š· listino demo</strong>
+              </span>
+            </div>
+            <div class="card-sub" id="card-acc-sub">
+              Estratto reale dal listino accessori (fallback a 3 articoli demo se lÃƒ¢€š¬€ž¢API non risponde).
+            </div>
+          </div>
+          <div class="chip-endpoint">
+            <code>/api/accessori/listino</code>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th id="th-code">Codice</th>
+              <th id="th-desc">Descrizione</th>
+              <th id="th-family">Famiglia</th>
+              <th id="th-state">DisponibilitÃƒÆ’ </th>
+            </tr>
+          </thead>
+          <tbody id="acc-table-body">
+            <!-- riempito da JS -->
+          </tbody>
+        </table>
+
+        <div class="tag-origin" id="tag-origin">
+          Origine dati: <strong>DEMO locale</strong> (verrÃƒÆ’  sostituita dai dati reali quando lÃƒ¢€š¬€ž¢API risponde).
+        </div>
+      </div>
+
+      <!-- COLONNA DESTRA (uguale alla pagina DPI) -->
+      <div class="card">
+        <div class="card-header-row">
+          <div>
+            <div class="card-title">
+              <span id="card-status-title">STATO API STAGING</span>
+            </div>
+            <div class="card-sub" id="card-status-sub">
+              Lettura live di <code>/health</code> e <code>/version</code> dal servizio di staging.
+            </div>
+          </div>
+          <button type="button" id="btn-refresh">
+            <span id="btn-refresh-label">Aggiorna</span>
+          </button>
+        </div>
+
+        <ul class="status-list" aria-label="Stato servizi API">
+          <li class="status-row">
+            <span class="status-label">/health</span>
+            <span class="status-value offline" id="status-health">offline</span>
+          </li>
+          <li class="status-row">
+            <span class="status-label">/version</span>
+            <span class="status-value offline" id="status-version">offline</span>
+          </li>
+        </ul>
+
+        <div class="section-title" id="sec-mag-title">MAGGIORDOMO TPI</div>
+        <p class="body-small" id="mag-intro">
+          Anche in questa vista Accessori, io non decido al posto tuo: ti indico solo dove trovare motore, API e cronache per gli accessori 3.0.
+        </p>
+
+        <div class="section-title" id="sec-paths-title">PERCORSI LOCALI PRINCIPALI</div>
+        <p class="body-small">
+          <b>Motore TPI_evoluto</b> Ãƒ¢‚¬ ‚¬„¢ <code>E:\CLONAZIONE\tpi_evoluto\</code><br />
+          <b>API di staging</b> Ãƒ¢‚¬ ‚¬„¢ <code>E:\CLONAZIONE\TPI_api_staging\</code><br />
+          <b>Unificazione API</b> Ãƒ¢‚¬ ‚¬„¢ <code>E:\CLONAZIONE\tpi_evoluto\docs\unificazione_tpi_api\</code><br />
+          <b>Demo grafica</b> Ãƒ¢‚¬ ‚¬„¢ <code>E:\CLONAZIONE\tpi_evoluto\docs\demo_grafica_tpi_2025-12-10\</code>
+        </p>
+
+        <div class="section-title" id="sec-live-title">DOVE VEDERE LE API IN AZIONE</div>
+        <p class="body-small">
+          <b>Swagger TPI_evoluto (locale)</b> Ãƒ¢‚¬ ‚¬„¢ <code>http://127.0.0.1:8000/docs</code><br />
+          <b>Healthcheck staging</b> Ãƒ¢‚¬ ‚¬„¢ <code>GET /health</code> sulla stessa istanza FastAPI<br />
+          <b>Endpoint listini</b> Ãƒ¢‚¬ ‚¬„¢ vedi mappa in
+          <code>32_mappa_endpoint_TPI_vs_STAGING_2025-12-10.md</code>
+        </p>
+
+        <div class="section-title" id="sec-audience-title">PER CHI GUARDA LA DEMO</div>
+        <p class="body-small" id="audience-text">
+          Se sei un tecnico: questa pagina mostra come gli accessori si agganciano al motore TPI.<br />
+          Se sei un HSE / RSPP: pensa a questa vista come al Ãƒ¢€š¬Ã…€œcatalogo intelligenteÃƒ¢€š¬ di accessori certificati.
+        </p>
+      </div>
+    </div>
+
+    <footer>
+      <div class="links-inline">
+        <span id="links-label">Link utili:</span>
+        <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noreferrer">Swagger / OpenAPI</a>
+        <a href="https://github.com/aicreator76/TPI_evoluto" target="_blank" rel="noreferrer">
+          Repo GitHub TPI_evoluto
+        </a>
+        <a href="https://github.com/aicreator76/TPI_api_staging" target="_blank" rel="noreferrer">
+          Repo GitHub TPI_api_staging
+        </a>
+      </div>
+      <div>
+        <span class="badge" id="badge-note">
+          Motore reale FastAPI + demo HTML statica Ãƒ¢€š¬‚¬Å“ nessuna magia, solo protocolli.
+        </span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const API_BASE = "http://127.0.0.1:8000";
+
+    // Fallback ACCESSORI demo
+    const FALLBACK_ACC = [
+      {
+        codice: "ACC-GAN-001",
+        descrizione: "Gancio di ancoraggio in acciaio INOX",
+        famiglia: "SOTTOGANCIO",
+        stato_demo: "Disponibile"
+      },
+      {
+        codice: "ACC-LVG-002",
+        descrizione: "Linea vita temporanea in fettuccia",
+        famiglia: "LINEE VITA",
+        stato_demo: "Stock limitato"
+      },
+      {
+        codice: "ACC-CON-003",
+        descrizione: "Connettore girevole per funi in fibra",
+        famiglia: "ACCESSORI FUNI",
+        stato_demo: "Non disponibile"
+      }
+    ];
+
+    async function fetchJson(path) {
+      const url = API_BASE + path;
+      try {
+        const resp = await fetch(url, { headers: { "Accept": "application/json" } });
+        if (!resp.ok) {
+          console.warn("Chiamata non OK:", path, resp.status);
+          return null;
+        }
+        return await resp.json();
+      } catch (err) {
+        console.error("Errore fetch", path, err);
+        return null;
+      }
+    }
+
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    // Tema
+    (function () {
+      const btn = document.getElementById("theme-toggle");
+      const label = document.getElementById("theme-label");
+      btn.addEventListener("click", () => {
+        const body = document.body;
+        const isDark = body.classList.contains("theme-dark");
+        if (isDark) {
+          body.classList.remove("theme-dark");
+          body.classList.add("theme-light");
+          label.textContent = "Tema chiaro";
+        } else {
+          body.classList.remove("theme-light");
+          body.classList.add("theme-dark");
+          label.textContent = "Tema";
+        }
+      });
+    })();
+
+    // I18N
+    const I18N = {
+      it: {
+        titleMain: "TPI Ãƒ¢€š¬‚¬Å“ Accessori 3.0",
+        titleSub: "API di staging + motore TPI_evoluto Ãƒ€š· vista dedicata agli accessori industriali",
+        chipAccMain: "Accessori 3.0 collegati",
+        chipDpi: "DPI & revisioni integrabili",
+        chipAi: "AI presente: AELIS, Tempesta, Maggiordomo",
+        cardAccTitle: "ACCESSORI 3.0 Ãƒ€š· listino demo",
+        cardAccSub:
+          "Estratto reale dal listino accessori (fallback a 3 articoli demo se lÃƒ¢€š¬€ž¢API non risponde).",
+        thCode: "Codice",
+        thDesc: "Descrizione",
+        thFamily: "Famiglia",
+        thState: "DisponibilitÃƒÆ’ ",
+        origin: "Origine dati: ",
+        originStrong:
+          "DEMO locale (verrÃƒÆ’  sostituita dai dati reali quando lÃƒ¢€š¬€ž¢API risponde).",
+        cardStatusTitle: "STATO API STAGING",
+        cardStatusSub: "Lettura live di /health e /version dal servizio di staging.",
+        btnRefresh: "Aggiorna",
+        magTitle: "MAGGIORDOMO TPI",
+        magIntro:
+          "Anche in questa vista Accessori, io non decido al posto tuo: ti indico solo dove trovare motore, API e cronache per gli accessori 3.0.",
+        secPaths: "PERCORSI LOCALI PRINCIPALI",
+        secLive: "DOVE VEDERE LE API IN AZIONE",
+        secAudience: "PER CHI GUARDA LA DEMO",
+        audience:
+          "Se sei un tecnico: questa pagina mostra come gli accessori si agganciano al motore TPI.\nSe sei un HSE / RSPP: pensa a questa vista come al catalogo intelligente di accessori certificati.",
+        linksLabel: "Link utili:",
+        badge: "Motore reale FastAPI + demo HTML statica Ãƒ¢€š¬‚¬Å“ nessuna magia, solo protocolli.",
+        stagingOffline: "Staging API offline",
+        stagingOnline: "Staging API online"
+      },
+      en: {
+        titleMain: "TPI Ãƒ¢€š¬‚¬Å“ Accessories 3.0",
+        titleSub: "Staging API + TPI_evoluto engine Ãƒ€š· view dedicated to industrial accessories",
+        chipAccMain: "Accessories 3.0 connected",
+        chipDpi: "PPE & inspections plug-in",
+        chipAi: "AI present: AELIS, Tempesta, Butler",
+        cardAccTitle: "ACCESSORIES 3.0 Ãƒ€š· demo list",
+        cardAccSub:
+          "Real extract from the accessories catalogue (fallback to 3 demo items if the API is not available).",
+        thCode: "Code",
+        thDesc: "Description",
+        thFamily: "Family",
+        thState: "Availability",
+        origin: "Data source: ",
+        originStrong:
+          "LOCAL DEMO (will be replaced by live data when the API answers).",
+        cardStatusTitle: "STAGING API STATUS",
+        cardStatusSub: "Live read of /health and /version from the staging service.",
+        btnRefresh: "Refresh",
+        magTitle: "TPI BUTLER",
+        magIntro:
+          "Also in this Accessories view, I do not decide for you: I only show where engine, APIs and logs live for the 3.0 accessories.",
+        secPaths: "MAIN LOCAL PATHS",
+        secLive: "WHERE TO SEE APIS IN ACTION",
+        secAudience: "FOR THE PERSON WATCHING THE DEMO",
+        audience:
+          "If you are a technician: this page shows how accessories connect to the TPI engine.\nIf you are HSE / RSPP: think of this view as the smart catalogue of certified accessories.",
+        linksLabel: "Useful links:",
+        badge: "Real FastAPI engine + static HTML demo Ãƒ¢€š¬‚¬Å“ no magic, only protocols.",
+        stagingOffline: "Staging API offline",
+        stagingOnline: "Staging API online"
+      }
+    };
+
+    (function () {
+      const select = document.getElementById("lang-select");
+      function applyLang(lang) {
+        const t = I18N[lang] || I18N.it;
+        setText("title-main", t.titleMain);
+        setText("title-sub", t.titleSub);
+        setText("chip-acc-main", t.chipAccMain);
+        setText("chip-dpi", t.chipDpi);
+        setText("chip-ai", t.chipAi);
+        setText("card-acc-title", t.cardAccTitle);
+        setText("card-acc-sub", t.cardAccSub);
+        setText("th-code", t.thCode);
+        setText("th-desc", t.thDesc);
+        setText("th-family", t.thFamily);
+        setText("th-state", t.thState);
+        setText("card-status-title", t.cardStatusTitle);
+        setText("card-status-sub", t.cardStatusSub);
+        setText("btn-refresh-label", t.btnRefresh);
+        setText("sec-mag-title", t.magTitle);
+        setText("mag-intro", t.magIntro);
+        setText("sec-paths-title", t.secPaths);
+        setText("sec-live-title", t.secLive);
+        setText("sec-audience-title", t.secAudience);
+        setText("audience-text", t.audience);
+        setText("links-label", t.linksLabel);
+        setText("badge-note", t.badge);
+
+        const originEl = document.getElementById("tag-origin");
+        if (originEl) {
+          originEl.innerHTML =
+            t.origin + "<strong>" + t.originStrong + "</strong>";
+        }
+
+        const pill = document.getElementById("pill-staging");
+        const statusHealth = document.getElementById("status-health");
+        if (pill && statusHealth) {
+          const online = statusHealth.classList.contains("ok");
+          document.getElementById("pill-staging-label").textContent = online
+            ? t.stagingOnline
+            : t.stagingOffline;
+        }
+      }
+
+      select.addEventListener("change", (e) => applyLang(e.target.value));
+      applyLang("it");
+    })();
+
+    function stateFromLabel(label) {
+      if (!label) return "unknown";
+      const v = label.toLowerCase();
+      if (v.includes("non disponibile") || v.includes("not available")) return "bad";
+      if (v.includes("limitato") || v.includes("limited")) return "warn";
+      if (v.includes("disponibile") || v.includes("available")) return "ok";
+      return "unknown";
+    }
+
+    function createStateChip(label) {
+      const state = stateFromLabel(label);
+      const span = document.createElement("span");
+      span.classList.add("state-chip");
+      if (state === "ok") span.classList.add("state-ok");
+      else if (state === "warn") span.classList.add("state-warn");
+      else if (state === "bad") span.classList.add("state-bad");
+      else span.classList.add("state-unknown");
+      span.textContent = label || "Ãƒ¢€š¬‚¬";
+      return span;
+    }
+
+    function renderAccTable(items, fromApi) {
+      const body = document.getElementById("acc-table-body");
+      if (!body) return;
+      body.innerHTML = "";
+
+      items.forEach((item) => {
+        const tr = document.createElement("tr");
+
+        const code =
+          item.codice ||
+          item.codice_accessorio ||
+          item.code ||
+          item.id ||
+          "";
+        const desc =
+          item.descrizione ||
+          item.descrizione_accessorio ||
+          item.description ||
+          "";
+        const fam =
+          item.famiglia ||
+          item.famiglia_accessorio ||
+          item.gruppo ||
+          item.family ||
+          "Ãƒ¢€š¬‚¬";
+
+        let statoLabel = "";
+        if ("stato_demo" in item) {
+          statoLabel = item.stato_demo;
+        } else if ("disponibilita" in item) {
+          statoLabel = String(item.disponibilita);
+        } else if ("availability" in item) {
+          statoLabel = String(item.availability);
+        }
+
+        const tdCode = document.createElement("td");
+        tdCode.textContent = code || "Ãƒ¢€š¬‚¬";
+
+        const tdDesc = document.createElement("td");
+        tdDesc.textContent = desc || "Ãƒ¢€š¬‚¬";
+
+        const tdFam = document.createElement("td");
+        tdFam.textContent = fam || "Ãƒ¢€š¬‚¬";
+
+        const tdState = document.createElement("td");
+        tdState.appendChild(createStateChip(statoLabel || "Ãƒ¢€š¬‚¬"));
+
+        tr.appendChild(tdCode);
+        tr.appendChild(tdDesc);
+        tr.appendChild(tdFam);
+        tr.appendChild(tdState);
+
+        body.appendChild(tr);
+      });
+
+      const lang = document.getElementById("lang-select").value || "it";
+      const t = I18N[lang] || I18N.it;
+      const originEl = document.getElementById("tag-origin");
+      if (originEl) {
+        if (fromApi) {
+          originEl.innerHTML =
+            (lang === "en" ? "Data source: " : "Origine dati: ") +
+            "<strong>API reale (/api/accessori/listino)</strong>";
+        } else {
+          originEl.innerHTML =
+            t.origin + "<strong>" + t.originStrong + "</strong>";
+        }
+      }
+    }
+
+    async function loadAccessori() {
+      renderAccTable(FALLBACK_ACC, false);
+
+      const data = await fetchJson("/api/accessori/listino?limit=3&offset=0");
+      if (!data || !Array.isArray(data.items) || data.items.length === 0) {
+        console.warn("Uso fallback Accessori demo");
+        return;
+      }
+      renderAccTable(data.items, true);
+    }
+
+    async function refreshStatus() {
+      const healthEl = document.getElementById("status-health");
+      const versionEl = document.getElementById("status-version");
+      const pill = document.getElementById("pill-staging");
+      const pillLabel = document.getElementById("pill-staging-label");
+      const lang = document.getElementById("lang-select").value || "it";
+      const t = I18N[lang] || I18N.it;
+
+      function setLoading() {
+        if (healthEl) {
+          healthEl.textContent = "loading...";
+          healthEl.className = "status-value loading";
+        }
+        if (versionEl) {
+          versionEl.textContent = "loading...";
+          versionEl.className = "status-value loading";
+        }
+      }
+
+      setLoading();
+
+      const [health, version] = await Promise.all([
+        fetchJson("/health"),
+        fetchJson("/version")
+      ]);
+
+      let ok = false;
+
+      if (healthEl) {
+        if (health && (health.status === "ok" || health.detail === "ok")) {
+          healthEl.textContent = "online";
+          healthEl.className = "status-value ok";
+          ok = true;
+        } else {
+          healthEl.textContent = "offline";
+          healthEl.className = "status-value offline";
+        }
+      }
+
+      if (versionEl) {
+        if (version) {
+          let v = "";
+          if (typeof version === "string") v = version;
+          else if (version.version) v = version.version;
+          else {
+            const firstKey = Object.keys(version)[0];
+            v = firstKey ? String(version[firstKey]) : "online";
+          }
+          versionEl.textContent = v;
+          versionEl.className = "status-value ok";
+          ok = true;
+        } else {
+          versionEl.textContent = "offline";
+          versionEl.className = "status-value offline";
+        }
+      }
+
+      if (pill && pillLabel) {
+        if (ok) {
+          pill.classList.remove("offline");
+          pillLabel.textContent = t.stagingOnline;
+        } else {
+          pill.classList.add("offline");
+          pillLabel.textContent = t.stagingOffline;
+        }
+      }
+    }
+
+    (function () {
+      const btn = document.getElementById("btn-refresh");
+      if (btn) {
+        btn.addEventListener("click", () => {
+          refreshStatus();
+        });
+      }
+      loadAccessori();
+      refreshStatus();
+    })();
+  </script>
+  <script src="./data/demo_cataloghi.js"></script>
+  <script src="./data/demo_movimenti.js"></script>
+  <script src="./data/wow_ui.js"></script>
+  <script src="./wow_photo_overlay.js"></script>
+</body>
+</html>
