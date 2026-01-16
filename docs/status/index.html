@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TPI – Status</title>
+  <style>
+    body{font-family:system-ui;margin:0;background:#f8fafc}
+    header{padding:14px 16px;background:#0b1220;color:#fff}
+    main{padding:16px;max-width:900px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:14px}
+    .row{display:flex;align-items:center;gap:10px}
+    .dot{width:10px;height:10px;border-radius:999px;background:#9ca3af}
+    .ok{background:#22c55e}
+    .ko{background:#ef4444}
+    a{text-decoration:none}
+    code{background:#f1f5f9;padding:2px 6px;border-radius:8px}
+  </style>
+</head>
+<body>
+  <header>
+    <strong>TPI – Status</strong> · <a href="../" style="color:#93c5fd">Portale</a>
+  </header>
+  <main>
+    <div class="grid">
+      <div class="card">
+        <div class="row"><span id="dot-pages" class="dot"></span><h3 style="margin:0">GitHub Pages</h3></div>
+        <p id="txt-pages">checking…</p>
+        <p><a href="../">Home</a></p>
+      </div>
+
+      <div class="card">
+        <div class="row"><span id="dot-openapi" class="dot"></span><h3 style="margin:0">OpenAPI</h3></div>
+        <p id="txt-openapi">checking…</p>
+        <p><a href="../openapi.json">openapi.json</a> · <a href="../api/">Swagger UI</a></p>
+      </div>
+
+      <div class="card">
+        <div class="row"><span id="dot-health" class="dot"></span><h3 style="margin:0">Backend Health (Render)</h3></div>
+        <p id="txt-health">checking…</p>
+        <p><a href="https://tpi-evoluto-staging.onrender.com/health">/health</a></p>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">Info</h3>
+        <p>Client time: <code id="now"></code></p>
+        <p>Tip: se un check fallisce, apri DevTools e guarda CORS/network.</p>
+      </div>
+    </div>
+  </main>
+
+<script>
+document.getElementById("now").textContent = new Date().toISOString();
+
+async function ping(url){
+  const r = await fetch(url, {cache:"no-store"});
+  return {ok:r.ok, status:r.status, text: await r.text()};
+}
+function set(idDot,idTxt,ok,msg){
+  const dot=document.getElementById(idDot);
+  const txt=document.getElementById(idTxt);
+  dot.classList.remove("ok","ko");
+  dot.classList.add(ok?"ok":"ko");
+  txt.textContent = msg;
+}
+
+(async ()=>{
+  try{
+    set("dot-pages","txt-pages",true,"OK: pagina caricata");
+  }catch(e){
+    set("dot-pages","txt-pages",false,"KO: "+e);
+  }
+
+  try{
+    const r = await ping("../openapi.json");
+    set("dot-openapi","txt-openapi",r.ok, (r.ok? "OK ":"KO ")+r.status);
+  }catch(e){
+    set("dot-openapi","txt-openapi",false,"KO: "+e);
+  }
+
+  try{
+    const r = await ping("https://tpi-evoluto-staging.onrender.com/health");
+    set("dot-health","txt-health",r.ok,(r.ok? "OK ":"KO ")+r.status);
+  }catch(e){
+    set("dot-health","txt-health",false,"KO: "+e);
+  }
+})();
+</script>
+</body>
+</html>

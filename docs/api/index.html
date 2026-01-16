@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TPI – Swagger UI</title>
+  <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+  <style>
+    body{margin:0}
+    .top{padding:12px 16px;font-family:system-ui;border-bottom:1px solid #e5e7eb}
+    .top a{text-decoration:none}
+  </style>
+</head>
+<body>
+  <div class="top">
+    <strong>TPI – Swagger UI</strong> · <a href="../">Portale</a>
+  </div>
+  <div id="swagger"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+  <script>
+    window.onload = () => {
+      SwaggerUIBundle({
+        dom_id: '#swagger',
+        url: '../openapi.json',
+        presets: [SwaggerUIBundle.presets.apis],
+        layout: "BaseLayout"
+      });
+    };
+  </script>
+</body>
+</html>
