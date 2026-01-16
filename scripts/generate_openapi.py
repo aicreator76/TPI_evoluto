@@ -1,14 +1,17 @@
+﻿import json
+import urllib.request
 from pathlib import Path
-import json
 
+# URL dell'OpenAPI del backend Render
+url = "https://tpi-evoluto-staging.onrender.com/openapi.json"
+
+# Scarica e decodifica (ignora eventuali BOM)
+data = urllib.request.urlopen(url).read().decode("utf-8-sig")
+obj = json.loads(data)
+
+# Scrivi il file nella cartella docs
 out = Path("docs/openapi.json")
 out.parent.mkdir(parents=True, exist_ok=True)
+out.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-payload = {
-  "openapi": "3.0.0",
-  "info": {"title": "TPI evoluto", "version": "0.0.0"},
-  "paths": {}
-}
-
-out.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-print(f"[OK] wrote {out}")
+print("[OK] wrote", out)
