@@ -44,6 +44,12 @@ jobs:
       - name: Build MkDocs site (strict)
         run: mkdocs build --strict
 
+      - name: Publish OpenAPI to site root
+        run: |
+          test -s docs/openapi.json
+          cp docs/openapi.json site/openapi.json
+          test -s site/openapi.json
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
