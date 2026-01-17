@@ -2,9 +2,9 @@ name: Docs
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
     paths:
+      - ".github/workflows/docs.yml"
       - "mkdocs.yml"
       - "docs/**"
       - "scripts/generate_openapi.py"
@@ -23,15 +23,22 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+          cache: "pip"
+          cache-dependency-path: |
+            requirements-docs.txt
 
       - name: Install docs dependencies
         run: |
@@ -39,16 +46,21 @@ jobs:
           pip install -r requirements-docs.txt
 
       - name: Generate OpenAPI schema
-        run: python scripts/generate_openapi.py
+        run: |
+          python scripts/generate_openapi.py
+          python -c "import json; json.load(open('docs/openapi.json','r',encoding='utf-8-sig')); print('[OK] openapi.json valid')"
 
       - name: Build MkDocs site (strict)
-        run: mkdocs build --strict
+        run: mkdocs build --strict --clean
 
       - name: Publish OpenAPI to site root
+        shell: bash
         run: |
+          set -euo pipefail
           test -s docs/openapi.json
-          cp docs/openapi.json site/openapi.json
+          cp -f docs/openapi.json site/openapi.json
           test -s site/openapi.json
+          echo "[OK] published site/openapi.json bytes=$(wc -c < site/openapi.json)"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -58,6 +70,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
