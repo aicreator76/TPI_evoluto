@@ -37,6 +37,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-docs.txt
 
+      # ENTERPRISE: prova a prendere l'ultima openapi pubblicata (cache) se esiste
+      - name: Warm cache from GitHub Pages (best-effort)
+        run: |
+          mkdir -p docs
+          curl -fsSL "https://aicreator76.github.io/TPI_evoluto/openapi.json" -o docs/openapi.json || true
+          test -s docs/openapi.json && echo "[OK] cache loaded from Pages" || echo "[WARN] no cache on Pages"
+
       - name: Generate OpenAPI schema (Render -> docs/openapi.json)
         run: |
           python scripts/generate_openapi.py
@@ -46,37 +53,45 @@ jobs:
           from pathlib import Path
 
           p = Path("docs/openapi.json")
-          data = json.loads(p.read_text(encoding="utf-8"))
-          st = data.get("x_sync_status")
-          paths = data.get("paths") or {}
+          d = json.loads(p.read_text(encoding="utf-8"))
+          st = d.get("x_sync_status")
+          paths = d.get("paths") or {}
 
-          # Se Render è sospeso/non raggiungibile: accetta placeholder (enterprise = mai 404 su Pages)
-          if st in ("service_suspended", "backend_unreachable"):
-              print(f"[WARN] OpenAPI placeholder accepted (status={st}).")
+          # ENTERPRISE: accetta placeholder/stale quando Render è down
+          if st in ("service_suspended", "backend_unreachable", "stale"):
+              print(f"[WARN] OpenAPI accepted (status={st}).")
               raise SystemExit(0)
 
-          # Se NON è placeholder: deve avere endpoints veri
+          # Se NON è placeholder/stale: deve avere endpoints veri
           if not isinstance(paths, dict) or len(paths) == 0:
-              print("[ERR] OpenAPI has no paths and is not placeholder.", file=sys.stderr)
+              print("[ERR] OpenAPI has no paths and is not acceptable status.", file=sys.stderr)
               raise SystemExit(2)
 
-          print(f"[OK] openapi.json OK paths={len(paths)} status={st}")
+          print(f"[OK] OpenAPI OK paths={len(paths)} status={st}")
           PY
 
-      - name: Build MkDocs site (strict)
-        run: mkdocs build --strict
+      # ENTERPRISE: FORZA SEMPRE OUTPUT IN site/
+      - name: Build MkDocs site (strict -> site/)
+        run: mkdocs build --strict --site-dir site
 
       - name: Publish OpenAPI to site root
         run: |
           test -s docs/openapi.json
           cp -f docs/openapi.json site/openapi.json
           test -s site/openapi.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("site/openapi.json")
+          d = json.loads(p.read_text(encoding="utf-8"))
+          print("[OK] site/openapi.json", "status=", d.get("x_sync_status"), "paths=", len(d.get("paths") or {}))
+          PY
           ls -la site | sed -n '1,200p'
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./site
+          path: site
 
   deploy:
     needs: build
