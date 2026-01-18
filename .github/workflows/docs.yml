@@ -37,7 +37,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-docs.txt
 
-      # ENTERPRISE: prova a prendere l'ultima openapi pubblicata (cache) se esiste
       - name: Warm cache from GitHub Pages (best-effort)
         run: |
           mkdir -p docs
@@ -51,18 +50,17 @@ jobs:
           python - <<'PY'
           import json, sys
           from pathlib import Path
-
           p = Path("docs/openapi.json")
           d = json.loads(p.read_text(encoding="utf-8"))
           st = d.get("x_sync_status")
           paths = d.get("paths") or {}
 
-          # ENTERPRISE: accetta placeholder/stale quando Render è down
+          # ENTERPRISE: placeholder/stale ok quando backend è down
           if st in ("service_suspended", "backend_unreachable", "stale"):
               print(f"[WARN] OpenAPI accepted (status={st}).")
               raise SystemExit(0)
 
-          # Se NON è placeholder/stale: deve avere endpoints veri
+          # Se NON è placeholder/stale: deve avere paths
           if not isinstance(paths, dict) or len(paths) == 0:
               print("[ERR] OpenAPI has no paths and is not acceptable status.", file=sys.stderr)
               raise SystemExit(2)
@@ -70,15 +68,16 @@ jobs:
           print(f"[OK] OpenAPI OK paths={len(paths)} status={st}")
           PY
 
-      # ENTERPRISE: FORZA SEMPRE OUTPUT IN site/
       - name: Build MkDocs site (strict -> site/)
         run: mkdocs build --strict --site-dir site
 
-      - name: Publish OpenAPI to site root
+      - name: Publish OpenAPI to site root (guaranteed)
         run: |
           test -s docs/openapi.json
           cp -f docs/openapi.json site/openapi.json
           test -s site/openapi.json
+          echo "[DBG] openapi.json in site:"
+          find site -maxdepth 2 -name "openapi.json" -print -ls || true
           python - <<'PY'
           import json
           from pathlib import Path
