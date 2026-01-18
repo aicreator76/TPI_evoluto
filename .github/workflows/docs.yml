@@ -37,7 +37,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-docs.txt
 
-      - name: Generate OpenAPI schema (Render -> docs/openapi.json)
+      -       - name: Generate OpenAPI schema (Render -> docs/openapi.json)
         run: |
           python scripts/generate_openapi.py
           test -s docs/openapi.json
@@ -45,11 +45,23 @@ jobs:
           import json
           from pathlib import Path
           p = Path("docs/openapi.json")
-          data = json.loads(p.read_text(encoding="utf-8"))
-          paths = data.get("paths", {}) or {}
-          print(f"[OK] openapi.json size={p.stat().st_size} paths={len(paths)}")
-          assert isinstance(paths, dict) and len(paths) > 0
+          data = json.loads(p.read_text(encoding="utf-8-sig"))
+          paths = data.get("paths") or {}
+          sync = data.get("x_sync_status", "ok")
+          npaths = len(paths) if isinstance(paths, dict) else -1
+          print(f"[INFO] openapi.json size={p.stat().st_size} paths={npaths} sync={sync}")
+
+          # ENTERPRISE RULE:
+          # - se backend sospeso/non raggiungibile: OK pubblicare placeholder (non fallire)
+          # - se backend OK: pretendiamo paths > 0
+          if sync in ("backend_unavailable", "backend_unreachable", "service_suspended"):
+              print("[WARN] Backend unavailable/suspended: publishing placeholder OpenAPI.")
+              raise SystemExit(0)
+
+          if not isinstance(paths, dict) or len(paths) == 0:
+              raise SystemExit("[ERR] OpenAPI has no paths while backend should be up. Failing build.")
           PY
+
 
       - name: Build MkDocs site (strict)
         run: mkdocs build --strict
