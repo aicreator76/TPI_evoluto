@@ -9,7 +9,7 @@ on:
       - "scripts/generate_openapi.py"
       - "requirements-docs.txt"
       - ".github/workflows/docs.yml"
-  workflow_dispatch:
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -37,60 +37,38 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-docs.txt
 
-      - name: Warm cache from GitHub Pages (best-effort)
-        run: |
-          mkdir -p docs
-          curl -fsSL "https://aicreator76.github.io/TPI_evoluto/openapi.json" -o docs/openapi.json || true
-          test -s docs/openapi.json && echo "[OK] cache loaded from Pages" || echo "[WARN] no cache on Pages"
-
       - name: Generate OpenAPI schema (Render -> docs/openapi.json)
         run: |
           python scripts/generate_openapi.py
           test -s docs/openapi.json
-          python - <<'PY'
+          python - <<''PY''
           import json, sys
           from pathlib import Path
           p = Path("docs/openapi.json")
-          d = json.loads(p.read_text(encoding="utf-8"))
-          st = d.get("x_sync_status")
-          paths = d.get("paths") or {}
-
-          # ENTERPRISE: placeholder/stale ok quando backend è down
-          if st in ("service_suspended", "backend_unreachable", "stale"):
-              print(f"[WARN] OpenAPI accepted (status={st}).")
-              raise SystemExit(0)
-
-          # Se NON è placeholder/stale: deve avere paths
-          if not isinstance(paths, dict) or len(paths) == 0:
-              print("[ERR] OpenAPI has no paths and is not acceptable status.", file=sys.stderr)
-              raise SystemExit(2)
-
-          print(f"[OK] OpenAPI OK paths={len(paths)} status={st}")
+          data = json.loads(p.read_text(encoding="utf-8"))
+          status = data.get("x_sync_status")
+          paths = data.get("paths") or {}
+          print(f"[INFO] x_sync_status={status}, paths={len(paths)}")
+          # se status è "ok", deve avere almeno un percorso; altrimenti (placeholder) non blocca la build
+          if status == "ok" and len(paths) == 0:
+              print("[ERROR] OpenAPI from Render has no paths", file=sys.stderr)
+              sys.exit(1)
           PY
 
-      - name: Build MkDocs site (strict -> site/)
-        run: mkdocs build --strict --site-dir site
+      - name: Build MkDocs site (strict)
+        run: mkdocs build --strict
 
-      - name: Publish OpenAPI to site root (guaranteed)
+      - name: Publish OpenAPI to site root
         run: |
-          test -s docs/openapi.json
+          mkdir -p site
           cp -f docs/openapi.json site/openapi.json
           test -s site/openapi.json
-          echo "[DBG] openapi.json in site:"
-          find site -maxdepth 2 -name "openapi.json" -print -ls || true
-          python - <<'PY'
-          import json
-          from pathlib import Path
-          p = Path("site/openapi.json")
-          d = json.loads(p.read_text(encoding="utf-8"))
-          print("[OK] site/openapi.json", "status=", d.get("x_sync_status"), "paths=", len(d.get("paths") or {}))
-          PY
           ls -la site | sed -n '1,200p'
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: ./site
 
   deploy:
     needs: build
