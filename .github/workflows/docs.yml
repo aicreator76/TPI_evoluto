@@ -37,30 +37,32 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-docs.txt
 
-      -       - name: Generate OpenAPI schema (Render -> docs/openapi.json)
+            - name: Generate OpenAPI schema (Render -> docs/openapi.json)
         run: |
           python scripts/generate_openapi.py
           test -s docs/openapi.json
           python - <<'PY'
-          import json
+          import json, sys
           from pathlib import Path
+
           p = Path("docs/openapi.json")
-          data = json.loads(p.read_text(encoding="utf-8-sig"))
+          data = json.loads(p.read_text(encoding="utf-8"))
+          st = data.get("x_sync_status")
           paths = data.get("paths") or {}
-          sync = data.get("x_sync_status", "ok")
-          npaths = len(paths) if isinstance(paths, dict) else -1
-          print(f"[INFO] openapi.json size={p.stat().st_size} paths={npaths} sync={sync}")
 
-          # ENTERPRISE RULE:
-          # - se backend sospeso/non raggiungibile: OK pubblicare placeholder (non fallire)
-          # - se backend OK: pretendiamo paths > 0
-          if sync in ("backend_unavailable", "backend_unreachable", "service_suspended"):
-              print("[WARN] Backend unavailable/suspended: publishing placeholder OpenAPI.")
-              raise SystemExit(0)
+          # ENTERPRISE: se Render è sospeso o non raggiungibile, accettiamo placeholder (mai 404 su Pages)
+          if st in ("service_suspended", "backend_unreachable"):
+              print(f"[WARN] OpenAPI placeholder accepted (status={st}).")
+              sys.exit(0)
 
+          # ENTERPRISE: se NON è placeholder, allora deve avere endpoints veri
           if not isinstance(paths, dict) or len(paths) == 0:
-              raise SystemExit("[ERR] OpenAPI has no paths while backend should be up. Failing build.")
+              print("[ERR] OpenAPI has no paths and is not placeholder.", file=sys.stderr)
+              sys.exit(2)
+
+          print(f"[OK] openapi.json size={p.stat().st_size} paths={len(paths)} status={st}")
           PY
+
 
 
       - name: Build MkDocs site (strict)
