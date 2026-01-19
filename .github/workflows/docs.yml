@@ -37,22 +37,44 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-docs.txt
 
+      - name: Warm cache from GitHub Pages (best-effort)
+        run: |
+          set +e
+          curl -s -L "https://aicreator76.github.io/TPI_evoluto/openapi.json" -o docs/openapi.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          p = Path("docs/openapi.json")
+          ok = False
+          try:
+              if p.exists() and p.stat().st_size > 0:
+                  d = json.loads(p.read_text(encoding="utf-8-sig"))
+                  paths = (d.get("paths") or {}) if isinstance(d, dict) else {}
+                  ok = isinstance(paths, dict) and len(paths) > 0
+          except Exception:
+              ok = False
+          if not ok:
+              p.unlink(missing_ok=True)
+          print(f"[INFO] warm_cache_ok={ok}")
+          PY
+          set -e
+
       - name: Generate OpenAPI schema (Render -> docs/openapi.json)
         run: |
           python scripts/generate_openapi.py
           test -s docs/openapi.json
-          python - <<''PY''
+          python - <<'PY'
           import json, sys
           from pathlib import Path
           p = Path("docs/openapi.json")
-          data = json.loads(p.read_text(encoding="utf-8"))
-          status = data.get("x_sync_status")
+          data = json.loads(p.read_text(encoding="utf-8-sig"))
+          status = (data.get("x_sync_status") or "unknown")
           paths = data.get("paths") or {}
-          print(f"[INFO] x_sync_status={status}, paths={len(paths)}")
-          # se status è "ok", deve avere almeno un percorso; altrimenti (placeholder) non blocca la build
-          if status == "ok" and len(paths) == 0:
-              print("[ERROR] OpenAPI from Render has no paths", file=sys.stderr)
-              sys.exit(1)
+          print(f"[INFO] x_sync_status={status}, paths={len(paths) if isinstance(paths, dict) else 'n/a'}")
+          if status == "ok":
+              if not isinstance(paths, dict) or len(paths) == 0:
+                  print("[ERROR] OpenAPI marked ok but has no paths", file=sys.stderr)
+                  sys.exit(1)
           PY
 
       - name: Build MkDocs site (strict)
