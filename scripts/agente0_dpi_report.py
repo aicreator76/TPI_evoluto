@@ -8,11 +8,6 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-try:
-    from zoneinfo import ZoneInfo
-except Exception:
-    ZoneInfo = None  # Se zoneinfo non è disponibile, si userà date.today()
-
 DATE_FORMATS = (
     "%Y-%m-%d",
     "%d/%m/%Y",
@@ -41,12 +36,10 @@ ALIASES: Dict[str, set[str]] = {
 
 
 def norm_key(s: str) -> str:
-    """Normalizza una chiave rimuovendo spazi e portando a minuscolo."""
     return (s or "").strip().lower().replace(" ", "_")
 
 
 def map_columns(cols: List[str]) -> Dict[str, str]:
-    """Mappa le colonne di input ai nomi canonici definiti in ALIASES."""
     src = [norm_key(c) for c in cols]
     mapping: Dict[str, str] = {}
     for canonical, alts in ALIASES.items():
@@ -58,7 +51,6 @@ def map_columns(cols: List[str]) -> Dict[str, str]:
 
 
 def parse_date(v: Any) -> Optional[date]:
-    """Parsa una data da varie rappresentazioni."""
     if v is None:
         return None
     if isinstance(v, datetime):
@@ -81,17 +73,16 @@ def parse_date(v: Any) -> Optional[date]:
 
 
 def today_rome() -> date:
-    """Restituisce la data odierna nel fuso Europe/Rome (fallback su date.today)."""
-    if ZoneInfo is None:
-        return date.today()
+    """Restituisce la data odierna nel fuso Europe/Rome se disponibile, altrimenti date.today()."""
     try:
+        from zoneinfo import ZoneInfo
+
         return datetime.now(ZoneInfo("Europe/Rome")).date()
     except Exception:
         return date.today()
 
 
 def status_from_days(days: int) -> str:
-    """Classifica la scadenza in verde/giallo/rosso in base ai giorni residui."""
     if days < 0:
         return "rosso"
     if days <= 60:
@@ -100,14 +91,12 @@ def status_from_days(days: int) -> str:
 
 
 def load_csv(path: Path) -> List[Dict[str, Any]]:
-    """Carica un file CSV in una lista di dict."""
     with path.open("r", encoding="utf-8-sig", newline="") as f:
-        r = csv.DictReader(f)
-        return [dict(row) for row in r]
+        reader = csv.DictReader(f)
+        return [dict(row) for row in reader]
 
 
 def load_xlsx(path: Path) -> List[Dict[str, Any]]:
-    """Carica un XLSX usando openpyxl; lancia errore se la libreria manca."""
     try:
         import openpyxl
     except Exception as e:
@@ -123,8 +112,7 @@ def load_xlsx(path: Path) -> List[Dict[str, Any]]:
     headers = [str(x).strip() if x is not None else "" for x in values[0]]
     rows: List[Dict[str, Any]] = []
     for line in values[1:]:
-        # converte il tuple in lista per indicizzazione sicura (mypy)
-        line_values = list(line)
+        line_values = list(line)  # converti la riga in lista per indicizzazione sicura
         row = {
             headers[i]: (line_values[i] if i < len(line_values) else None)
             for i in range(len(headers))
@@ -157,7 +145,7 @@ def main() -> int:
 
     def log(msg: str) -> None:
         prev = log_path.read_text(encoding="utf-8") if log_path.exists() else ""
-        log_path.write_text(prev + msg + "\n", encoding="utf-8")
+        log_path.write_text(prev + msg + "\\n", encoding="utf-8")
 
     # Carica righe
     if inp.suffix.lower() == ".csv":
@@ -210,7 +198,7 @@ def main() -> int:
             }
         )
 
-    # Categorie
+    # Categorie scadenze
     scaduti = [x for x in out_rows if x["days_to_expiry"] < 0]
     due30 = [x for x in out_rows if 0 <= x["days_to_expiry"] <= 30]
     due15 = [x for x in out_rows if 0 <= x["days_to_expiry"] <= 15]
@@ -223,12 +211,7 @@ def main() -> int:
     fields = (
         list(out_rows[0].keys())
         if out_rows
-        else [
-            "id_dpi",
-            "data_scadenza",
-            "days_to_expiry",
-            "stato",
-        ]
+        else ["id_dpi", "data_scadenza", "days_to_expiry", "stato"]
     )
     with report_csv.open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=fields)
@@ -253,7 +236,7 @@ def main() -> int:
         },
     }
     report_json.write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        json.dumps(summary, indent=2, ensure_ascii=False) + "\\n", encoding="utf-8"
     )
 
     n8n_payload = {
@@ -264,7 +247,7 @@ def main() -> int:
         "due_1": due1,
     }
     payload_n8n.write_text(
-        json.dumps(n8n_payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        json.dumps(n8n_payload, indent=2, ensure_ascii=False) + "\\n", encoding="utf-8"
     )
 
     log(f"[OK] input={inp}")
