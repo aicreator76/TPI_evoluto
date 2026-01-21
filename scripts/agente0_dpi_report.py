@@ -38,10 +38,12 @@ ALIASES: Dict[str, set[str]] = {
 
 
 def norm_key(s: str) -> str:
+    """Normalizza una chiave rimuovendo spazi e portando a minuscolo."""
     return (s or "").strip().lower().replace(" ", "_")
 
 
 def map_columns(cols: List[str]) -> Dict[str, str]:
+    """Mappa le colonne di input ai nomi canonici definiti in ALIASES."""
     src = [norm_key(c) for c in cols]
     mapping: Dict[str, str] = {}
     for canonical, alts in ALIASES.items():
@@ -53,6 +55,7 @@ def map_columns(cols: List[str]) -> Dict[str, str]:
 
 
 def parse_date(v: Any) -> Optional[date]:
+    """Parsa una data da varie rappresentazioni."""
     if v is None:
         return None
     if isinstance(v, datetime):
@@ -75,9 +78,9 @@ def parse_date(v: Any) -> Optional[date]:
 
 
 def today_rome() -> date:
-    # Import locale di ZoneInfo per non riassegnare il tipo (mypy)
+    """Restituisce la data odierna nel fuso Europe/Rome se disponibile; fallback su date.today()."""
     try:
-        from zoneinfo import ZoneInfo
+        from zoneinfo import ZoneInfo  # import locale per evitare riassegnazioni globali
 
         return datetime.now(ZoneInfo("Europe/Rome")).date()
     except Exception:
@@ -85,6 +88,7 @@ def today_rome() -> date:
 
 
 def status_from_days(days: int) -> str:
+    """Classifica la scadenza in verde/giallo/rosso in base ai giorni residui."""
     if days < 0:
         return "rosso"
     if days <= 60:
@@ -93,12 +97,14 @@ def status_from_days(days: int) -> str:
 
 
 def load_csv(path: Path) -> List[Dict[str, Any]]:
+    """Carica un file CSV in una lista di dict."""
     with path.open("r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         return [dict(row) for row in reader]
 
 
 def load_xlsx(path: Path) -> List[Dict[str, Any]]:
+    """Carica un XLSX usando openpyxl; lancia errore se la libreria manca."""
     try:
         import openpyxl
     except Exception as e:
@@ -111,18 +117,21 @@ def load_xlsx(path: Path) -> List[Dict[str, Any]]:
     values = list(ws.values)
     if not values:
         return []
+
     # Tipizza headers come lista indicizzabile
     from typing import List as _List
 
     headers: _List[str] = [str(x).strip() if x is not None else "" for x in values[0]]
     rows: _List[Dict[str, Any]] = []
+
     for line in values[1:]:
+        # Converte la riga in lista e la tipizza per MyPy
         line_values: _List[Any] = list(line)
-        row = {
-            headers[i]: (line_values[i] if i < len(line_values) else None)
-            for i in range(len(headers))
-        }
+        row: Dict[str, Any] = {}
+        for idx, header in enumerate(headers):
+            row[header] = line_values[idx] if idx < len(line_values) else None
         rows.append(row)
+
     return rows
 
 
