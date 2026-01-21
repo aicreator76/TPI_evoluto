@@ -8,6 +8,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
+# Formati accettati per le date
 DATE_FORMATS = (
     "%Y-%m-%d",
     "%d/%m/%Y",
@@ -16,6 +17,7 @@ DATE_FORMATS = (
     "%d.%m.%Y",
 )
 
+# Mappature delle colonne
 ALIASES: Dict[str, set[str]] = {
     "id_dpi": {"id_dpi", "id", "codice", "codice_dpi", "dpi_id"},
     "tipo": {"tipo", "type", "modello", "descrizione"},
@@ -73,7 +75,7 @@ def parse_date(v: Any) -> Optional[date]:
 
 
 def today_rome() -> date:
-    """Restituisce la data odierna nel fuso Europe/Rome se disponibile, altrimenti date.today()."""
+    # Import locale di ZoneInfo per non riassegnare il tipo (mypy)
     try:
         from zoneinfo import ZoneInfo
 
@@ -109,10 +111,13 @@ def load_xlsx(path: Path) -> List[Dict[str, Any]]:
     values = list(ws.values)
     if not values:
         return []
-    headers = [str(x).strip() if x is not None else "" for x in values[0]]
-    rows: List[Dict[str, Any]] = []
+    # Tipizza headers come lista indicizzabile
+    from typing import List as _List
+
+    headers: _List[str] = [str(x).strip() if x is not None else "" for x in values[0]]
+    rows: _List[Dict[str, Any]] = []
     for line in values[1:]:
-        line_values = list(line)  # converti la riga in lista per indicizzazione sicura
+        line_values: _List[Any] = list(line)
         row = {
             headers[i]: (line_values[i] if i < len(line_values) else None)
             for i in range(len(headers))
@@ -145,7 +150,7 @@ def main() -> int:
 
     def log(msg: str) -> None:
         prev = log_path.read_text(encoding="utf-8") if log_path.exists() else ""
-        log_path.write_text(prev + msg + "\\n", encoding="utf-8")
+        log_path.write_text(prev + msg + "\n", encoding="utf-8")
 
     # Carica righe
     if inp.suffix.lower() == ".csv":
@@ -236,7 +241,7 @@ def main() -> int:
         },
     }
     report_json.write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False) + "\\n", encoding="utf-8"
+        json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
 
     n8n_payload = {
@@ -247,7 +252,7 @@ def main() -> int:
         "due_1": due1,
     }
     payload_n8n.write_text(
-        json.dumps(n8n_payload, indent=2, ensure_ascii=False) + "\\n", encoding="utf-8"
+        json.dumps(n8n_payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
 
     log(f"[OK] input={inp}")
