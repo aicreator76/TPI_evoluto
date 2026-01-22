@@ -104,21 +104,25 @@ def load_xlsx(path: Path) -> List[Dict[str, Any]]:
         raise RuntimeError(
             "openpyxl non installato: converti XLSX→CSV oppure installa: pip install openpyxl"
         ) from e
+
     wb = openpyxl.load_workbook(path, data_only=True)
     ws = wb.active
     values = list(ws.values)
     if not values:
         return []
+
     from typing import List as _List
 
     headers: _List[str] = [str(x).strip() if x is not None else "" for x in values[0]]
     rows: _List[Dict[str, Any]] = []
+
     for line in values[1:]:
         line_values: _List[Any] = list(line)
         row: Dict[str, Any] = {}
         for idx, header in enumerate(headers):
             row[header] = line_values[idx] if idx < len(line_values) else None
         rows.append(row)
+
     return rows
 
 
@@ -170,6 +174,7 @@ def main() -> int:
     t0 = today_rome()
     out_rows: List[Dict[str, Any]] = []
     parse_errors = 0
+
     for r in rows:
         r_norm = {norm_key(k): v for k, v in r.items()}
 
@@ -180,6 +185,7 @@ def main() -> int:
         if exp is None:
             parse_errors += 1
             continue
+
         days_to_expiry = (exp - t0).days
         out_rows.append(
             {
@@ -215,28 +221,32 @@ def main() -> int:
         writer.writeheader()
         writer.writerows(out_rows)
 
-    summary = {
+    counts: Dict[str, int] = {
+        "tot": len(out_rows),
+        "verde": sum(1 for x in out_rows if x["stato"] == "verde"),
+        "giallo": sum(1 for x in out_rows if x["stato"] == "giallo"),
+        "rosso": sum(1 for x in out_rows if x["stato"] == "rosso"),
+        "parse_errors": parse_errors,
+    }
+    thresholds: Dict[str, int] = {
+        "due_30": len(due30),
+        "due_15": len(due15),
+        "due_1": len(due1),
+        "expired": len(scaduti),
+    }
+
+    summary: Dict[str, Any] = {
         "timestamp_utc": stamp,
         "today_rome": t0.isoformat(),
-        "counts": {
-            "tot": len(out_rows),
-            "verde": sum(1 for x in out_rows if x["stato"] == "verde"),
-            "giallo": sum(1 for x in out_rows if x["stato"] == "giallo"),
-            "rosso": sum(1 for x in out_rows if x["stato"] == "rosso"),
-            "parse_errors": parse_errors,
-        },
-        "thresholds": {
-            "due_30": len(due30),
-            "due_15": len(due15),
-            "due_1": len(due1),
-            "expired": len(scaduti),
-        },
+        "counts": counts,
+        "thresholds": thresholds,
     }
     report_json.write_text(
-        json.dumps(summary, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        json.dumps(summary, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
     )
 
-    n8n_payload = {
+    n8n_payload: Dict[str, Any] = {
         "meta": summary,
         "expired": scaduti,
         "due_30": due30,
@@ -244,17 +254,18 @@ def main() -> int:
         "due_1": due1,
     }
     payload_n8n.write_text(
-        json.dumps(n8n_payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+        json.dumps(n8n_payload, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
     )
 
     log(f"[OK] input={inp}")
     log(f"[OK] wrote={report_csv}")
     log(f"[OK] wrote={report_json}")
     log(f"[OK] wrote={payload_n8n}")
-    log(f"[OK] counts={summary['counts']}")
+    log(f"[OK] counts={counts}")
 
     print(
-        f"[OK] DPI report ready tot={summary['counts']['tot']} expired={len(scaduti)} due30={len(due30)}"
+        f"[OK] DPI report ready tot={counts['tot']} expired={thresholds['expired']} due30={thresholds['due_30']}"
     )
     print(f"[OK] wrote {report_csv}")
     print(f"[OK] wrote {payload_n8n}")
