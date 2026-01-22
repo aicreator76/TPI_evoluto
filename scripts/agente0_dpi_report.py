@@ -8,7 +8,6 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
-# Formati accettati per le date
 DATE_FORMATS = (
     "%Y-%m-%d",
     "%d/%m/%Y",
@@ -17,7 +16,6 @@ DATE_FORMATS = (
     "%d.%m.%Y",
 )
 
-# Mappature delle colonne
 ALIASES: Dict[str, set[str]] = {
     "id_dpi": {"id_dpi", "id", "codice", "codice_dpi", "dpi_id"},
     "tipo": {"tipo", "type", "modello", "descrizione"},
@@ -38,12 +36,10 @@ ALIASES: Dict[str, set[str]] = {
 
 
 def norm_key(s: str) -> str:
-    """Normalizza una chiave rimuovendo spazi e portando a minuscolo."""
     return (s or "").strip().lower().replace(" ", "_")
 
 
 def map_columns(cols: List[str]) -> Dict[str, str]:
-    """Mappa le colonne di input ai nomi canonici definiti in ALIASES."""
     src = [norm_key(c) for c in cols]
     mapping: Dict[str, str] = {}
     for canonical, alts in ALIASES.items():
@@ -55,7 +51,6 @@ def map_columns(cols: List[str]) -> Dict[str, str]:
 
 
 def parse_date(v: Any) -> Optional[date]:
-    """Parsa una data da varie rappresentazioni."""
     if v is None:
         return None
     if isinstance(v, datetime):
@@ -78,9 +73,9 @@ def parse_date(v: Any) -> Optional[date]:
 
 
 def today_rome() -> date:
-    """Restituisce la data odierna nel fuso Europe/Rome se disponibile; fallback su date.today()."""
+    """Restituisce la data odierna nel fuso Europe/Rome; fallback su date.today()."""
     try:
-        from zoneinfo import ZoneInfo  # import locale per evitare riassegnazioni globali
+        from zoneinfo import ZoneInfo
 
         return datetime.now(ZoneInfo("Europe/Rome")).date()
     except Exception:
@@ -88,7 +83,6 @@ def today_rome() -> date:
 
 
 def status_from_days(days: int) -> str:
-    """Classifica la scadenza in verde/giallo/rosso in base ai giorni residui."""
     if days < 0:
         return "rosso"
     if days <= 60:
@@ -97,7 +91,6 @@ def status_from_days(days: int) -> str:
 
 
 def load_csv(path: Path) -> List[Dict[str, Any]]:
-    """Carica un file CSV in una lista di dict."""
     with path.open("r", encoding="utf-8-sig", newline="") as f:
         reader = csv.DictReader(f)
         return [dict(row) for row in reader]
@@ -111,27 +104,21 @@ def load_xlsx(path: Path) -> List[Dict[str, Any]]:
         raise RuntimeError(
             "openpyxl non installato: converti XLSX→CSV oppure installa: pip install openpyxl"
         ) from e
-
     wb = openpyxl.load_workbook(path, data_only=True)
     ws = wb.active
     values = list(ws.values)
     if not values:
         return []
-
-    # Tipizza headers come lista indicizzabile
     from typing import List as _List
 
     headers: _List[str] = [str(x).strip() if x is not None else "" for x in values[0]]
     rows: _List[Dict[str, Any]] = []
-
     for line in values[1:]:
-        # Converte la riga in lista e la tipizza per MyPy
         line_values: _List[Any] = list(line)
         row: Dict[str, Any] = {}
         for idx, header in enumerate(headers):
             row[header] = line_values[idx] if idx < len(line_values) else None
         rows.append(row)
-
     return rows
 
 
@@ -161,7 +148,6 @@ def main() -> int:
         prev = log_path.read_text(encoding="utf-8") if log_path.exists() else ""
         log_path.write_text(prev + msg + "\n", encoding="utf-8")
 
-    # Carica righe
     if inp.suffix.lower() == ".csv":
         rows = load_csv(inp)
     elif inp.suffix.lower() in {".xlsx", ".xlsm"}:
@@ -184,7 +170,6 @@ def main() -> int:
     t0 = today_rome()
     out_rows: List[Dict[str, Any]] = []
     parse_errors = 0
-
     for r in rows:
         r_norm = {norm_key(k): v for k, v in r.items()}
 
@@ -195,7 +180,6 @@ def main() -> int:
         if exp is None:
             parse_errors += 1
             continue
-
         days_to_expiry = (exp - t0).days
         out_rows.append(
             {
@@ -212,7 +196,6 @@ def main() -> int:
             }
         )
 
-    # Categorie scadenze
     scaduti = [x for x in out_rows if x["days_to_expiry"] < 0]
     due30 = [x for x in out_rows if 0 <= x["days_to_expiry"] <= 30]
     due15 = [x for x in out_rows if 0 <= x["days_to_expiry"] <= 15]
