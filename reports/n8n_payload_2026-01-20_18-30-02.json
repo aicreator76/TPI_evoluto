@@ -1,0 +1,86 @@
+{
+  "meta": {
+    "timestamp_utc": "2026-01-20_18-30-02",
+    "today_rome": "2026-01-20",
+    "counts": {
+      "tot": 2,
+      "verde": 0,
+      "giallo": 2,
+      "rosso": 0,
+      "parse_errors": 0
+    },
+    "thresholds": {
+      "due_30": 2,
+      "due_15": 2,
+      "due_1": 1,
+      "expired": 0
+    }
+  },
+  "expired": [],
+  "due_30": [
+    {
+      "id_dpi": "",
+      "tipo": "",
+      "marca": "",
+      "matricola": "",
+      "data_scadenza": "2026-02-03",
+      "assegnato_a": "",
+      "sede": "",
+      "note": "",
+      "days_to_expiry": 14,
+      "stato": "giallo"
+    },
+    {
+      "id_dpi": "",
+      "tipo": "",
+      "marca": "",
+      "matricola": "",
+      "data_scadenza": "2026-01-20",
+      "assegnato_a": "",
+      "sede": "",
+      "note": "",
+      "days_to_expiry": 0,
+      "stato": "giallo"
+    }
+  ],
+  "due_15": [
+    {
+      "id_dpi": "",
+      "tipo": "",
+      "marca": "",
+      "matricola": "",
+      "data_scadenza": "2026-02-03",
+      "assegnato_a": "",
+      "sede": "",
+      "note": "",
+      "days_to_expiry": 14,
+      "stato": "giallo"
+    },
+    {
+      "id_dpi": "",
+      "tipo": "",
+      "marca": "",
+      "matricola": "",
+      "data_scadenza": "2026-01-20",
+      "assegnato_a": "",
+      "sede": "",
+      "note": "",
+      "days_to_expiry": 0,
+      "stato": "giallo"
+    }
+  ],
+  "due_1": [
+    {
+      "id_dpi": "",
+      "tipo": "",
+      "marca": "",
+      "matricola": "",
+      "data_scadenza": "2026-01-20",
+      "assegnato_a": "",
+      "sede": "",
+      "note": "",
+      "days_to_expiry": 0,
+      "stato": "giallo"
+    }
+  ]
+}

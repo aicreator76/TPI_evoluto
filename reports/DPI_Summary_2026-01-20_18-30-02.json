@@ -1,0 +1,17 @@
+{
+  "timestamp_utc": "2026-01-20_18-30-02",
+  "today_rome": "2026-01-20",
+  "counts": {
+    "tot": 2,
+    "verde": 0,
+    "giallo": 2,
+    "rosso": 0,
+    "parse_errors": 0
+  },
+  "thresholds": {
+    "due_30": 2,
+    "due_15": 2,
+    "due_1": 1,
+    "expired": 0
+  }
+}
