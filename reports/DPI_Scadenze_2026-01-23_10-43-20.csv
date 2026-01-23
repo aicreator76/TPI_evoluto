@@ -1,0 +1,5 @@
+id_dpi,tipo,marca,matricola,data_scadenza,assegnato_a,sede,note,days_to_expiry,stato
+DPI-101,,,,2025-10-05,,,,-110,rosso
+DPI-102,,,,2025-11-15,,,,-69,rosso
+DPI-103,,,,2025-12-20,,,,-34,rosso
+DPI-103,,,,2025-12-20,,,,-34,rosso
