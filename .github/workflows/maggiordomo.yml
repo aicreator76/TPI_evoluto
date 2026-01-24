@@ -4,7 +4,27 @@ on:
   schedule:
     # GitHub Actions usa UTC
     - cron: "*/5 * * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Override URL (vuoto = usa vars.RENDER_PING_URL)"
+        required: false
+        default: ""
+        type: string
+      mode:
+        description: "strict = fallisce su KO | warn = warning (non fallisce)"
+        required: false
+        default: "strict"
+        type: choice
+        options: [strict, warn]
+      accept_suspended:
+        description: "Accetta 503 'Service Suspended' come OK (utile quando Render è sospeso)"
+        required: false
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
 
 concurrency:
   group: maggiordomo-render-keepawake
@@ -16,55 +36,120 @@ jobs:
     timeout-minutes: 2
 
     env:
-      # Consiglio: mettila come Repository Variable (Settings -> Secrets and variables -> Actions -> Variables)
-      # oppure come Secret se vuoi tenerla privata.
-      RENDER_PING_URL: ${{ vars.RENDER_PING_URL }}
+      # URL: se manuale e input url non vuoto -> usa input, altrimenti vars
+      RENDER_PING_URL: ${{ (github.event_name == 'workflow_dispatch' && inputs.url != '' && inputs.url) || vars.RENDER_PING_URL }}
+
+      # schedule = warn (non sporca di X rosse quando Render è sospeso)
+      # manuale = input mode (default strict)
+      MODE: ${{ (github.event_name == 'workflow_dispatch' && inputs.mode) || 'warn' }}
+
+      # schedule = true | manuale = input accept_suspended
+      ACCEPT_SUSPENDED: ${{ (github.event_name == 'workflow_dispatch' && inputs.accept_suspended) || true }}
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Guardrail - URL must exist
         run: |
           if [ -z "${RENDER_PING_URL}" ]; then
-            echo "ERRORE: vars.RENDER_PING_URL non impostata."
+            echo "ERRORE: vars.RENDER_PING_URL non impostata (e nessun override url)."
             exit 1
           fi
 
       - name: GET ping with timeout + retry (Render cold start)
-        shell: bash
+        id: ping
         run: |
           set -euo pipefail
 
           URL="${RENDER_PING_URL}"
           TS="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          echo "[$TS] PING GET -> $URL"
+          BODY="${RUNNER_TEMP}/render_body.txt"
+          : > "$BODY"
 
-          # curl: GET esplicito + timeout + retry robusto
-          # - connect-timeout: tempo per connettersi
-          # - max-time: tempo massimo totale request
-          # - retry-all-errors: ritenta su errori di rete e 5xx
-          # - retry-max-time: tetto complessivo per i retry
+          echo "[$TS] PING GET -> $URL"
+          echo "mode=${MODE} accept_suspended=${ACCEPT_SUSPENDED}"
+
+          # Allineato al job timeout 2 min: retry corto e realistico
           HTTP_AND_TIME="$(curl -sS -L -X GET \
             --connect-timeout 10 \
-            --max-time 45 \
-            --retry 8 \
-            --retry-delay 5 \
+            --max-time 25 \
+            --retry 4 \
+            --retry-delay 10 \
             --retry-all-errors \
-            --retry-max-time 240 \
-            -o /tmp/render_body.txt \
+            --retry-max-time 90 \
+            -H "User-Agent: maggiordomo/1.0" \
+            -o "$BODY" \
             -w '%{http_code} %{time_total}\n' \
-            "$URL" || true)"
+            "$URL" || echo '000 0')"
 
           CODE="$(echo "$HTTP_AND_TIME" | awk '{print $1}')"
           TIME_TOTAL="$(echo "$HTTP_AND_TIME" | awk '{print $2}')"
 
+          # Preview in log
           echo "HTTP=$CODE time_total=${TIME_TOTAL}s"
           echo "BODY_PREVIEW:"
-          head -c 300 /tmp/render_body.txt || true
+          head -c 300 "$BODY" || true
           echo ""
 
-          # Se vuoi che il workflow fallisca quando non è 2xx/3xx:
+          # Render sospeso: 503 + HTML "Service Suspended"
+          if [ "$CODE" = "503" ] && grep -qi "service has been suspended" "$BODY"; then
+            if [ "${ACCEPT_SUSPENDED}" = "true" ] || [ "${ACCEPT_SUSPENDED}" = "True" ]; then
+              echo "::warning::Render risponde 503 'Service Suspended' (accettato)."
+              echo "code=$CODE" >> "$GITHUB_OUTPUT"
+              echo "time_total=$TIME_TOTAL" >> "$GITHUB_OUTPUT"
+              echo "status=SUSPENDED_OK" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          fi
+
+          # KO se non 2xx/3xx
           if [ -z "${CODE}" ] || [ "${CODE}" -lt 200 ] || [ "${CODE}" -ge 400 ]; then
-            echo "PING KO (HTTP=$CODE)."
+            MSG="PING KO (HTTP=$CODE)."
+            if [ "${MODE}" = "warn" ]; then
+              echo "::warning::${MSG}"
+              echo "code=$CODE" >> "$GITHUB_OUTPUT"
+              echo "time_total=$TIME_TOTAL" >> "$GITHUB_OUTPUT"
+              echo "status=KO_WARN" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            echo "${MSG}"
+            echo "code=$CODE" >> "$GITHUB_OUTPUT"
+            echo "time_total=$TIME_TOTAL" >> "$GITHUB_OUTPUT"
+            echo "status=KO_STRICT" >> "$GITHUB_OUTPUT"
             exit 2
           fi
 
           echo "PING OK."
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "time_total=$TIME_TOTAL" >> "$GITHUB_OUTPUT"
+          echo "status=OK" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        if: always()
+        run: |
+          BODY="${RUNNER_TEMP}/render_body.txt"
+          echo "### Maggiordomo – Render keep-awake" >> "$GITHUB_STEP_SUMMARY"
+          echo "- URL: \`${RENDER_PING_URL}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- MODE: \`${MODE}\` (schedule=warn)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- ACCEPT_SUSPENDED: \`${ACCEPT_SUSPENDED}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- STATUS: \`${{ steps.ping.outputs.status || 'UNKNOWN' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- HTTP: \`${{ steps.ping.outputs.code || 'n/a' }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- time_total: \`${{ steps.ping.outputs.time_total || 'n/a' }}s\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "<details><summary>Body preview</summary>" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          head -c 800 "$BODY" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "</details>" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload response body (debug)
+        # Upload SOLO quando serve: warn/ko/strict fail
+        if: always() && (steps.ping.outputs.status != 'OK')
+        uses: actions/upload-artifact@v4
+        with:
+          name: maggiordomo-render-body
+          path: ${{ runner.temp }}/render_body.txt
