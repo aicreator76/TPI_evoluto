@@ -3,7 +3,7 @@ name: Maggiordomo (Render keep-awake)
 on:
   schedule:
     # GitHub Actions usa UTC
-    - cron: "*/5 * * * *"
+    - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       url:
