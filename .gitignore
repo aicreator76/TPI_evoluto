@@ -27,3 +27,6 @@ LOG/
 .venv-docs/
 
 docs/openapi.json
+
+# secrets
+scripts/radar/.env.proton_bridge

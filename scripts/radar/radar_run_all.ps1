@@ -1,0 +1,61 @@
+<##>
+# TPI Radar Run All Script
+#
+# This PowerShell script orchestrates the entire DPI radar pipeline.
+# It performs the following operations in sequence:
+#  1. Generates an updated LIFE_MIN file from the current revision schedule (Scadenziario).
+#  2. Builds a combined MIX radar report by joining the revision data with the LIFE_MIN data.
+#  3. Sends an email notification with the latest MIX risk CSV as an attachment via Proton Mail Bridge.
+#
+# Before running this script, ensure that:
+#  - The intake folder contains the latest revision file (e.g. `SCADENZIARIO_REV.xlsx`).
+#  - The environment file `.env.proton_bridge` in the radar scripts folder is configured with your Proton Bridge SMTP details.
+#  - Python dependencies are installed in your environment (pandas, openpyxl).
+
+param(
+    [string]$IntakePath = "E:\CLONAZIONE\REPORT_DELTA\INTAKE",
+    [string]$ReportsDir = "E:\CLONAZIONE\REPORT_DELTA\REPORTS",
+    [string]$RevisionFile = "SCADENZIARIO_REV.xlsx",
+    [int]$RevHeaderRow = 3,
+    [int]$WarnDays = 60
+)
+
+# Helper function to locate the latest file matching a pattern in the reports directory
+function Get-LatestReport {
+    param(
+        [string]$Pattern
+    )
+    $files = Get-ChildItem -Path $ReportsDir -Filter $Pattern | Sort-Object LastWriteTime -Descending
+    if ($files.Count -gt 0) {
+        return $files[0]
+    }
+    return $null
+}
+
+Write-Host "[1/3] Generating LIFE_MIN from the revision schedule..."
+
+# Run the life_min generator. This will produce a new LIFE_MIN file in the reports directory.
+python "E:\CLONAZIONE\tpi_evoluto\scripts\radar\life_min_2026-02-16.py"
+
+$latestLife = Get-LatestReport -Pattern "TPI_LIFE_MIN_*.xlsx"
+if (-not $latestLife) {
+    Write-Error "No LIFE_MIN file was generated. Aborting."
+    exit 1
+}
+
+Write-Host "[2/3] Generating the MIX report using $($latestLife.Name)..."
+
+python "E:\CLONAZIONE\tpi_evoluto\scripts\radar\radar_mix_FULL_2026-02-16.py" `
+  --rev-xlsx "$IntakePath\$RevisionFile" `
+  --life-xlsx "$($latestLife.FullName)" `
+  --rev-sheet 0 `
+  --life-sheet 0 `
+  --rev-header $RevHeaderRow `
+  --life-header 0 `
+  --warn-days $WarnDays
+
+Write-Host "[3/3] Sending MIX report email..."
+
+python "E:\CLONAZIONE\tpi_evoluto\scripts\radar\send_radar_proton_bridge_2026-02-16.py"
+
+Write-Host "Pipeline completed."
