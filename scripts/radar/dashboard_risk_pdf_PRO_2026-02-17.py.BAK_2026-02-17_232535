@@ -1,0 +1,332 @@
+from __future__ import annotations
+
+import re
+from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
+
+REPORTS_DIR_DEFAULT = r"E:\CLONAZIONE\REPORT_DELTA\REPORTS"
+
+
+@dataclass
+class RadarCounts:
+    total: int
+    rev_ok: int
+    rev_warn: int
+    rev_expired: int
+    rev_unknown: int
+    life_ok: int
+    life_warn: int
+    life_expired: int
+    life_unknown: int
+    mix_ok: int
+    mix_warn: int
+    mix_expired: int
+    mix_unknown: int
+
+
+def _int(maybe: str) -> int:
+    return int(maybe.strip())
+
+
+def parse_radar_report(text: str) -> RadarCounts:
+    # Accetta anche il report "con \n letterali"
+    t = text.replace("\\n", "\n")
+
+    total = re.search(r"Totale:\s*(\d+)", t)
+    if not total:
+        raise ValueError("Non trovo 'Totale:' nel report.")
+    total_n = _int(total.group(1))
+
+    def grab(section: str, key: str) -> int:
+        # es: "REV (revisione)\n  OK: 0\n  Warning: 3\n  Expired: 34\n  Unknown: 3"
+        m = re.search(rf"{re.escape(section)}.*?\n\s*{re.escape(key)}:\s*(\d+)", t, flags=re.S)
+        if not m:
+            raise ValueError(f"Non trovo '{key}:' nella sezione '{section}'.")
+        return _int(m.group(1))
+
+    rev_ok = grab("REV (revisione)", "OK")
+    rev_warn = grab("REV (revisione)", "Warning")
+    rev_exp = grab("REV (revisione)", "Expired")
+    rev_unk = grab("REV (revisione)", "Unknown")
+
+    life_ok = grab("LIFE (fine vita)", "OK")
+    life_warn = grab("LIFE (fine vita)", "Warning")
+    life_exp = grab("LIFE (fine vita)", "Expired")
+    life_unk = grab("LIFE (fine vita)", "Unknown")
+
+    mix_ok = grab("MIX (rischio complessivo)", "OK")
+    mix_warn = grab("MIX (rischio complessivo)", "Warning")
+    mix_exp = grab("MIX (rischio complessivo)", "Expired")
+    mix_unk = grab("MIX (rischio complessivo)", "Unknown")
+
+    return RadarCounts(
+        total=total_n,
+        rev_ok=rev_ok,
+        rev_warn=rev_warn,
+        rev_expired=rev_exp,
+        rev_unknown=rev_unk,
+        life_ok=life_ok,
+        life_warn=life_warn,
+        life_expired=life_exp,
+        life_unknown=life_unk,
+        mix_ok=mix_ok,
+        mix_warn=mix_warn,
+        mix_expired=mix_exp,
+        mix_unknown=mix_unk,
+    )
+
+
+def compute_risk_index(mix_expired: int, mix_warn: int, total: int) -> int:
+    """
+    Formula commerciale:
+      score = (expired*2 + warning*1) / total
+    Normalizzo in 0..100 usando max=2 (tutti expired).
+    """
+    if total <= 0:
+        return 0
+    score = (mix_expired * 2 + mix_warn * 1) / total  # 0..2
+    idx = round(min(1.0, max(0.0, score / 2.0)) * 100)
+    return int(idx)
+
+
+def level_from_index(idx: int) -> str:
+    if idx >= 80:
+        return "CRITICO"
+    if idx >= 50:
+        return "MEDIO"
+    return "CONTROLLATO"
+
+
+def latest_report_file(reports_dir: Path) -> Path:
+    files = sorted(reports_dir.glob("TPI_RadarMIX_*_REPORT.txt"), key=lambda p: p.stat().st_mtime, reverse=True)
+    if not files:
+        raise FileNotFoundError(f"Nessun REPORT.txt trovato in: {reports_dir}")
+    return files[0]
+
+
+# --- COMMERCIALE (CLIENTE) - PAGINA 2 ---
+from reportlab.lib.units import mm
+from reportlab.lib import colors
+
+def _pct(x: int, total: int) -> float:
+    if total <= 0:
+        return 0.0
+    return round((x / total) * 100, 1)
+
+def commercial_lines(counts: dict) -> dict:
+    # counts atteso: {"expired":x,"warning":x,"unknown":x,"ok":x,"total":x} (se manca, calcolo)
+    exp = int(counts.get("expired", 0) or 0)
+    warn = int(counts.get("warning", 0) or 0)
+    unk = int(counts.get("unknown", 0) or 0)
+    okv = int(counts.get("ok", 0) or 0)
+    total = int(counts.get("total", 0) or (exp + warn + unk + okv) or 1)
+
+    return {
+        "meaning": [
+            f"Critici: {exp} ({_pct(exp,total)}%) | Attenzione: {warn} ({_pct(warn,total)}%)",
+            f"Dati incompleti: {unk} ({_pct(unk,total)}%) → rischio di non tracciabilità",
+            "Priorità: ridurre esposizione e ripristinare conformità in modo documentato",
+        ],
+        "todo": [
+            "Blocca l’uso dei DPI critici e pianifica revisione/sostituzione",
+            "Completa i dati mancanti (matricola, scadenze, documenti) per DPI sconosciuti",
+            "Allinea lo scadenziario con evidenze (verbali, certificati, registri)",
+        ],
+        "next": [
+            "Modulo 2: Piano di rientro + conformità post-intervento (tracciabilità completa)",
+            "Schede DPI per modello + collegamento Manuali/Libretti (PDF digitali)",
+            "Automazione: promemoria scadenze + report periodico per audit/cliente",
+        ],
+    }
+
+def draw_commercial_box(c, x, y_top, w, h, title, lines):
+    c.setStrokeColor(colors.black)
+    c.setLineWidth(0.8)
+    c.roundRect(x, y_top - h, w, h, 10, stroke=1, fill=0)
+
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(x + 6*mm, y_top - 10*mm, title)
+
+    c.setFont("Helvetica", 10)
+    ty = y_top - 18*mm
+    for line in lines:
+        c.drawString(x + 8*mm, ty, u"\u2022 " + line)
+        ty -= 6*mm
+
+def draw_page2(c, counts, stamp):
+    # nuova pagina
+    c.showPage()
+    w, h = c._pagesize
+
+    margin = 18*mm
+    c.setFont("Helvetica-Bold", 18)
+    c.drawString(margin, h - margin, "Dashboard Rischio DPI – Azioni")
+
+    c.setFont("Helvetica", 10)
+    c.drawString(margin, h - margin - 12*mm, f"Generato: {stamp}")
+    total = int(counts.get("total", 0) or 0)
+    if total:
+        c.drawString(margin, h - margin - 18*mm, f"Totale DPI analizzati: {total}")
+
+    boxes = commercial_lines(counts)
+
+    box_w = w - 2*margin
+    box_h = 42*mm
+    y = h - margin - 30*mm
+
+    draw_commercial_box(c, margin, y, box_w, box_h, "Cosa significa", boxes["meaning"])
+    y -= (box_h + 8*mm)
+    draw_commercial_box(c, margin, y, box_w, box_h, "Cosa fare subito", boxes["todo"])
+    y -= (box_h + 8*mm)
+    draw_commercial_box(c, margin, y, box_w, box_h, "Prossimo passo (Servizio Modulo 2)", boxes["next"])
+
+    c.setFont("Helvetica-Oblique", 9)
+    c.drawString(margin, 12*mm, "Nota: elenco completo e dettagli disponibili solo nella versione interna.")
+def build_pdf(out_pdf: Path, counts: RadarCounts, idx: int, level: str, stamp: str) -> None:
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfgen import canvas
+        from reportlab.lib.units import cm
+    except Exception as e:
+        raise SystemExit(
+            "Manca reportlab. Installa con:\n"
+            "  python -m pip install reportlab\n"
+            f"Dettaglio: {e}"
+        )
+
+    w, h = A4
+    c = canvas.Canvas(str(out_pdf), pagesize=A4)
+
+    def title(text: str):
+        c.setFont("Helvetica-Bold", 20)
+        c.drawString(2 * cm, h - 2.5 * cm, text)
+
+    def subtitle(text: str, y: float):
+        c.setFont("Helvetica", 11)
+        c.drawString(2 * cm, y, text)
+
+    def big(text: str, y: float):
+        c.setFont("Helvetica-Bold", 34)
+        c.drawString(2 * cm, y, text)
+
+    def line(y: float):
+        c.setLineWidth(1)
+        c.line(2 * cm, y, w - 2 * cm, y)
+
+    # ---------------- PAGE 1
+    title("TPI – Dashboard Rischio DPI")
+    subtitle("Versione dimostrativa cliente (3 pagine)", h - 3.3 * cm)
+    subtitle(f"Generato: {stamp}", h - 4.0 * cm)
+    line(h - 4.4 * cm)
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(2 * cm, h - 5.7 * cm, "Executive Impact")
+    c.setFont("Helvetica", 12)
+    c.drawString(2 * cm, h - 6.7 * cm, f"Totale DPI analizzati: {counts.total}")
+    c.drawString(2 * cm, h - 7.5 * cm, f"Scaduti (MIX): {counts.mix_expired}")
+    c.drawString(2 * cm, h - 8.3 * cm, f"In scadenza ≤60gg (MIX): {counts.mix_warn}")
+    c.drawString(2 * cm, h - 9.1 * cm, f"Regolari (MIX): {counts.mix_ok}")
+
+    line(h - 9.6 * cm)
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(2 * cm, h - 10.8 * cm, "Indice Rischio Complessivo (0–100)")
+    big(f"{idx}/100", h - 13.0 * cm)
+    c.setFont("Helvetica-Bold", 18)
+    c.drawString(2 * cm, h - 14.2 * cm, f"Livello: {level}")
+
+    c.setFont("Helvetica", 11)
+    c.drawString(2 * cm, 2.2 * cm, "TPI – Tecnologia | Prevenzione | Innovazione")
+    c.showPage()
+
+    # ---------------- PAGE 2
+    title("TPI – Analisi Sintetica")
+    subtitle(f"Base dati: Radar MIX – {stamp}", h - 3.4 * cm)
+    line(h - 4.0 * cm)
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(2 * cm, h - 5.3 * cm, "A) Revisione periodica (REV)")
+    c.setFont("Helvetica", 12)
+    c.drawString(2 * cm, h - 6.3 * cm, f"OK: {counts.rev_ok}")
+    c.drawString(2 * cm, h - 7.1 * cm, f"Warning (≤60gg): {counts.rev_warn}")
+    c.drawString(2 * cm, h - 7.9 * cm, f"Expired: {counts.rev_expired}")
+    c.drawString(2 * cm, h - 8.7 * cm, f"Unknown: {counts.rev_unknown}")
+
+    line(h - 9.4 * cm)
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(2 * cm, h - 10.6 * cm, "B) Fine vita (LIFE)")
+    c.setFont("Helvetica", 12)
+    c.drawString(2 * cm, h - 11.6 * cm, f"OK: {counts.life_ok}")
+    c.drawString(2 * cm, h - 12.4 * cm, f"Warning: {counts.life_warn}")
+    c.drawString(2 * cm, h - 13.2 * cm, f"Expired: {counts.life_expired}")
+    c.drawString(2 * cm, h - 14.0 * cm, f"Unknown: {counts.life_unknown}")
+
+    line(h - 15.0 * cm)
+
+    c.setFont("Helvetica-Bold", 13)
+    c.drawString(2 * cm, h - 16.2 * cm, "Insight automatico")
+    c.setFont("Helvetica", 12)
+    c.drawString(
+        2 * cm,
+        h - 17.2 * cm,
+        "Il rischio aziendale è determinato principalmente da gestione revisione, non da fine vita dei DPI."
+    )
+
+    c.setFont("Helvetica", 11)
+    c.drawString(2 * cm, 2.2 * cm, "TPI – Tecnologia | Prevenzione | Innovazione")
+    c.showPage()
+
+    # ---------------- PAGE 3
+    title("TPI – Piano di Rientro Rischio")
+    subtitle("Obiettivo: controllo e tracciabilità in 60 giorni", h - 3.4 * cm)
+    line(h - 4.0 * cm)
+
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(2 * cm, h - 5.5 * cm, "Piano 60 Giorni (operativo)")
+    c.setFont("Helvetica", 12)
+
+    bullets = [
+        f"1) Revisione immediata dei {counts.mix_expired} DPI in stato CRITICO (MIX scaduti).",
+        f"2) Pianificazione revisione dei {counts.mix_warn} DPI in finestra ≤60 giorni.",
+        "3) Attivazione monitoraggio digitale: alert automatici + storico controlli + report mensile.",
+        "4) Dashboard rischio: KPI, trend, responsabilità, evidenze e audit-ready.",
+    ]
+    y = h - 6.7 * cm
+    for b in bullets:
+        c.drawString(2 * cm, y, b)
+        y -= 0.9 * cm
+
+    line(y - 0.4 * cm)
+
+    c.setFont("Helvetica-Bold", 13)
+    c.drawString(2 * cm, y - 1.5 * cm, "Output per Cliente / Audit")
+    c.setFont("Helvetica", 12)
+    c.drawString(2 * cm, y - 2.5 * cm, "• PDF mensile rischio • CSV esportabili • Log verifiche • Tracciabilità completa")
+
+    c.setFont("Helvetica", 11)
+    c.drawString(2 * cm, 2.2 * cm, "TPI – Tecnologia | Prevenzione | Innovazione")
+        c.save()
+
+
+def main() -> None:
+    reports_dir = Path(REPORTS_DIR_DEFAULT)
+    rep = latest_report_file(reports_dir)
+    text = rep.read_text(encoding="utf-8", errors="ignore")
+
+    counts = parse_radar_report(text)
+    idx = compute_risk_index(counts.mix_expired, counts.mix_warn, counts.total)
+    level = level_from_index(idx)
+
+    stamp = datetime.now().strftime("%Y-%m-%d_%H%M")
+    out_pdf = reports_dir / f"TPI_DashboardRischio_{stamp}.pdf"
+    build_pdf(out_pdf, counts, idx, level, stamp)
+
+    print("OK DASHBOARD PDF")
+    print("REPORT:", rep.name)
+    print("PDF   :", out_pdf)
+
+
+if __name__ == "__main__":
+    main()

@@ -39,8 +39,7 @@ python 'E:\CLONAZIONE\tpi_evoluto\scripts\radar\radar_mix_FULL_2026-02-17.py' `
   --warn-days $WarnDays
 
 Write-Host '[3/4] Generating Dashboard Rischio PDF (cliente) + OPEN...'
-python 'E:\CLONAZIONE\tpi_evoluto\scripts\radar\dashboard_risk_pdf_PRO_2026-02-17.py'
-if ($LASTEXITCODE -ne 0) { throw 'Dashboard PDF failed – stop email' }
+python 'E:\CLONAZIONE\tpi_evoluto\scripts\radar\dashboard_risk_pdf_2026-02-17.py'
 $pdf = Get-LatestReport -Pattern 'TPI_DashboardRischio_*.pdf'
 if ($pdf) { Start-Process $pdf.FullName }
 
