@@ -30,3 +30,7 @@ docs/openapi.json
 
 # secrets
 scripts/radar/.env.proton_bridge
+# --- RADAR: rottami locali (mai in git) ---
+scripts/radar/*.BAK_*
+scripts/radar/*_20??-??-??*.py
+scripts/radar/*_20??-??-??*.ps1
