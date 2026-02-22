@@ -46,9 +46,9 @@ function DeUmlaut([string]$s) {
   if ([string]::IsNullOrWhiteSpace($s)) { return "" }
   $x = $s
   try {
-    $x = $x.Replace(([string][char]0x00C4),'AE').Replace(([string][char]0x00D6),'OE').Replace(([string][char]0x00DC),'UE')  # ÄÖÜ
-    $x = $x.Replace(([string][char]0x00DF),'SS')                                                                           # ß
-    $x = $x.Replace(([string][char]0x00E4),'AE').Replace(([string][char]0x00F6),'OE').Replace(([string][char]0x00FC),'UE')  # äöü
+    $x = $x.Replace(([string][char]0x00C4),'AE').Replace(([string][char]0x00D6),'OE').Replace(([string][char]0x00DC),'UE')  # Ã„Ã–Ãœ
+    $x = $x.Replace(([string][char]0x00DF),'SS')                                                                           # ÃŸ
+    $x = $x.Replace(([string][char]0x00E4),'AE').Replace(([string][char]0x00F6),'OE').Replace(([string][char]0x00FC),'UE')  # Ã¤Ã¶Ã¼
   } catch { return $s }
   return $x
 }
@@ -174,7 +174,9 @@ function Guess-Categoria([string]$prod,[string]$mod,[string]$path){
     if($mod -match 'FALLSORB'){ return "CORDINO_Y_ASSORBITORE" }
     if($mod -match 'MULTIGRIP'){ return "CORDINO_POSIZIONAMENTO" }
     if($mod -match 'BANDSCHLINGE'){ return "CORDINO_POSIZIONAMENTO" }
-    if($mod -match 'ERGO_CLICK'){ return "MOSCHETTONE" }
+    if($mod -match 'ERGO_CLICK'){ return "IMBRAGATURA" }
+    # ERGO_FALLBACK_IMBRAGATURA
+    if($mod -match '^ERGO'){ return "IMBRAGATURA" }
     if($mod -match 'INSTRUCTION_MANUAL'){ return "CORDINO_Y_ASSORBITORE" }
   }
 
@@ -247,7 +249,7 @@ if(!$pdfs){
 Write-Host "Trovati:"
 $pdfs | ForEach-Object { Write-Host (" - " + $_.Name) }
 
-# preset iniziale per evitare “IKAR rimane appiccicato su TEUF”
+# preset iniziale per evitare â€œIKAR rimane appiccicato su TEUFâ€
 $folderUpper = $Folder.ToUpper()
 $startProd = ""
 if($folderUpper -match 'TEUF'){ $startProd = "TEUFELBERGER" }
