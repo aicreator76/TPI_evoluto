@@ -50,9 +50,9 @@ function DeUmlaut([string]$s) {
   if ([string]::IsNullOrWhiteSpace($s)) { return "" }
   $x = $s
   try {
-    $x = $x.Replace(([string][char]0x00C4),'AE').Replace(([string][char]0x00D6),'OE').Replace(([string][char]0x00DC),'UE')  # ÄÖÜ
-    $x = $x.Replace(([string][char]0x00DF),'SS')                                                                           # ß
-    $x = $x.Replace(([string][char]0x00E4),'AE').Replace(([string][char]0x00F6),'OE').Replace(([string][char]0x00FC),'UE')  # äöü
+    $x = $x.Replace(([string][char]0x00C4),'AE').Replace(([string][char]0x00D6),'OE').Replace(([string][char]0x00DC),'UE')  # Ã„Ã–Ãœ
+    $x = $x.Replace(([string][char]0x00DF),'SS')                                                                           # ÃŸ
+    $x = $x.Replace(([string][char]0x00E4),'AE').Replace(([string][char]0x00F6),'OE').Replace(([string][char]0x00FC),'UE')  # Ã¤Ã¶Ã¼
   } catch { return $s }
   return $x
 }
@@ -90,7 +90,7 @@ function Load-HashIndex {
         if (-not $map.ContainsKey($h)) { $map[$h] = $fp }
       }
     } catch {
-      # se un CSV è sporco non blocchiamo l'import: dedup "soft" salta
+      # se un CSV Ã¨ sporco non blocchiamo l'import: dedup "soft" salta
     }
   }
   return $map
@@ -150,7 +150,7 @@ function Guess-Modello([string]$path){
     return (Normalize-Slug ("ABS_3A{0}" -f $suffix))
   }
 
-  # --- manuale generico "Höhensicherungsgeräte"
+  # --- manuale generico "HÃ¶hensicherungsgerÃ¤te"
   if($n0 -match 'HOEHENSICHERUNGSGERAET|HOHENSICHERUNGSGERAET|HOEHENSICHERUNGSGERAETE|HOHENSICHERUNGSGERAETE'){
     return "HOEHENSICHERUNGSGERAETE"
   }
@@ -174,7 +174,8 @@ function Guess-Categoria([string]$tipo,[string]$prod,[string]$mod,[string]$path)
     if($mod -match 'FALLSORB'){ return "CORDINO_Y_ASSORBITORE" }
     if($mod -match 'MULTIGRIP'){ return "CORDINO_POSIZIONAMENTO" }
     if($mod -match 'BANDSCHLINGE'){ return "CORDINO_POSIZIONAMENTO" }
-    if($mod -match 'ERGO_CLICK'){ return "MOSCHETTONE" }
+    if($mod -match 'ERGO_CLICK'){ return "IMBRAGATURA" }
+if($mod -match '^ERGO'){ return "IMBRAGATURA" }
     if($mod -match 'INSTRUCTION_MANUAL'){ return "CORDINO_Y_ASSORBITORE" }
   }
 
