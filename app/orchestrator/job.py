@@ -13,7 +13,7 @@ from typing import Any, Iterable, Iterator
 from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 
-from app.db.models.orchestrator_event import OrchestratorEvent
+from app.db.orchestrator_models.orchestrator_event import OrchestratorEvent
 from app.db.session import db_session, init_db
 
 LOG = logging.getLogger("orchestrator0")
@@ -62,7 +62,7 @@ def _parse_date(s: str) -> date:
 def _sniff_dialect(sample: str) -> csv.Dialect:
     """
     mypy-safe:
-    - typeshed può tipizzare sniff() come type[Dialect]
+    - typeshed puÃ² tipizzare sniff() come type[Dialect]
     - normalizziamo sempre a ISTANZA csv.Dialect
     """
     try:

@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.db.models.orchestrator_event import OrchestratorEvent
+from app.db.orchestrator_models.orchestrator_event import OrchestratorEvent
 from app.db.session import get_db, init_db
 from app.orchestrator.lock_service import acquire_lock, lock_status, release_lock
 from app.orchestrator.schemas import AckIn, OrchestratorEventOut
@@ -182,7 +182,7 @@ def run(
         return {"ok": True, "summary": summary}
 
     except HTTPException:
-        # già formattata
+        # giÃ  formattata
         raise
     except Exception as e:
         db.rollback()
