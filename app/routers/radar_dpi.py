@@ -6,7 +6,7 @@ import json
 import os
 from datetime import date, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd
 from fastapi import APIRouter, Depends, File, Query, UploadFile
@@ -35,7 +35,7 @@ def _ensure_tree() -> tuple[Path, Path]:
 
 
 def _pick_col(df: pd.DataFrame, candidates: list[str]) -> str | None:
-    # priorità: candidates (ordine) -> colonne
+    # prioritÃ : candidates (ordine) -> colonne
     cols = [str(c) for c in df.columns]
     low = [c.strip().lower() for c in cols]
     for k in candidates:
@@ -80,7 +80,7 @@ def _latest_source(db: Session, tenant: str) -> str | None:
 
 
 def _detect_header_row(xlsx_path: Path, sheet_name: str | int) -> int:
-    # scansione prime 20 righe: prende quella con più keyword
+    # scansione prime 20 righe: prende quella con piÃ¹ keyword
     df = pd.read_excel(xlsx_path, sheet_name=sheet_name, header=None, nrows=20, engine="openpyxl")
     keys = [
         "posizione",
@@ -135,14 +135,13 @@ async def import_excel(
 
     raw_bytes = await file.read()
     dest.write_bytes(raw_bytes)
-
-    sheet_name = sheet if sheet else 0
+    sheet_name = cast("str | int", sheet if sheet else 0)
     hr = header_row if header_row is not None else _detect_header_row(dest, sheet_name)
 
     df = pd.read_excel(dest, sheet_name=sheet_name, header=hr, engine="openpyxl")
     df = df.dropna(how="all")
 
-    # colonne chiave (questa è la tua tabella)
+    # colonne chiave (questa Ã¨ la tua tabella)
     col_exp = _pick_col(df, ["data scad verifica", "scad verifica", "scaden", "expiry", "valid"])
     col_art = _pick_col(df, ["articolo"])
     col_brand = _pick_col(df, ["marca", "brand"])
