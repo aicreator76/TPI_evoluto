@@ -1,3 +1,21 @@
 .env
 *.env
 *.bak
+.venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+logs/
+site/
+tpi_evoluto.sqlite
+docs/openapi.json
+.github/workflows/__pycache__/
+
+# Radar / env
+*.env
+.env*
+**/*.env
+**/.env*
+scripts/radar/.env.proton_bridge
+ops/radar_dpi/*.env
+ops/radar_dpi/*.env.*
