@@ -1,36 +1,3 @@
-.# --- Python ---
-__pycache__/
-*.py[cod]
-
-# --- Virtualenv ---
-.venv/
-
-# --- Local outputs / artifacts (non versionare) ---
-logs/
-REPORT_DELTA/
-RELEASE_TPI/
-site/
-tmp_*.csv
-
-# --- Backups ---
-*.bak.*
-tat -ano*
-
-requirements.txt.bak-*
-*.bak-*
-
-*.sqlite
-*.sqlite3
-
-LOG/
-
-.venv-docs/
-
-docs/openapi.json
-
-# secrets
-scripts/radar/.env.proton_bridge
-# --- RADAR: rottami locali (mai in git) ---
-scripts/radar/*.BAK_*
-scripts/radar/*_20??-??-??*.py
-scripts/radar/*_20??-??-??*.ps1
+.env
+*.env
+*.bak

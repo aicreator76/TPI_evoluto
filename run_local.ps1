@@ -10,8 +10,8 @@ pip install --no-cache-dir -r requirements.txt
 $port=8011
 if (Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue) {
   Write-Host "Porta $port occupata. Uccido server precedenti..."
-  taskkill /F /IM uvicorn.exe 2>$null
-  taskkill /F /IM python.exe  2>$null
+  taskkill /F /IM uvicorn.exe 2>$null *> $null; $LASTEXITCODE=0; $Error.Clear()
+  taskkill /F /IM python.exe  2>$null *> $null
   Start-Sleep -Seconds 1
 }
 
