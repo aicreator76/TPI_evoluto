@@ -1,6 +1,6 @@
 # run_local.ps1 — avvio rapido FastAPI su 8011
 $ErrorActionPreference="Stop"
-if (-not (Test-Path ".\.venv\Scripts\Activate.ps1")) { py -3.11 -m venv .venv }
+if (-not (Test-Path ".\.venv\Scripts\Activate.ps1")) { python -m venv .venv }
 . .\.venv\Scripts\Activate.ps1
 
 python -m pip install --upgrade pip *> $null
