@@ -16,7 +16,10 @@ from typing import Any, Dict, List, Optional, Tuple
 from fastapi import HTTPException
 
 # Percorso DB assoluto (on-prem TPI)
-DB_PATH = Path(r"E:\CLONAZIONE\tpi_evoluto\tpi.db")
+import os
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DB_PATH = Path(os.getenv("TPI_DB_PATH", str(PROJECT_ROOT / "data" / "tpi.db")))
 
 
 # ------------------------------------------------------------
