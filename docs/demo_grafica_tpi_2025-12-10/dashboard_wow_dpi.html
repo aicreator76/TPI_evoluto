@@ -529,8 +529,7 @@ el("photoPreview").addEventListener("click", ()=>{
       }
     }
 
-    demoFill();
-    STATE.origin = "DEMO locale (fallback)";
+    STATE.dpi=[]; STATE.accessori=[]; STATE.origin="API offline"; toast("API non raggiungibile", "err");
   }
 
   // --- RENDER ---
