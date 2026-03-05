@@ -1,0 +1,25 @@
+# RUNBOOK_RADAR.txt
+# Radar DPI - Esecuzione rapida (JOB -> DRY RUN -> SEND)
+
+## Prerequisiti
+- ApiBase (staging o locale) disponibile
+- RADAR_DPI_DATA_DIR impostata (cartella dati radar)
+- ops/radar_dpi/radar_mail.env configurato (TO/SMTP ecc.)
+
+## 1) Genera report (CSV+JSON) da STAGING
+$env:RADAR_DPI_DATA_DIR="E:\CLONAZIONE\REPORT_DELTA\RADAR_DPI_DATA"
+$env:RADAR_API_BASE="https://tpi-evoluto-staging.onrender.com/api"
+pwsh -NoProfile -File .\ops\radar_dpi\radar_daily_job.ps1
+
+## 2) DRY RUN mail (non invia)
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\ops\radar_dpi\radar_send_mail.ps1 `
+  -EnvFile .\ops\radar_dpi\radar_mail.env `
+  -ReportsDir "$env:RADAR_DPI_DATA_DIR\reports" `
+  -ReportPattern "radar_*.csv" `
+  -DryRun
+
+## 3) INVIO reale (invia)
+pwsh -NoProfile -ExecutionPolicy Bypass -File .\ops\radar_dpi\radar_send_mail.ps1 `
+  -EnvFile .\ops\radar_dpi\radar_mail.env `
+  -ReportsDir "$env:RADAR_DPI_DATA_DIR\reports" `
+  -ReportPattern "radar_*.csv"
