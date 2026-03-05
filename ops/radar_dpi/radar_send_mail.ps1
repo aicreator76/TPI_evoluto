@@ -61,15 +61,17 @@ try {
 
   $smtpHost = Get-Cfg "RADAR_SMTP_HOST" "127.0.0.1"
   $smtpPort = [int](Get-Cfg "RADAR_SMTP_PORT" "1025")
-  $smtpUser = Get-Cfg "RADAR_SMTP_USER" $null -Required
-  $smtpPass = Get-Cfg "RADAR_SMTP_APP_PASSWORD" $null -Required
+  $smtpUser = Get-Cfg "RADAR_SMTP_USER" $null
+  $smtpPass = Get-Cfg "RADAR_SMTP_APP_PASSWORD" $null
 
   $mailFrom = Get-Cfg "RADAR_MAIL_FROM" $smtpUser
   $mailTo   = Split-EmailList (Get-Cfg "RADAR_MAIL_TO" $null -Required)
   $mailCc   = Split-EmailList (Get-Cfg "RADAR_MAIL_CC" "")
   $mailBcc  = Split-EmailList (Get-Cfg "RADAR_MAIL_BCC" "")
 
-  if (-not $PSBoundParameters.ContainsKey("SubjectPrefix")) { $SubjectPrefix = Get-Cfg "RADAR_SUBJECT_PREFIX" "[DPI radar]" }
+
+  if(-not $DryRun){ if([string]::IsNullOrWhiteSpace($smtpUser)){ throw "Missing required config: RADAR_SMTP_USER" } if([string]::IsNullOrWhiteSpace($smtpPass)){ throw "Missing required config: RADAR_SMTP_APP_PASSWORD" } }
+if (-not $PSBoundParameters.ContainsKey("SubjectPrefix")) { $SubjectPrefix = Get-Cfg "RADAR_SUBJECT_PREFIX" "[DPI radar]" }
   if (-not $PSBoundParameters.ContainsKey("MaxAttachMB"))   { $MaxAttachMB   = [int](Get-Cfg "RADAR_MAX_ATTACH_MB" "5") }
   if (-not $PSBoundParameters.ContainsKey("ReportPattern") -or [string]::IsNullOrWhiteSpace($ReportPattern)) {
     $ReportPattern = Get-Cfg "RADAR_REPORT_PATTERN" "radar_*.csv"
