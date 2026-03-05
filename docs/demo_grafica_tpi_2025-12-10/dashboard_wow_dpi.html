@@ -293,7 +293,7 @@
     8000;
 
   // se API online ma lista vuota -> DEMO (default ON)
-  const PREFER_DEMO_ON_EMPTY = (qs.get("empty") === "1") ? false : true;
+  const PREFER_DEMO_ON_EMPTY = false;
 
   const el = (id)=>document.getElementById(id);
   const esc = (s)=>String(s ?? "").replace(/[&<>"']/g, (c)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
@@ -515,11 +515,7 @@ el("photoPreview").addEventListener("click", ()=>{
         const demoS = (window.WOW_DEMO && window.WOW_DEMO.sottogancio) ? window.WOW_DEMO.sottogancio : [];
         const demoM = (window.WOW_DEMO && window.WOW_DEMO.movimenti) ? window.WOW_DEMO.movimenti : [];
 
-        if(PREFER_DEMO_ON_EMPTY && (!dpi || dpi.length === 0)){
-          demoFill();
-          STATE.origin = "API online ma DPI vuoti -> DEMO locale (niente 0)";
-          return;
-        }
+        if(!dpi || dpi.length === 0){ STATE.dpi = []; STATE.accessori = acc || []; STATE.sottogancio = demoS; STATE.movimenti = demoM; STATE.origin = "API online: nessun dato"; toast("Nessun dato disponibile dall'API", "warn"); return; }
 
         STATE.dpi = dpi || [];
         STATE.accessori = acc || [];
